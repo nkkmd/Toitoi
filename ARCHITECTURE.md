@@ -8,7 +8,7 @@
 
 ## 1. システム・オーバービュー
 
-本システムは、『テクノロジーを手放す農業論』に基づく「問いの循環」を実装する分散型プラットフォームです。Nostrプロトコルを基盤とし、中央集権的なデータベースを持たず、農家のエッジデバイスと有志がホスティングする分散リレー、およびGitによる永続的アーカイブによって構成されます。
+本システムは、『[テクノロジーを手放す農業論](./Tech-wo-Tebanasu-Nogyoron.md)』に基づく「問いの循環」を実装する分散型プラットフォームです。Nostrプロトコルを基盤とし、中央集権的なデータベースを持たず、農家のエッジデバイスと有志がホスティングする分散リレー、およびGitによる永続的アーカイブによって構成されます。
 
 ### 1.1 データフローとコンポーネント連携
 
@@ -176,7 +176,7 @@
 
 ## 1. System Overview
 
-This system is a decentralized platform implementing the "Circulation of Inquiry" based on the theory of "Agriculture that Lets Go of Technology." Built on the Nostr protocol, it features no centralized database and consists of edge devices, decentralized relays hosted by volunteers, and a permanent archive using Git.
+This system is a decentralized platform implementing the "Circulation of Inquiry" based on the theory of "[Letting Go of Technology in Agriculture](./Letting-Go-of-Technology-in-Agriculture.md)". Built on the Nostr protocol, it features no centralized database and consists of edge devices, decentralized relays hosted by volunteers, and a permanent archive using Git.
 
 ### 1.1 Data Flow and Component Integration
 
