@@ -47,7 +47,7 @@
 ## 3. 送信データの構造（概要）
 
 生成されるNostrイベント（JSON）の基本的な構造です。
-※ 各タグ（`context`, `relationship`等）の厳密な定義と標準ボキャブラリーについては、システム全体の共通仕様書である **[`TOITOI_PROTOCOL_SCHEMA.md`](./TOITOI_PROTOCOL_SCHEMA.md)** を必ず参照して実装してください。
+※ 各タグ（`context`, `relationship`等）の厳密な定義と標準ボキャブラリーについては、システム全体の共通仕様書である **[`TOITOI_PROTOCOL_SCHEMA.md`](../TOITOI_PROTOCOL_SCHEMA.md)** を必ず参照して実装してください。
 
 ```json
 {
