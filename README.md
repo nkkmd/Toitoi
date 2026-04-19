@@ -1,4 +1,9 @@
 # Toitoi 🌱
+[![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](./LICENSE_POLICY.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE_POLICY.md)
+[![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC_BY--SA_4.0-lightgrey.svg)](./LICENSE_POLICY.md)
+
 **Digital Agroecology Commons powered by Nostr Protocol**
 
 Toitoi（トイトイ）は、『テクノロジーを手放す農業論』の思想に基づき、アグロエコロジーの知を共有・進化させるための**分散型プロトコル・プラットフォーム（デジタル・コモンズ）**です。
