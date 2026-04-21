@@ -107,7 +107,7 @@ console.log("署名済みイベントID:", signedEvent.id);
 async function publishToCommons() {
     const targetRelays = [
         'wss://relay.cultivationdata.net', // アンカーリレー
-        'wss://relay.local-agri.org'       // 地域のコモンズリレー
+        'wss://relay.local.cultivationdata.net' // 地域のコモンズリレー
     ];
 
     for (const url of targetRelays) {
