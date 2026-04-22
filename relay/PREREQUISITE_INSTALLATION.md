@@ -231,6 +231,8 @@ sudo chmod +x /usr/local/bin/nak
 which nak
 ```
 
+> **注意:** nak のリリースファイル名はバージョンによって変更される可能性があります。最新のリリース（v0.19.7時点）では `nak-v0.19.7-linux-amd64` というファイル名ですが、`/latest/download/nak-linux-amd64` のURLは自動的に最新版を指します。もしダウンロードが失敗する場合は、[GitHub Releasesページ](https://github.com/fiatjaf/nak/releases/latest)で最新のLinux AMD64バイナリを確認してください。
+
 ### Step 3: nak インストール確認
 
 ```bash
