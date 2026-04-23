@@ -1,5 +1,5 @@
 # 構築ガイド：アグロエコロジー・コモンズ専用リレーの立ち上げ方
-**バージョン：2.1**　｜　前バージョン (v2.0) からの主な追加：ネットワーク競合および初期エラー回避のための設定手順(Step 2.3)を追記
+**バージョン：2.2**　｜　前バージョン (v2.1) からの主な追加：Nostream最新仕様への対応（`.env`から`.nostr/settings.yaml`への設定移行、シークレットキーの自動生成）
 
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」の基盤となる専用Nostrリレーサーバーを構築するための公式ガイドです。
 
@@ -36,61 +36,80 @@ git clone https://github.com/Cameri/nostream.git
 cd nostream
 ```
 
-### Step 2.2: 「アグロエコロジー専用」設定の適用（最重要）
-Nostreamの環境変数ファイル（`.env`）を作成し、**「Kind: 11042 のみを受け付ける」** という強力なホワイトリスト設定を行います。
+### Step 2.2: セキュリティキーの生成（.env）
+Nostreamを安全に稼働させるための「シークレットキー」を生成して `.env` ファイルに記述します。（リレーの詳細設定は次の Step 2.3 で行います）
 
 ```bash
 # デフォルトの設定ファイルをコピー
 cp .env.example .env
 
-# 設定ファイルを編集 (nano エディタを使用)
-nano .env
+# 128文字のランダムなシークレットキーを生成して .env に追記
+echo "SECRET=$(openssl rand -hex 128)" >> .env
 ```
 
-`.env` ファイルを開いたら、以下の設定を追加・変更してください。
+### Step 2.3: アグロエコロジー専用設定（settings.yaml）
+「Kind 11042 のみを受け付ける」という強力なホワイトリスト設定や、リレーのプロフィール情報は `.nostr/settings.yaml` に記述します。
 
-```ini
-# --- リレーの基本情報（NIP-11） ---
-RELAY_NAME="Agroecology Commons Relay (Kyushu)"
-RELAY_DESCRIPTION="九州地域の有機農家コミュニティが運営する、アグロエコロジー『問いの循環』専用リレーです。"
-RELAY_PUBKEY="<あなたのNostr公開鍵（hex形式）があれば入力>"
-RELAY_CONTACT="mailto:admin@your-domain.com"
+```bash
+# 設定ディレクトリを作成し、デフォルト設定をコピー
+mkdir -p .nostr
+cp resources/default-settings.yaml .nostr/settings.yaml
 
-# --- アグロエコロジー専用の制限（ホワイトリスト） ---
-# Kind 11042（問い）のイベントのみを保存・配信する
-EVENT_KIND_WHITELIST="11042"
+# 設定ファイルを編集 (nano エディタを使用)
+nano .nostr/settings.yaml
+```
 
-# 巨大なデータ（画像スパム等）を防ぐため、イベントサイズを20KBに制限
-EVENT_MAX_SIZE_BYTES=20000
+ファイルを開いたら、以下の構成になるように該当部分を変更・追記してください。
+（※YAMLファイルはインデントが厳密です。タブ文字は使わず半角スペースを使用してください）
 
-# 古すぎる/未来すぎるタイムスタンプのイベントを拒否
-EVENT_CREATED_AT_UPPER_LIMIT=60
-EVENT_CREATED_AT_LOWER_LIMIT=31536000 # (1年前まで)
+```yaml
+info:
+  relay_url: wss://relay.your-domain.com
+  name: "Agroecology Commons Relay (Kyushu)"
+  description: "九州地域の有機農家コミュニティが運営する、アグロエコロジー『問いの循環』専用リレーです。"
+  pubkey: "<あなたのNostr公開鍵（hex形式）があれば入力>"
+  contact: "mailto:admin@your-domain.com"
+
+# --- 中略（paymentsなどの他項目はデフォルトのままでOK） ---
+
+limits:
+  client:
+    subscription:
+      # アプリからの同時接続や検索の過剰な要求を防ぐ
+      maxSubscriptions: 10
+      maxFilters: 10
+  event:
+    eventId:
+      # 計算証明（PoW）は要求しない
+      minLeadingZeroBits: 0
+    kind:
+      # Kind 11042（問い）のイベントのみを保存・配信する
+      whitelist:
+        - 11042
+      blacklist:[]
+    createdAt:
+      # 古すぎる/未来すぎるタイムスタンプのイベントを拒否
+      maxPositiveDelta: 60
+      maxNegativeDelta: 31536000 # (1年前まで)
+    content:
+      # 巨大なデータ（画像スパム等）を防ぐため、イベントサイズを20KBに制限
+      maxLength: 20000
 ```
 *※編集が終わったら `Ctrl + O` → `Enter` で保存し、`Ctrl + X` で閉じます。*
 
-### Step 2.3: docker-compose.yml と初期ファイルの調整（エラー回避）
-Nostreamのデフォルト設定のまま起動すると、VPSの環境によってはネットワーク競合や設定ファイル不在によるエラー（起動ループ）が発生します。これを未然に防ぐため、2つの調整を行います。
+### Step 2.4: docker-compose.yml の調整（ネットワーク競合回避）
+Nostreamのデフォルト設定のまま起動すると、VPSの環境によってはネットワーク競合によるエラー（起動ループ）が発生します。これを未然に防ぐため、固定IP設定を解除してDockerに自動割り当てさせます。
 
-**① 固定IPネットワーク設定の解除**
-デフォルトで指定されている固定IPを削除し、Dockerに自動割り当てさせます。
 ```bash
 nano docker-compose.yml
 ```
-ファイルを開き、以下の部分（複数箇所あります）を `#` でコメントアウトするか、行ごと削除してください。
+ファイルを開き、以下の部分を `#` でコメントアウトするか、行ごと削除してください。
 
 1. 各コンテナ（`nostream`, `nostream-db`, `nostream-cache`）の `ipv4_address: 10.10.10.x` の行
 2. ファイルの一番下にある `subnet: 10.10.10.0/24` およびその上の `ipam:` 関連の行
 *(※さらに安全性を高めるため、外部公開が不要な `nostream-db` の `5432:5432` と `nostream-cache` の `6379:6379` のポート指定もコメントアウトしておくことを推奨します)*
 
-**② 初期設定ファイルの空作成**
-起動時に必要な `settings.yaml` が無いとエラーになるため、空のファイルを作っておきます。
-```bash
-mkdir -p .nostr
-touch .nostr/settings.yaml
-```
-
-### Step 2.4: データベースのセットアップと起動
+### Step 2.5: データベースのセットアップと起動
 NostreamはPostgreSQLを使用します。Docker Composeを使って一発で起動します。（※権限エラーを防ぐため `sudo` を付けて実行します）
 
 ```bash
@@ -203,7 +222,7 @@ async function test() {
     const invalidEvent = finalizeEvent({
         kind: 1,
         created_at: Math.floor(Date.now() / 1000),
-        tags: [],
+        tags:[],
         content: "おはよう！これは弾かれるべき普通のツイートです。"
     }, sk);
 
@@ -349,7 +368,7 @@ cd "$ARCHIVE_DIR" || exit 1
 
 # 最後にエクスポートしたイベントのタイムスタンプを取得
 # (ファイルが存在しない場合は0＝全件取得)
-if [ -f "$ARCHIVE_FILE" ]; then
+if[ -f "$ARCHIVE_FILE" ]; then
     # JSONLの最終行からcreated_atを取得
     LAST_TS=$(tail -1 "$ARCHIVE_FILE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('created_at',0))" 2>/dev/null || echo 0)
 else
@@ -364,7 +383,7 @@ nak req -k 11042 --since "$LAST_TS" "$RELAY" > "$TMP_FILE" 2>> "$LOG_FILE"
 
 NEW_COUNT=$(wc -l < "$TMP_FILE")
 
-if [ "$NEW_COUNT" -eq 0 ]; then
+if[ "$NEW_COUNT" -eq 0 ]; then
     echo "[$TIMESTAMP] 新規イベントなし。スキップ。" >> "$LOG_FILE"
     rm "$TMP_FILE"
     exit 0
@@ -378,7 +397,7 @@ python3 - <<'EOF'
 import json, sys
 
 seen = set()
-unique_lines = []
+unique_lines =[]
 with open("questions.jsonl", "r") as f:
     for line in f:
         line = line.strip()
@@ -502,4 +521,4 @@ commit 2c4a1f0  archive: 2026-05-30 +5件追加（累計 320件）
 ---
 
 *このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*v2.1 — 2026年4月改訂*
+*v2.2 — 2026年4月改訂*
