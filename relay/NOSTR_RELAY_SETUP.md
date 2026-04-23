@@ -142,7 +142,7 @@ info:
   contact: mailto:admin@your-domain.com
 ```
 
-**② `limits.event` セクション内の3箇所を編集：**
+**② `limits.event` セクション内の2箇所を編集：**
 
 `retention.kind.whitelist` を空にします（デフォルトで `62` が入っています）：
 
@@ -172,6 +172,17 @@ info:
     createdAt:
       maxPositiveDelta: 900
       maxNegativeDelta: 31536000    # 1年分の余裕を持たせる
+```
+
+`content` セクション全体を置き換えて、イベントサイズを20KBに制限します（画像スパム等の巨大データを防ぐため）。このリレーはKind 11042専用のため、複雑なkind範囲指定は不要です：
+
+```yaml
+    content:
+      - description: 20 KB limit for Kind 11042 (agroecology inquiry)
+        maxLength: 20480
+        kinds:
+          - - 11042
+            - 11042
 ```
 
 編集が終わったら `Ctrl + O` → `Enter` で保存し、`Ctrl + X` で閉じます。その後、設定を反映するためにnostreamを再起動します。
