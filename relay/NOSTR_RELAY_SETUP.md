@@ -86,7 +86,7 @@ limits:
       # Kind 11042（問い）のイベントのみを保存・配信する
       whitelist:
         - 11042
-      blacklist:[]
+      blacklist: []
     createdAt:
       # 古すぎる/未来すぎるタイムスタンプのイベントを拒否
       maxPositiveDelta: 60
