@@ -1,5 +1,5 @@
 # 構築ガイド：アグロエコロジー・コモンズ専用リレーの立ち上げ方
-**バージョン：2.3**　｜　前バージョン (v2.2) からの主な修正：`postgresql.conf` 事前生成手順の追加、設定ファイルを `settings.yaml` から `settings.json`（初回起動後に自動生成）に修正、パーミッション設定手順の追加、`SECRET` 重複防止の注記追加
+**バージョン：2.4**　｜　前バージョン (v2.3) からの主な修正：Nostream v2.1.1 は `settings.json` ではなく **`settings.yaml`** を使用することを確認・修正。設定ファイルはテンプレートからの手動コピーが必要（自動生成されない）。ブラウザでのNIP-11確認表示がJSONになることを正常動作として明記。`retention.kind.whitelist` の修正手順を追加。
 
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」の基盤となる専用Nostrリレーサーバーを構築するための公式ガイドです。
 
@@ -88,68 +88,78 @@ sudo chown -R 999:999 .nostr/data
 sudo chown -R 999:999 .nostr/db-logs
 ```
 
+**注意：** ホスト側に `lxd` などUID=999のシステムユーザーが存在する場合、`ls -la` の表示がそのユーザー名になりますが、コンテナ内では正しくpostgresユーザーとして動作します。`ls -lan` でUID番号が `999` になっていれば問題ありません。
+
 ### Step 2.6: データベースのセットアップと初回起動
-NostreamはPostgreSQLを使用します。Docker Composeを使って一発で起動します。
 
 ```bash
 # Nostream本体とデータベース(PostgreSQL)のビルドと起動（バックグラウンド実行）
 sudo docker compose up -d
 ```
 
-起動後、以下のコマンドでログを確認してください。エラーが出ずに `Server listening on port 8008` または `nostream is running` と表示されていれば内部サーバーの起動は成功です。（監視から抜けるには `Ctrl + C`）
+起動後、以下のコマンドでログを確認してください。
 
 ```bash
 sudo docker compose logs -f nostream
 ```
 
-### Step 2.7: アグロエコロジー専用設定（settings.json）
-初回起動によって `.nostr/settings.json` が自動生成されます。このファイルに「Kind 11042 のみを受け付ける」という強力なホワイトリスト設定や、リレーのプロフィール情報を記述します。
+以下のようなログが出力されていれば起動成功です。（監視から抜けるには `Ctrl + C`）
 
-まず生成されたことを確認します。
-
-```bash
-ls -la .nostr/settings.json
+```
+nostream  | ... "2 client workers started"
+nostream  | ... "1 maintenance worker started"
+nostream  | ... "Tor hidden service: disabled"
 ```
 
-確認できたら編集します。
+**起動直後に `Error: ENOENT: no such file or directory, watch '/home/node/.nostr/settings.yaml'` が出ることがありますが、これは次のStep 2.7で設定ファイルを配置する前の一時的なエラーです。その後に上記の正常ログが続いていれば問題ありません。**
+
+### Step 2.7: アグロエコロジー専用設定（settings.yaml）
+
+Nostream v2.1.1 は設定ファイルとして `settings.yaml` を使用します。コンテナ内のテンプレートをホスト側にコピーして編集します。
 
 ```bash
-nano .nostr/settings.json
+# テンプレートをコンテナからコピー
+sudo docker cp nostream:/app/resources/default-settings.yaml .nostr/settings.yaml
+
+# オーナーをnodeユーザー(UID=1000)に設定
+sudo chown 1000:1000 .nostr/settings.yaml
 ```
 
-ファイルを開いたら、以下の項目を該当箇所に合わせて変更・追記してください。（※JSONファイルはカンマや括弧の対応が厳密です。編集後に構文エラーがないか注意してください）
+次に編集します。
 
-```json
-{
-  "info": {
-    "relay_url": "wss://relay.your-domain.com",
-    "name": "Agroecology Commons Relay (Kyushu)",
-    "description": "九州地域の有機農家コミュニティが運営する、アグロエコロジー『問いの循環』専用リレーです。",
-    "pubkey": "<あなたのNostr公開鍵（hex形式）があれば入力>",
-    "contact": "mailto:admin@your-domain.com"
-  },
-  "limits": {
-    "client": {
-      "subscription": {
-        "maxSubscriptions": 10,
-        "maxFilters": 10
-      }
-    },
-    "event": {
-      "kind": {
-        "whitelist": [11042],
-        "blacklist": []
-      },
-      "createdAt": {
-        "maxPositiveDelta": 60,
-        "maxNegativeDelta": 31536000
-      },
-      "content": {
-        "maxLength": 20000
-      }
-    }
-  }
-}
+```bash
+nano .nostr/settings.yaml
+```
+
+**① `info` セクション（ファイル冒頭）を編集：**
+
+```yaml
+info:
+  relay_url: wss://relay.your-domain.com
+  name: Agroecology Commons Relay
+  description: デジタル・アグロエコロジー・コモンズ専用リレー。Kind 11042（問いの循環）のみを保存します。
+  pubkey: replace-with-your-pubkey-in-hex
+  contact: mailto:admin@your-domain.com
+```
+
+**② `limits.event` セクション内の2箇所を編集：**
+
+`retention.kind.whitelist` を空にします（デフォルトで `62` が入っています）：
+
+```yaml
+    retention:
+      maxDays: -1
+      kind:
+        whitelist: []
+```
+
+`kind.whitelist` に `11042` のみを設定します：
+
+```yaml
+    kind:
+      whitelist:
+        - 11042
+      blacklist: []
 ```
 
 編集が終わったら `Ctrl + O` → `Enter` で保存し、`Ctrl + X` で閉じます。その後、設定を反映するためにnostreamを再起動します。
@@ -222,7 +232,8 @@ sudo systemctl restart caddy
 
 ### ブラウザでの確認 (NIP-11)
 ブラウザを開き、`https://relay.your-domain.com` にアクセスしてください。
-「Please use a Nostr client to connect.」という文字が表示されれば成功です。
+
+リレー情報のJSONが表示されれば成功です。（Nostream v2.1.1ではブラウザからのアクセスに対してJSONを返します。これは正常な動作です。）
 
 ### WebSocket接続とフィルタリングのテスト
 Nostrの接続確認ツールを使用して、WebSocket（`wss://`）が機能しているか、そして**指定したKind以外がちゃんと弾かれるか**を確認します。
@@ -563,4 +574,4 @@ commit 2c4a1f0  archive: 2026-05-30 +5件追加（累計 320件）
 ---
 
 *このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*v2.3 — 2026年4月改訂*
+*v2.4 — 2026年4月改訂*
