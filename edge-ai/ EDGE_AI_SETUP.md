@@ -65,7 +65,7 @@
     ["relationship", "microclimate", "weed_flora"],
     ["phase", "intermediate"],
     ["trigger", "sensor_anomaly", "soil_moisture"],  // [任意] 問いの起点となったセンサー異常等
-    ["e", "<親イベントID>", "wss://relay.cultivationdata.net", "derived_from"]
+    ["e", "<親イベントID>", "wss://relay.toitoi.cultivationdata.net", "derived_from"]
   ],
   "id": "<sha256(serialize(event))>",
   "sig": "<schnorr_signature(id, privkey)>"
@@ -102,7 +102,7 @@ const inquiryPayload = {
         ["relationship", "weed_flora", "nutrient"],         // ← v1.1の "nutrient_cycle" を推奨ボキャブラリー "nutrient" に修正
         ["phase", "intermediate"],
         ["trigger", "sensor_anomaly", "soil_moisture"],     // [任意] センサー異常が問いの起点の場合に付与
-        ["e", "abc123def456...", "wss://relay.cultivationdata.net", "derived_from"]
+        ["e", "abc123def456...", "wss://relay.toitoi.cultivationdata.net", "derived_from"]
     ]
 };
 
@@ -114,8 +114,8 @@ console.log("署名済みイベントID:", signedEvent.id);
 // フェイルセーフ: Promise.allSettled により、一部のリレーが失敗しても他への送信を継続
 async function publishToCommons() {
     const targetRelays = [
-        'wss://relay.cultivationdata.net',            // アンカーリレー（必須）
-        'wss://relay.local.cultivationdata.net',      // 地域のコモンズリレー
+        'wss://relay.toitoi.cultivationdata.net',            // アンカーリレー（必須）
+        'wss://relay.local.toitoi.cultivationdata.net',      // 地域のコモンズリレー
         'wss://relay.damus.io'                        // パブリックリレー（冗長性確保）
     ];
 
