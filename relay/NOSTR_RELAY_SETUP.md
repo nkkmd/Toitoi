@@ -133,16 +133,32 @@ nano .nostr/settings.yaml
 
 **① `info` セクション（ファイル冒頭）を編集：**
 
+`pubkey` にはリレー運営者自身のNostr公開鍵（hex形式）を記載します。まだ鍵ペアを持っていない場合は `nak` で生成してください。
+
+```bash
+# 鍵ペアを生成（一度だけ実行。秘密鍵は厳重に保管すること）
+nak key generate
+
+# 出力例:
+# nsec1abc...  ← 秘密鍵（絶対に他人に見せない）
+# npub1xyz...  ← 公開鍵
+
+# npub を settings.yaml に記載できるhex形式に変換
+nak decode npub1xyz...
+```
+
+変換されたhex文字列を `pubkey:` に記載します。
+
 ```yaml
 info:
   relay_url: wss://relay.your-domain.com
   name: Agroecology Commons Relay
   description: デジタル・アグロエコロジー・コモンズ専用リレー。Kind 11042（問いの循環）のみを保存します。
-  pubkey: replace-with-your-pubkey-in-hex
+  pubkey: （nak decode で得たhex形式の公開鍵）
   contact: mailto:admin@your-domain.com
 ```
 
-**② `limits.event` セクション内の2箇所を編集：**
+**② `limits.event` セクション内の4箇所を編集：**
 
 `retention.kind.whitelist` を空にします（デフォルトで `62` が入っています）：
 
