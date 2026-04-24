@@ -60,7 +60,7 @@ A relay network designed to build a permanent knowledge database independent of 
     Unlike standard Nostr relays, strict admission policies are enforced at the relay level:
     1. Must be `kind === 11042`.
     2. Must contain the `["t", "agroecology"]` tag.
-    3. Payload size must be less than 5KB (rejecting images or massive data embeddings).
+    3. Payload size must be less than 20KB (rejecting images or massive data embeddings).
 *   **Permanent Archiving of Knowledge Lineage (JSONL + Git):**
     To prepare for PostgreSQL failures or VPS termination, we implement an archiving mechanism utilizing the nature of Nostr events as "self-contained, cryptographically signed data." By periodically exporting differential events in `JSONL` format via the `nak` tool and committing them to a Git repository, we ensure complete protocol-level portability and recoverability independent of infrastructure.
 *   **Distribution Format:**
@@ -231,7 +231,7 @@ Operational policies to maintain Ostrom's "Design principles for Common Pool Res
     標準のNostrリレーとは異なり、リレー側で厳格な入場制限（Admission Policy）を設けます。
     1.  `kind === 11042` であること。
     2.  `tags` 内に `["t", "agroecology"]` が存在すること。
-    3.  ペイロードサイズが 5KB 未満であること（画像や巨大なデータの埋め込みを拒否）。
+    3.  ペイロードサイズが 20KB 未満であること（画像や巨大なデータの埋め込みを拒否）。
 *   **知識の系譜の永続化（JSONL + Git アーカイブ）:**
     PostgreSQL（運用DB）の障害やVPSの廃止に備え、Nostrイベントが「自己完結した暗号署名済みデータ」である特性を活かしたアーカイブ機構を実装します。`nak` ツールを用いて定期的に差分イベントを `JSONL` 形式でエクスポートし、Gitリポジトリにコミットします。これにより、インフラに依存しない「プロトコルレベルでの完全な可搬性と復元性」を担保します。
 *   **配布形態:**
