@@ -1,10 +1,11 @@
-# Digital Agroecology Commons: System Architecture Detailed Design v2.0
+# Digital Agroecology Commons: System Architecture Detailed Design v2.1
 
 *[日本語は下に続きます]*
 
-**Version: 2.0** | Main updates from the previous version (v1.0):
-* Added "Protocol-level data persistence mechanism using JSONL + Git (Archiving the lineage of knowledge)" in the Commons Relay Layer.
-* Appended "Preservation of tamper-proof history" to governance requirements.
+**Version: 2.1** | Main updates from the previous version (v2.0):
+* §3.2: Corrected `nutrient` → `nutrient_cycle` to align with TOITOI_PROTOCOL_SCHEMA.md (the authoritative protocol specification).
+* §3.2: Added `clay` and `andisol` to `soil_type` vocabulary (sync with SCHEMA §2.1).
+* §3.2: Added `farming_context` and `crop_family` context categories (sync with SCHEMA §2.1).
 
 ## 1. System Overview
 
@@ -59,7 +60,7 @@ A relay network designed to build a permanent knowledge database independent of 
     Unlike standard Nostr relays, strict admission policies are enforced at the relay level:
     1. Must be `kind === 11042`.
     2. Must contain the `["t", "agroecology"]` tag.
-    3. Payload size must be less than 20KB (rejecting images or massive data embeddings).
+    3. Payload size must be less than 5KB (rejecting images or massive data embeddings).
 *   **Permanent Archiving of Knowledge Lineage (JSONL + Git):**
     To prepare for PostgreSQL failures or VPS termination, we implement an archiving mechanism utilizing the nature of Nostr events as "self-contained, cryptographically signed data." By periodically exporting differential events in `JSONL` format via the `nak` tool and committing them to a Git repository, we ensure complete protocol-level portability and recoverability independent of infrastructure.
 *   **Distribution Format:**
@@ -148,8 +149,10 @@ The data payload specification for the "Form of Inquiry (Boundary Object)," whic
 To overcome the dilemma of locality while generating searchable "weak ties," tag values are standardized by the frontend/AI using a recommended vocabulary rather than completely free text.
 
 *   **Context (climate_zone):** `subarctic`, `cool-temperate`, `warm-temperate`, `subtropical`
-*   **Context (soil_type):** `volcanic_ash` (Andisol), `alluvial`, `peat`, `sandy`
-*   **Relationship (Elements):** `soil_moisture`, `weed_flora`, `pest`, `natural_enemy`, `microclimate`, `nutrient`
+*   **Context (soil_type):** `volcanic_ash` / `andisol`, `alluvial`, `peat`, `sandy`, `clay`
+*   **Context (farming_context):** `open_field`, `greenhouse_unheated`, `greenhouse_heated`, `no_till`, `organic`, `conventional`
+*   **Context (crop_family):** `solanaceae`, `brassica`, `legume`, `cucurbitaceae`, `poaceae`
+*   **Relationship (Elements):** `soil_moisture`, `weed_flora`, `pest`, `natural_enemy`, `microclimate`, `nutrient_cycle`, `soil_physical`, `soil_microbe`, `crop_vitality`
 
 ---
 
@@ -168,11 +171,12 @@ Operational policies to maintain Ostrom's "Design principles for Common Pool Res
 
 ---
 
-# デジタル・アグロエコロジー・コモンズ：システムアーキテクチャ詳細設計書 v2.0
+# デジタル・アグロエコロジー・コモンズ：システムアーキテクチャ詳細設計書 v2.1
 
-**バージョン：2.0**　｜　前バージョン (v1.0) からの主なアップデート：
-* コモンズ・リレー層における「JSONL + Gitを用いたプロトコルレベルのデータ永続化機構（知識の系譜のアーカイブ）」の追加
-* ガバナンス要件への「改ざん不可能な歴史の保存」の追記
+**バージョン：2.1**　｜　前バージョン (v2.0) からの主なアップデート：
+* §3.2：`nutrient`（養分）→ `nutrient_cycle`（養分循環）に修正（TOITOI_PROTOCOL_SCHEMA.md 正典への統一）。
+* §3.2：`soil_type` に `clay`（粘土質）・`andisol`（黒ボク土の別名）を追記（SCHEMA §2.1 との同期）。
+* §3.2：`farming_context`（栽培環境・農法）・`crop_family`（対象作物群）の context カテゴリを追加（SCHEMA §2.1 との同期）。
 
 ## 1. システム・オーバービュー
 
@@ -227,7 +231,7 @@ Operational policies to maintain Ostrom's "Design principles for Common Pool Res
     標準のNostrリレーとは異なり、リレー側で厳格な入場制限（Admission Policy）を設けます。
     1.  `kind === 11042` であること。
     2.  `tags` 内に `["t", "agroecology"]` が存在すること。
-    3.  ペイロードサイズが 20KB 未満であること（画像や巨大なデータの埋め込みを拒否）。
+    3.  ペイロードサイズが 5KB 未満であること（画像や巨大なデータの埋め込みを拒否）。
 *   **知識の系譜の永続化（JSONL + Git アーカイブ）:**
     PostgreSQL（運用DB）の障害やVPSの廃止に備え、Nostrイベントが「自己完結した暗号署名済みデータ」である特性を活かしたアーカイブ機構を実装します。`nak` ツールを用いて定期的に差分イベントを `JSONL` 形式でエクスポートし、Gitリポジトリにコミットします。これにより、インフラに依存しない「プロトコルレベルでの完全な可搬性と復元性」を担保します。
 *   **配布形態:**
@@ -316,8 +320,10 @@ Operational policies to maintain Ostrom's "Design principles for Common Pool Res
 属地性のジレンマを克服しつつ、検索可能な「弱い連帯」を生むため、タグの値は完全自由記述ではなく、一定の推奨語彙（Vocabulary）をフロントエンド/AI側で標準化します。
 
 *   **Context (climate_zone):** `subarctic`, `cool-temperate`, `warm-temperate`, `subtropical`
-*   **Context (soil_type):** `volcanic_ash` (黒ボク土), `alluvial` (沖積土), `peat` (泥炭土), `sandy` (砂土)
-*   **Relationship (要素群):** `soil_moisture` (土壌水分), `weed_flora` (雑草相), `pest` (害虫), `natural_enemy` (天敵), `microclimate` (微気候), `nutrient` (養分)
+*   **Context (soil_type):** `volcanic_ash` / `andisol` (黒ボク土), `alluvial` (沖積土), `peat` (泥炭土), `sandy` (砂土), `clay` (粘土質)
+*   **Context (farming_context):** `open_field` (露地), `greenhouse_unheated` (無加温ハウス), `greenhouse_heated` (加温ハウス), `no_till` (不耕起), `organic` (有機), `conventional` (慣行)
+*   **Context (crop_family):** `solanaceae` (ナス科), `brassica` (アブラナ科), `legume` (マメ科), `cucurbitaceae` (ウリ科), `poaceae` (イネ科)
+*   **Relationship (要素群):** `soil_moisture` (土壌水分), `weed_flora` (雑草相), `pest` (害虫), `natural_enemy` (天敵), `microclimate` (微気候), `nutrient_cycle` (養分循環), `soil_physical` (土壌物理性), `soil_microbe` (土壌微生物), `crop_vitality` (作物の活力)
 
 ---
 
