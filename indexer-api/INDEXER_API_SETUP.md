@@ -95,7 +95,7 @@ import { Relay, verifyEvent } from 'nostr-tools';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-const RELAY_URL = 'wss://relay.toitoi.net';
+const RELAY_URL = 'wss://relay.toitoi.cultivationdata.net';
 let isRunning = false;
 
 cron.schedule('*/10 * * * *', async () => {
