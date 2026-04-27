@@ -137,11 +137,13 @@ nano .nostr/settings.yaml
 
 ```bash
 # 鍵ペアを生成（一度だけ実行。秘密鍵は厳重に保管すること）
-nak key generate
+SECRET=$(nak key generate)
+echo "nsec: $(echo $SECRET | nak encode nsec)"
+echo "npub: $(echo $SECRET | nak key public | nak encode npub)"
 
 # 出力例:
-# nsec1abc...  ← 秘密鍵（絶対に他人に見せない）
-# npub1xyz...  ← 公開鍵
+# nsec: nsec1abc...  ← 秘密鍵（絶対に他人に見せない）
+# npub: npub1xyz...  ← 公開鍵
 
 # npub を settings.yaml に記載できるhex形式に変換
 nak decode npub1xyz...
