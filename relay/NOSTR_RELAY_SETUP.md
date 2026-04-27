@@ -152,7 +152,7 @@ nak decode npub1xyz...
 ```yaml
 info:
   relay_url: wss://relay.your-domain.com
-  name: Agroecology Commons Relay
+  name: Digital Agroecology Commons Relay
   description: デジタル・アグロエコロジー・コモンズ専用リレー。Kind 11042（問いの循環）のみを保存します。
   pubkey: （nak decode で得たhex形式の公開鍵）
   contact: mailto:admin@your-domain.com
