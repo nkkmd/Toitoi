@@ -502,7 +502,7 @@ wc -l archive_$(date +%Y-%m-%d).jsonl
 
 ```bash
 git add archive_$(date +%Y-%m-%d).jsonl
-git commit -m "archive: $(date +%Y-%m-%d) 時点のスナップショット（$(wc -l < archive_$(date +%Y-%m-%d).jsonl)件）"
+git commit -m "archive: snapshot as of $(date +%Y-%m-%d) ($(wc -l < archive_$(date +%Y-%m-%d).jsonl) entries))"
 ```
 
 ---
