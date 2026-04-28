@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 250" width="250" height="250">
+
+  <rect width="250" height="250" fill="#f2f0eb"/>
+
+  <g transform="translate(125, 125)" stroke="#0f0f0f" fill="none">
+
+    <!-- Arc 1: solid -->
+    <path d="M -58,-58 A 82,82 0 1 1 58,58"
+          stroke-width="6" stroke-linecap="round"/>
+
+    <!-- Arrowhead arc 1 -->
+    <g transform="translate(58,58) rotate(45)">
+      <polyline points="-13,-6.5 0,0 -13,6.5"
+                stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+    </g>
+
+    <!-- Arc 2: dashed return -->
+    <path d="M 58,58 A 82,82 0 0 1 -58,-58"
+          stroke-width="4" stroke-linecap="round" stroke-dasharray="5 7"/>
+
+    <!-- Arrowhead arc 2 -->
+    <g transform="translate(-58,-58) rotate(225)">
+      <polyline points="-13,-6.5 0,0 -13,6.5"
+                stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+    </g>
+
+    <!-- Node dots -->
+    <circle cx="-58" cy="-58" r="9" fill="#0f0f0f" stroke="none"/>
+    <circle cx="58"  cy="58"  r="9" fill="#0f0f0f" stroke="none"/>
+
+  </g>
+
+</svg>
