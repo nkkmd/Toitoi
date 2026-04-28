@@ -1,5 +1,5 @@
 # 構築ガイド：アグロエコロジー・コモンズ専用リレーの立ち上げ方
-**バージョン：2.5**　｜　前バージョン (v2.4) からの主な修正：`settings.yaml` をToitoi専用の最小構成に整理。支払い機能（`payments`詳細・`paymentsProcessors`）、`nip05`詳細設定、未使用の`mirroring`セクションを削除。`info.self`（非標準項目）を削除。`network.trustedProxies`およびレート制限の`ipWhitelist`から、docker-compose.ymlで固定IP設定を削除済みの`10.10.10.x`系アドレスを除去。`settings.yaml`の全文テンプレートをガイド内に掲載。
+**バージョン：3.0**　｜　前バージョン (v2.5) からの主な修正：セクション6に「Step 6.8: JSONLアーカイブのファイル分割」を追加。`questions.jsonl` が50MBを超えた際に年別ファイルへ分割する `split_archive.sh` スクリプト、`archive_diff.sh` へのサイズ警告ログ追加、分割後の復元コマンド変更点を追記。
 
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」の基盤となる専用Nostrリレーサーバーを構築するための公式ガイドです。
 
@@ -663,5 +663,152 @@ commit 2c4a1f0  archive: 2026-05-30 +5件追加（累計 320件）
 
 ---
 
+### Step 6.8: JSONLアーカイブのファイル分割（50MB超過時）
+
+`questions.jsonl` は通常、数十年単位で単一ファイルのまま運用できます。ただし以下のいずれかを感じたタイミングで、年別ファイルへの分割を検討してください。
+
+- ファイルサイズが **50MB** を超えたとき
+- `git commit` に数秒以上かかるようになったとき
+- `wc -l questions.jsonl` が **10万行** を超えたとき
+
+#### サイズ警告ログの追加（`archive_diff.sh` の修正）
+
+`archive_diff.sh` の末尾のログ行を以下に置き換えておくと、50MB超過をログで気づけます。
+
+```bash
+# 既存の最終ログ行を以下で置き換える
+SIZE_MB=$(du -m "$ARCHIVE_FILE" | cut -f1)
+echo "[$TIMESTAMP] 完了: ${NEW_COUNT}件追加、累計 ${TOTAL}件 / ファイルサイズ: ${SIZE_MB}MB" >> "$LOG_FILE"
+
+if [ "$SIZE_MB" -ge 50 ]; then
+    echo "[$TIMESTAMP] ⚠️  ファイルサイズが50MBを超えました。split_archive.sh の実行を検討してください。" >> "$LOG_FILE"
+fi
+```
+
+#### 分割スクリプトの作成
+
+```bash
+nano ~/nostr-archive/split_archive.sh
+```
+
+```bash
+#!/bin/bash
+# =====================================================
+# questions.jsonl 年別分割スクリプト
+# 50MB超えを検知したとき、または任意のタイミングで手動実行
+# =====================================================
+
+ARCHIVE_DIR="$HOME/nostr-archive/agroecology-commons"
+ARCHIVE_FILE="$ARCHIVE_DIR/questions.jsonl"
+DIFF_SCRIPT="$HOME/nostr-archive/archive_diff.sh"
+
+cd "$ARCHIVE_DIR" || exit 1
+
+# --- 事前チェック ---
+if [ ! -f "$ARCHIVE_FILE" ]; then
+    echo "❌ questions.jsonl が見つかりません"
+    exit 1
+fi
+
+SIZE_MB=$(du -m "$ARCHIVE_FILE" | cut -f1)
+echo "現在のファイルサイズ: ${SIZE_MB}MB"
+echo "年別分割を開始します..."
+
+# --- 年別に分割 ---
+python3 - <<'EOF'
+import json, datetime
+
+src = "questions.jsonl"
+year_lines = {}
+
+with open(src, "r") as f:
+    for line in f:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+            year = str(datetime.datetime.utcfromtimestamp(event["created_at"]).year)
+            year_lines.setdefault(year, []).append(line)
+        except Exception:
+            pass
+
+for year, lines in sorted(year_lines.items()):
+    fname = f"questions_{year}.jsonl"
+    with open(fname, "w") as f:
+        f.write("\n".join(lines) + "\n")
+    print(f"  ✅ {fname}: {len(lines)}件")
+
+print(f"\n合計 {sum(len(v) for v in year_lines.values())} 件を分割しました")
+EOF
+
+# --- 元ファイルを削除 ---
+rm "$ARCHIVE_FILE"
+echo "questions.jsonl を削除しました"
+
+# --- archive_diff.sh の書き込み先を今年のファイルに更新 ---
+CURRENT_YEAR=$(date +%Y)
+NEW_FILENAME="questions_${CURRENT_YEAR}.jsonl"
+
+sed -i "s|ARCHIVE_FILE=\".*questions.*\"|ARCHIVE_FILE=\"$ARCHIVE_DIR/$NEW_FILENAME\"|" "$DIFF_SCRIPT"
+echo "archive_diff.sh の ARCHIVE_FILE を $NEW_FILENAME に更新しました"
+
+# --- Gitにコミット ---
+git add -A
+git commit -m "archive: questions.jsonl を年別ファイルに分割"
+
+echo ""
+echo "✅ 分割完了。git log で確認してください。"
+echo "📌 復元時は: cat questions_*.jsonl | nak event wss://your-relay"
+```
+
+```bash
+# 実行権限を付与
+chmod +x ~/nostr-archive/split_archive.sh
+```
+
+**実行手順（必要になったとき）：**
+
+```bash
+# 1. 念のため事前にGitの状態を確認
+cd ~/nostr-archive/agroecology-commons
+git status
+
+# 2. 分割スクリプトを実行
+~/nostr-archive/split_archive.sh
+
+# 3. 結果を確認
+ls -lh questions_*.jsonl
+git log --oneline -5
+```
+
+#### 分割後のディレクトリ構成
+
+```text
+~/nostr-archive/agroecology-commons/
+├── .git/
+├── .gitignore
+├── questions_2026.jsonl   # 分割済みアーカイブ
+├── questions_2027.jsonl
+├── questions_2028.jsonl   # archive_diff.sh が追記する現在年ファイル
+├── archive.log
+├── archive_diff.sh        # ARCHIVE_FILE が自動更新済み
+└── split_archive.sh       # 本Stepで作成
+```
+
+#### 分割後の復元コマンド（Step 6.7 の変更点）
+
+分割後は Step 6.7 の復元コマンドを以下に読み替えてください。ワイルドカードで年順に連結されるため、手順はほぼ変わりません。
+
+```bash
+# 分割前（単一ファイル）
+cat questions.jsonl | nak event wss://new-relay.your-domain.com
+
+# 分割後（年別ファイル）
+cat questions_*.jsonl | nak event wss://new-relay.your-domain.com
+```
+
+---
+
 *このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*v2.5 — 2026年4月改訂*
+*v3.0 — 2026年4月改訂*
