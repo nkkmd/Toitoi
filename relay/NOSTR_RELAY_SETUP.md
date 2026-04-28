@@ -475,7 +475,7 @@ git init
 echo "*.tmp" > .gitignore
 echo ".DS_Store" >> .gitignore
 git add .gitignore
-git commit -m "init: アグロエコロジー・コモンズ アーカイブリポジトリを初期化"
+git commit -m "init: Initialize Agroecology Commons archive repository"
 ```
 
 ※ Git のユーザー名・メールアドレスは [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md) の Step 3 でグローバル設定済みのため、ここでの設定は不要です。
