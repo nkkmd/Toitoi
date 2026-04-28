@@ -590,7 +590,7 @@ rm "$TMP_FILE"
 # Gitにコミット
 TOTAL=$(wc -l < "$ARCHIVE_FILE")
 git add questions.jsonl
-git commit -m "archive: $DATE +${NEW_COUNT}件追加（累計 ${TOTAL}件）" >> "$LOG_FILE" 2>&1
+git commit -m "archive: $DATE +${NEW_COUNT} items added (total ${TOTAL} items)" >> "$LOG_FILE" 2>&1
 
 echo "[$TIMESTAMP] 完了: ${NEW_COUNT}件追加、累計 ${TOTAL}件" >> "$LOG_FILE"
 ```
@@ -779,7 +779,7 @@ echo "archive_diff.sh の ARCHIVE_FILE を $NEW_FILENAME に更新しました"
 
 # --- Gitにコミット ---
 git add -A
-git commit -m "archive: questions.jsonl を年別ファイルに分割"
+git commit -m "archive: Split questions.jsonl into yearly files"
 
 echo ""
 echo "✅ 分割完了。git log で確認してください。"
