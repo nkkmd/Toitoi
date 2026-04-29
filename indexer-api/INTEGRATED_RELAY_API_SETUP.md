@@ -73,7 +73,7 @@ nano docker-compose.yml
       - ${PWD}/.nostr/db-logs:/var/log/postgresql
       - ${PWD}/postgresql.conf:/postgresql.conf
     ports:
-      - "127.0.0.1:5432:5432"   # この ports: ブロックを追加
+      - 127.0.0.1:5432:5432   # この ports: ブロックを追加
     networks:
       default:
     command: postgres -c 'config_file=/postgresql.conf'
