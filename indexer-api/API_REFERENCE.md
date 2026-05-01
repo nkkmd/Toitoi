@@ -262,7 +262,7 @@ curl "https://api.your-domain.com/api/v1/inquiries/query"
     {
       "id": "abc123def456...",
       "pubkey": "9f8e7d6c5b4a...",
-      "created_at": 1714567890,
+      "createdAt": 1714567890,
       "content": "北側斜面において、土壌の乾きの遅さとスギナの繁茂に相関が見られます。この微気候は天敵群集にどのような影響を与えているでしょうか？",
       "highlight": "土壌の乾きの遅さと<em>スギナ</em>の繁茂に相関が見られます。",
       "tags": [
@@ -280,7 +280,7 @@ curl "https://api.your-domain.com/api/v1/inquiries/query"
 
 | フィールド | 型 | 説明 |
 |---|---|---|
-| `results[].created_at` | integer | 作成日時（`/inquiries` の `createdAt` と同義。このエンドポイントではスネークケース） |
+| `results[].createdAt` | integer | 作成日時（`/inquiries` の `createdAt` と同義） |
 | `results[].highlight` | string \| null | `q` を指定した場合のみ返されます。マッチ箇所を `<em>...</em>` で囲んだ本文スニペット。`q` を指定しなかった場合は `null` |
 
 > **`highlight` のレンダリングについて：** `highlight` フィールドはHTMLが含まれます。フロントエンドで表示する際は `innerHTML` を使用してください。ただし、本フィールドはAPIサーバー側でXSSエスケープ済みのため、そのまま利用しても安全です。
