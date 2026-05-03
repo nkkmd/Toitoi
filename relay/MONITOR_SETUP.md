@@ -384,17 +384,19 @@ sudo visudo -f /etc/sudoers.d/toitoi-monitor
 
 *`Ctrl + O` → `Enter` で保存し、`Ctrl + X` で閉じます。*
 
-設定を確認します（`<your-username>` を実際のユーザー名に置き換えた結果が表示されます）。
+設定を確認します。
 
 ```bash
 sudo -l | grep docker
 ```
 
-以下のように表示されていれば成功です。
+以下のように表示されていれば成功です（`(ALL)` は「全ユーザーとして実行可能」を意味します）。
 
 ```
-(<your-username>) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose, /bin/systemctl, /usr/bin/systemctl, /bin/chown
+    (ALL) NOPASSWD: /usr/bin/docker, /usr/bin/docker-compose, /bin/systemctl, /usr/bin/systemctl, /bin/chown
 ```
+
+**出力にこの行が含まれていれば、sudoers 設定は正しく機能しています。**
 
 ---
 
