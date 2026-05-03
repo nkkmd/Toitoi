@@ -205,12 +205,10 @@ handle_high_load() {
     log "WARN" "=== 高負荷対処を開始します ==="
 
     # workerを先にreload（最も負荷の原因になりやすい）
-    log "INFO" "[PM2] toitoi-worker を reload"
     recover_pm2 "toitoi-worker"
     sleep 5
 
     # apiも念のためreload
-    log "INFO" "[PM2] toitoi-api を reload"
     recover_pm2 "toitoi-api"
 
     log "INFO" "=== 高負荷対処完了。${COOLDOWN}秒クールダウン ==="
