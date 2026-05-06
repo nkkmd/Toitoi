@@ -1,8 +1,8 @@
-# Digital Agroecology Commons: System Architecture Detailed Design v2.2
+# Digital Agroecology Commons: System Architecture Detailed Design v0.2.2
 
 *[日本語は下に続きます]*
 
-**Version: 2.2** | Main updates from the previous version (v2.1):
+**Version: 0.2.2** | Main updates from the previous version (v0.2.1):
 * §2.3: Updated REST API `GET /api/v1/inquiries/query` endpoint to support comprehensive full-text search (PGroonga) with unified filtering on `context` tags (soil_type, climate_zone, farming_context, crop_family), `relationship`, and `phase` tags; added relevance scoring and snippet highlighting.
 * §2.3: Renamed endpoint from `GET /api/v1/inquiries/search` to `GET /api/v1/inquiries/query` for clarity.
 
@@ -170,9 +170,9 @@ Operational policies to maintain Ostrom's "Design principles for Common Pool Res
 
 ---
 
-# デジタル・アグロエコロジー・コモンズ：システムアーキテクチャ詳細設計書 v2.2
+# デジタル・アグロエコロジー・コモンズ：システムアーキテクチャ詳細設計書 v0.2.2
 
-**バージョン：2.2**　｜　前バージョン (v2.1) からの主なアップデート：
+**バージョン：0.2.2**　｜　前バージョン (v0.2.1) からの主なアップデート：
 * §2.3：REST API の `GET /api/v1/inquiries/query` エンドポイントを拡張し、`content` フィールド全文検索（PGroonga）と `context`（soil_type / climate_zone / farming_context / crop_family）・`relationship`・`phase` タグによる統合フィルタリングを実装。全文検索時は関連度スコアとハイライトスニペットを付与。
 * §2.3：エンドポイント名を `GET /api/v1/inquiries/search` から `GET /api/v1/inquiries/query` に変更。
 
