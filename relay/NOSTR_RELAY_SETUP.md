@@ -329,6 +329,8 @@ sudo systemctl restart caddy
 ### WebSocket接続とフィルタリングのテスト
 Nostrの接続確認ツールを使用して、WebSocket（`wss://`）が機能しているか、そして**指定したKind以外がちゃんと弾かれるか**を確認します。
 
+ここではシンプルな接続テストを紹介します。より高度な検証やスキーマ準拠テストについては、`relay/test_relay.js` を参照してください。
+
 手元のPC（またはサーバー上）で以下のNode.jsスクリプトを実行してみてください。
 （※ `wss://relay.your-domain.com` をあなたのドメインに変更してください）
 
@@ -364,7 +366,7 @@ async function test() {
         kind: 1,
         created_at: Math.floor(Date.now() / 1000),
         tags:[],
-        content: "おはよう！これは弾かれるべき普通のツイートです。"
+        content: "おはよう！これは弾かれるべき普通の投稿です。"
     }, sk);
 
     try {
