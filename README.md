@@ -68,7 +68,6 @@ Please refer to the following directories for the overall picture of the project
 ### Essays & Background
 
 * 🌱 **[Letting Go of Technology in Agriculture](./docs/essays/letting-go-of-technology-in-agriculture.md)**
-* 🌾 **[テクノロジーを手放す農業論](./docs/essays/tech-wo-tebanasu-nogyoron.md)**
 
 ### Module Setup & Design
 
@@ -196,8 +195,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 ### 論考・背景思想 (Essays & Background)
 
-* 🌱 **[Letting Go of Technology in Agriculture](./docs/essays/letting-go-of-technology-in-agriculture.md)**
-* 🌾 **[テクノロジーを手放す農業論](./docs/essays/tech-wo-tebanasu-nogyoron.md)**
+* 🌱 **[テクノロジーを手放す農業論](./docs/essays/tech-wo-tebanasu-nogyoron.md)**
 
 ### モジュール別セットアップ・設計書 (Modules)
 
