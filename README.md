@@ -78,6 +78,20 @@ Please refer to the following directories for the overall picture of the project
 * ⚙️ **Indexer API Layer**: **[`/indexer-api/INDEXER_API_SETUP.md`](./indexer-api/INDEXER_API_SETUP.md)**
 * 📱 **Frontend UI Layer**: **[`/frontend/FRONTEND_UX_DESIGN.md`](./frontend/FRONTEND_UX_DESIGN.md)**
 
+### Repository Structure
+
+For the overall repository layout and directory responsibilities, see:
+
+* 🗂️ **[Repository Structure](./REPOSITORY_STRUCTURE.md)**
+
+This document explains:
+
+- repository organization
+- module responsibilities
+- documentation structure
+- protocol / concept / architecture separation
+- long-term extensibility strategy
+
 ## 🟢 Live Endpoints
 
 * **Relay server**: `wss://relay.toitoi.cultivationdata.net`
@@ -192,6 +206,22 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * 🧠 **AIシステム概要**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **インデクサー・API層**: **[`/indexer-api/INDEXER_API_SETUP.md`](./indexer-api/INDEXER_API_SETUP.md)**
 * 📱 **フロントエンド・UI層**: **[`/frontend/FRONTEND_UX_DESIGN.md`](./frontend/FRONTEND_UX_DESIGN.md)**
+
+### リポジトリ構成 (Repository Structure)
+
+リポジトリ全体の構造と、各ディレクトリの責務については以下を参照してください。
+
+* 🗂️ **[Repository Structure](./REPOSITORY_STRUCTURE.md)**
+
+このドキュメントでは：
+
+- repository 全体構成
+- モジュール責務
+- documentation structure
+- protocol / concept / architecture の分離
+- 将来的な拡張方針
+
+を整理しています。
 
 ## 🟢 現在稼働中のサーバー
 
