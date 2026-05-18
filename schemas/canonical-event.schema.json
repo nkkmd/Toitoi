@@ -1,53 +1,227 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Canonical Event",
+  "$id": "https://toitoi.dev/schemas/canonical-event.schema.json",
+  "title": "Toitoi Canonical Object",
+  "description": "Schema for Toitoi Canonical JSONL objects (spec v0.2.0).",
   "type": "object",
 
   "required": [
     "id",
-    "actor",
-    "timestamp",
+    "schemaVersion",
     "type",
+    "author",
+    "createdAt",
     "body"
   ],
 
   "properties": {
     "id": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^tt:obj:[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Transport-independent canonical object ID. Recommended format: tt:obj:<ULID>."
     },
 
-    "actor": {
-      "type": "string"
-    },
-
-    "timestamp": {
-      "type": "integer"
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.2.0",
+      "description": "Canonical schema version."
     },
 
     "type": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1,
+      "description": "Semantic object type. Recommended values: inquiry, annotation, observation, hypothesis, synthesis, dataset."
+    },
+
+    "author": {
+      "type": "object",
+      "required": ["scheme", "id"],
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identity scheme (e.g. nostr, atproto, ethereum)."
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Author identifier in the specified scheme."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 UTC timestamp."
     },
 
     "body": {
-      "type": "object"
+      "type": "object",
+      "required": ["text", "language"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$",
+          "description": "BCP47-style language tag (e.g. ja, en, ja-JP)."
+        }
+      },
+      "additionalProperties": false
     },
 
-    "references": {
+    "contexts": {
+      "type": "object",
+      "description": "Ecological/translational contextual metadata. Custom keys are allowed.",
+      "additionalProperties": true
+    },
+
+    "relationships": {
       "type": "array",
       "items": {
-        "type": "string"
+        "$ref": "#/definitions/relation"
       }
     },
 
-    "signatures": {
+    "phase": {
+      "type": "string",
+      "enum": ["beginner", "intermediate", "expert"]
+    },
+
+    "trigger": {
+      "type": "object",
+      "required": ["category", "value"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "dsl": {
+      "type": "object",
+      "required": ["models"],
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dslModel"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "lineage": {
       "type": "array",
       "items": {
-        "type": "object"
+        "$ref": "#/definitions/lineageEdge"
       }
     },
 
-    "metadata": {
-      "type": "object"
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+
+    "meta": {
+      "type": "object",
+      "description": "Non-semantic implementation metadata. Do not store transport-specific data here.",
+      "additionalProperties": true
     }
-  }
+  },
+
+  "definitions": {
+    "relation": {
+      "type": "object",
+      "required": ["source", "target"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "dslVariable": {
+      "type": "object",
+      "required": ["name", "role"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": ["independent", "dependent", "mediator", "moderator"]
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "dslModel": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dslVariable"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/relation"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "lineageEdge": {
+      "type": "object",
+      "required": ["type", "target"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Recommended values: derived_from, synthesis, annotates, revises."
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+
+  "additionalProperties": true
 }
