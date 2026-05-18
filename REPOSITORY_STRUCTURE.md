@@ -21,6 +21,14 @@ Toitoi は：
 
 ---
 
+## 責務ルール（必読）
+
+ディレクトリ配置の判断基準は以下を参照してください。
+
+- [docs/architecture/DIRECTORY_BOUNDARIES.md](./docs/architecture/DIRECTORY_BOUNDARIES.md)
+
+---
+
 # Repository Overview
 
 ```text
@@ -36,10 +44,13 @@ Toitoi/
 ├── examples/
 ├── assets/
 │
-├── frontend/
-├── relay/
-├── indexer-api/
-├── edge-ai/
+├── apps/
+│   ├── frontend/
+│   └── edge-ai/
+├── infra/
+│   ├── relay/
+│   └── indexer-api/
+├── packages/
 │
 └── archive/
 ```
@@ -320,7 +331,7 @@ Toitoi では：
 
 ---
 
-# frontend/
+# apps/frontend/
 
 ## 役割
 
@@ -347,7 +358,7 @@ Toitoi の viewer / UI layer。
 
 ---
 
-# relay/
+# infra/relay/
 
 ## 役割
 
@@ -373,7 +384,7 @@ Toitoi commons の transport infrastructure。
 
 ---
 
-# indexer-api/
+# infra/indexer-api/
 
 ## 役割
 
@@ -398,7 +409,7 @@ distributed event indexing layer。
 
 ---
 
-# edge-ai/
+# apps/edge-ai/
 
 ## 役割
 

@@ -2,7 +2,7 @@
 
 *[日本語は下に続きます]*
 
-The Toitoi project is an open-source initiative aimed at realizing a "Digital Agroecology Commons" based on the philosophy of "[Letting Go of Technology in Agriculture](./Letting-Go-of-Technology-in-Agriculture.md)".
+The Toitoi project is an open-source initiative aimed at realizing a "Digital Agroecology Commons" based on the philosophy of "[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)".
 The primary goal of this project is to **"prevent the tacit knowledge (the lineage of inquiries) among farmers from being enclosed by platform capitalism, and to perpetuate it as a shared asset (commons) of humanity."**
 
 To legally guarantee this philosophy while encouraging the participation of diverse developers and enterprises in the ecosystem, Toitoi adopts a **"Multi-License Approach,"** combining different licenses depending on the role of each component (module).
@@ -55,7 +55,7 @@ Let's grow the infrastructure that supports farmers' autonomy and co-evolution w
 
 # Toitoi ライセンス・ポリシー (License Policy)
 
-Toitoiプロジェクトは、『[テクノロジーを手放す農業論](./Tech-wo-Tebanasu-Nogyoron.md)』に基づく「デジタル・アグロエコロジー・コモンズ」を実現するためのオープンソース・プロジェクトです。
+Toitoiプロジェクトは、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』に基づく「デジタル・アグロエコロジー・コモンズ」を実現するためのオープンソース・プロジェクトです。
 
 本プロジェクトの最大の目的は、**「農家同士の暗黙知（問いの系譜）が特定のプラットフォーム資本によって囲い込まれるのを防ぎ、人類の共有財産（コモンズ）として永続させること」** にあります。
 
