@@ -72,10 +72,10 @@ Please refer to the following directories for the overall picture of the project
 
 ### Module Setup & Design
 
-* 🌐 **Commons Relay Layer**: **[`/infra/relay/NOSTR_RELAY_SETUP.md`](./infra/relay/NOSTR_RELAY_SETUP.md)**
+* 🌐 **Commons Relay Layer**: **[`/infra/transport/nostr/NOSTR_RELAY_SETUP.md`](./infra/transport/nostr/NOSTR_RELAY_SETUP.md)**
 * 🤖 **Local AI Edge Layer**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
 * 🧠 **AI System Overview**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
-* ⚙️ **Indexer API Layer**: **[`/infra/indexer-api/INDEXER_API_SETUP.md`](./infra/indexer-api/INDEXER_API_SETUP.md)**
+* ⚙️ **Indexer API Layer**: **[`/infra/indexer/nostr/INDEXER_API_SETUP.md`](./infra/indexer/nostr/INDEXER_API_SETUP.md)**
 * 📱 **Frontend UI Layer**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
 ### Repository Structure
@@ -201,10 +201,10 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 ### モジュール別セットアップ・設計書 (Modules)
 
-* 🌐 **コモンズ・リレー層**: **[`/infra/relay/NOSTR_RELAY_SETUP.md`](./infra/relay/NOSTR_RELAY_SETUP.md)**
+* 🌐 **コモンズ・リレー層**: **[`/infra/transport/nostr/NOSTR_RELAY_SETUP.md`](./infra/transport/nostr/NOSTR_RELAY_SETUP.md)**
 * 🤖 **ローカルAI・エッジ層**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
 * 🧠 **AIシステム概要**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
-* ⚙️ **インデクサー・API層**: **[`/infra/indexer-api/INDEXER_API_SETUP.md`](./infra/indexer-api/INDEXER_API_SETUP.md)**
+* ⚙️ **インデクサー・API層**: **[`/infra/indexer/nostr/INDEXER_API_SETUP.md`](./infra/indexer/nostr/INDEXER_API_SETUP.md)**
 * 📱 **フロントエンド・UI層**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
 ### リポジトリ構成 (Repository Structure)

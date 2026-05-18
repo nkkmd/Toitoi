@@ -48,8 +48,10 @@ Toitoi/
 │   ├── frontend/
 │   └── edge-ai/
 ├── infra/
-│   ├── relay/
-│   └── indexer-api/
+│   ├── transport/
+│   │   └── nostr/
+│   └── indexer/
+│       └── nostr/
 ├── packages/
 │
 └── archive/
@@ -358,7 +360,7 @@ Toitoi の viewer / UI layer。
 
 ---
 
-# infra/relay/
+# infra/transport/nostr/
 
 ## 役割
 
@@ -384,7 +386,7 @@ Toitoi commons の transport infrastructure。
 
 ---
 
-# infra/indexer-api/
+# infra/indexer/nostr/
 
 ## 役割
 

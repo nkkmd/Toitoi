@@ -52,7 +52,7 @@
 ## 2. 前提条件
 
 - [NOSTR_RELAY_SETUP.md](./NOSTR_RELAY_SETUP.md) に従い、Nostreamリレーの構築が完了していること。
-- [INDEXER_API_SETUP.md](../indexer-api/INDEXER_API_SETUP.md) に従い、ToitoiインデクサーAPIのPM2起動が完了していること。
+- [INDEXER_API_SETUP.md](../../indexer/nostr/INDEXER_API_SETUP.md) に従い、ToitoiインデクサーAPIのPM2起動が完了していること。
 - `python3` がインストールされていること（PM2プロセス状態の取得に使用）。
 
 ---

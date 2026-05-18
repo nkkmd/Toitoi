@@ -1,97 +1,113 @@
-# Directory Boundaries
+# ディレクトリ責務ルール
 
-## Purpose
+## 目的
 
-This document defines repository placement rules for Toitoi.
+このドキュメントは、Toitoi リポジトリにおけるディレクトリ配置の判断基準を定義します。
 
-The goal is to keep directory intent stable as the project grows.
-
----
-
-## Core Rule
-
-Place files by **responsibility**, not by temporary implementation state.
-
-When in doubt, ask:
-
-1. Is this deployed runtime logic?
-2. Is this infrastructure operation material?
-3. Is this reusable module code?
-4. Is this explanatory or conceptual documentation?
+狙いは、実装が進んでも「どこに何を置くべきか」の意味を安定させることです。
 
 ---
 
-## Directory Roles
+## 基本原則
+
+ファイルは「現時点の形」ではなく、「将来を含む責務」によって配置します。
+
+迷ったときは、次の順で判断します。
+
+1. これは配備される実行アプリか
+2. これはインフラ運用のための資産か
+3. これは再利用される共通モジュールか
+4. これは横断的な仕様・思想ドキュメントか
+
+---
+
+## 各ディレクトリの役割
 
 ### `apps/`
 
-Runtime applications and user-facing services.
+配備されるアプリケーション本体（実行単位）を置きます。
 
-Examples:
+例:
 
-- frontend app
-- edge AI application
-- API runtime (if code is in this repository)
-
-Use `apps/` when the artifact is a deployable runtime unit.
+- frontend
+- edge AI
+- 将来的な API 実装コード（このリポジトリで管理する場合）
 
 ---
 
 ### `infra/`
 
-Operational assets for running infrastructure modules.
+インフラ運用・構築・監視に関する資産を置きます。
 
-Examples:
+例:
 
-- relay setup and operations docs
-- indexer API deployment/setup docs
-- future `docker-compose`, `Caddyfile`, `pm2` configs, monitoring assets
+- relay / indexer のセットアップ手順
+- 運用手順、監視手順
+- 将来的な `docker-compose`、`Caddyfile`、`pm2` 設定、監視設定
 
-Use `infra/` when the artifact exists to operate infrastructure, even if it is currently documentation-first.
+ドキュメント中心の段階でも、責務がインフラ運用なら `infra/` に置きます。
 
 ---
 
 ### `packages/`
 
-Reusable code modules consumed by multiple apps/services.
+複数のアプリ・サービスから利用される再利用可能コードを置きます。
 
-Examples:
+例:
 
-- transport adapters
-- canonical conversion library
-- shared protocol utilities
+- transport adapter
+- canonical converter
+- protocol utility
 
-Use `packages/` only for reusable library-style modules, not for deployment guides.
+デプロイ手順書や運用手順は `packages/` に置きません。
 
 ---
 
 ### `docs/`
 
-Cross-cutting documentation not owned by a single runtime/infra module.
+特定モジュールに閉じない、横断的な仕様・思想・設計文書を置きます。
 
-Examples:
+例:
 
-- architecture principles
-- protocol specs
-- concepts, essays, roadmap
-
-Use `docs/` for project-level knowledge and specifications.
+- architecture
+- protocol specification
+- concepts / essays / roadmap
 
 ---
 
-## Placement Decision Guide
+## 多プロトコル拡張時の配置
 
-- Deployable application logic: `apps/`
-- Infrastructure operations and setup: `infra/`
-- Reusable shared code: `packages/`
-- Cross-module conceptual/spec docs: `docs/`
+transport と indexer は、同じ粒度でプロトコル別に揃えます。
+
+```text
+infra/
+├── transport/
+│   ├── nostr/
+│   ├── atproto/        (future)
+│   └── activitypub/    (future)
+└── indexer/
+    ├── nostr/
+    ├── atproto/        (future)
+    └── activitypub/    (future)
+```
+
+この対称性を維持することで、責務と探索性を保てます。
 
 ---
 
-## Migration Policy
+## 配置クイックガイド
 
-1. Prefer stable role naming over short-term convenience.
-2. Move files only when ownership/responsibility changes.
-3. Update all internal links in the same change.
-4. Keep README and `REPOSITORY_STRUCTURE.md` aligned with actual layout.
+- 配備される実行アプリ: `apps/`
+- インフラ構築/運用資産: `infra/`
+- 再利用コード: `packages/`
+- 横断仕様・思想文書: `docs/`
+
+---
+
+## 移行ポリシー
+
+1. 一時的な都合より責務の安定性を優先する
+2. ファイル移動は責務変更が起きたときだけ行う
+3. 移動時はリンク更新を同一変更で完了させる
+4. `README.md` と `REPOSITORY_STRUCTURE.md` を必ず同期する
 
