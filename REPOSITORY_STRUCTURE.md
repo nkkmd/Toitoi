@@ -192,9 +192,9 @@ protocol / event structure / archive format に関する文書群。
 
 | File | 内容 |
 |---|---|
-| NOSTR.md | Nostr の役割 |
-| CANONICAL_JSONL.md | canonical archive format |
-| TOITOI_PROTOCOL_SCHEMA.md | protocol schema |
+| NOSTR_TRANSPORT.md | Nostr transport の役割 |
+| CANONICAL_EVENT.md | canonical event model |
+| NOSTR_INQUIRY_SCHEMA.md | Nostr inquiry transport schema |
 
 ---
 

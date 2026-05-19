@@ -2,7 +2,7 @@
 **バージョン：v0.2.0** ｜ *デジタル・アグロエコロジー・コモンズ推進プロジェクト*
 
 前バージョン (v0.1.0) からの主な更新：
-* **`/api/v1/inquiries/query`**: ARCHITECTURE.md v0.3.0 / TOITOI_PROTOCOL_SCHEMA.md v0.1.2 で導入された **問いの二層構造（DSL層）** に対応。クエリパラメータに `dsl_model` / `dsl_var` / `dsl_role` を追加しました。
+* **`/api/v1/inquiries/query`**: `OVERVIEW.md` / `NOSTR_INQUIRY_SCHEMA.md` で定義された **問いの二層構造（DSL層）** に対応。クエリパラメータに `dsl_model` / `dsl_var` / `dsl_role` を追加しました。
 * **推奨語彙**: `dsl:*` タグの標準語彙（DSLサブキー・変数ロール）テーブルを新規追加しました。
 * **タグの読み方**: `dsl:*` タグの格納方式と読み取りルールを追記しました。
 * **よくある質問**: DSLフィルタリングに関するQ&Aを追加しました。
@@ -186,7 +186,7 @@ curl "https://api.your-domain.com/api/v1/inquiries?limit=50"
 
 #### 推奨語彙
 
-`context` 系パラメータ・`relationship`・DSL系パラメータには、以下の標準語彙（TOITOI_PROTOCOL_SCHEMA v0.1.2 準拠）を使用してください。
+`context` 系パラメータ・`relationship`・DSL系パラメータには、以下の標準語彙（`NOSTR_INQUIRY_SCHEMA.md` / `TOITOI_VOCABULARY.md` 準拠）を使用してください。
 
 **`climate_zone`（気候帯）**
 
@@ -680,7 +680,7 @@ AND条件として動作します。たとえば `soil_type=volcanic_ash&climate
 
 **Q. DSLタグを持たない問いは `/query?dsl_model=...` でヒットしますか？**
 
-ヒットしません。DSLタグは任意（optional）であり（TOITOI_PROTOCOL_SCHEMA §2.6 準拠）、`dsl_model` / `dsl_var` / `dsl_role` の各パラメータは指定したタグを実際に持つイベントのみを返します。DSLタグの有無に関わらず全件を取得したい場合は、これらのパラメータを省略して他のフィルタのみを使用してください。
+ヒットしません。DSLタグは任意（optional）であり、`dsl_model` / `dsl_var` / `dsl_role` の各パラメータは指定したタグを実際に持つイベントのみを返します。DSLタグの有無に関わらず全件を取得したい場合は、これらのパラメータを省略して他のフィルタのみを使用してください。
 
 **Q. `highlight` フィールドの `<em>` タグはCSSでどう装飾しますか？**
 

@@ -1,6 +1,6 @@
 # 構築ガイド：リレー＆インデクサー統合・低負荷アーキテクチャ設計書
 **バージョン：0.2.0**　｜　前バージョン (v0.1.5) からの主な更新：
-* **§5.2（api.js）**: ARCHITECTURE.md v0.3.0 / TOITOI_PROTOCOL_SCHEMA.md v0.1.2 で正式導入された **問いの二層構造** に対応。`dsl:*` タグ（`dsl:model` / `dsl:var` / `dsl:rel` / `dsl:meta`）を既存の `tags` テーブルへスキーマ変更なしで格納する方式を実装。
+* **§5.2（api.js）**: `OVERVIEW.md` / `NOSTR_INQUIRY_SCHEMA.md` で定義された **問いの二層構造** に対応。`dsl:*` タグ（`dsl:model` / `dsl:var` / `dsl:rel` / `dsl:meta`）を既存の `tags` テーブルへスキーマ変更なしで格納する方式を実装。
 * **§5.2（api.js）**: `/api/v1/inquiries/query` エンドポイントに DSL フィルタリングパラメータ（`dsl_model` / `dsl_var` / `dsl_role`）を追加。既存の `EXISTS` サブクエリパターンを流用し、モデル単位の絞り込みを実現。
 * **§5.1（worker.js）**: `dsl:*` タグを含む4要素配列（`["dsl:var", "m1", "microclimate", "independent"]` 等）を正しく格納するため、2行目レコードパターン（`tagValue2` に収まらない `value_2` を同一 `tagKey` / `model_id` で追加保存）を実装。
 
@@ -302,7 +302,7 @@ let isRunning = false;
 // ─────────────────────────────────────────────────────────────────
 // saveEventToDB: イベントをDBに保存する
 //
-// DSL タグの格納方式（TOITOI_PROTOCOL_SCHEMA §2.6.6 準拠）:
+// DSL タグの格納方式（NOSTR_INQUIRY_SCHEMA.md 準拠）:
 //   dsl:* タグは既存の Tag テーブルにスキーマ変更なしで格納する。
 //   - tagKey   : dsl:model / dsl:var / dsl:rel / dsl:meta
 //   - tagValue1: model_id（例: "m1"）
@@ -523,7 +523,7 @@ app.get('/api/v1/inquiries', async (req, res) => {
 //   limit          : 取得件数（デフォルト: 20、上限: 100）             ※ 任意
 //   offset         : ページネーション用オフセット                      ※ 任意
 //
-// DSL フィルタリングの仕組み（TOITOI_PROTOCOL_SCHEMA §2.6.6 準拠）:
+// DSL フィルタリングの仕組み（NOSTR_INQUIRY_SCHEMA.md 準拠）:
 //   dsl:* タグは Tag テーブルに以下のように格納されている。
 //     tagKey    = 'dsl:model' / 'dsl:var' / 'dsl:rel' / 'dsl:meta'
 //     tagValue1 = model_id（例: "m1"）
@@ -615,7 +615,7 @@ app.get('/api/v1/inquiries/query', async (req, res) => {
         }
 
         // 3. relationship タグによる絞り込み
-        //    TOITOI_PROTOCOL_SCHEMA §2.2 の「AとBの順序はインデクサー側で
+        //    NOSTR_INQUIRY_SCHEMA.md の「AとBの順序はインデクサー側で
         //    同一視する」仕様に従い、tagValue1 または tagValue2 の
         //    いずれかに一致すればよい。
         if (relationship) {
@@ -645,7 +645,7 @@ app.get('/api/v1/inquiries/query', async (req, res) => {
             p++;
         }
 
-        // 5. DSL フィルタリング（ARCHITECTURE.md v0.3.0 §2.3 / TOITOI_PROTOCOL_SCHEMA §2.6 準拠）
+        // 5. DSL フィルタリング（OVERVIEW.md / NOSTR_INQUIRY_SCHEMA.md 準拠）
         //
         //    【dsl_model】
         //    tagKey='dsl:model' かつ tagValue2=<name> を持つイベントを絞り込む。

@@ -446,7 +446,7 @@ const dslModels = parseDslModels(inquiry.tags);
 
 2. **投稿時の匿名性の選択：** システムは「誰が」問いを発したかよりも「どのような環境（コンテキスト）から」発されたかを重視します。プロフィール（Nostr Kind: 0）の設定は任意であり、完全に匿名（公開鍵の羅列）のままでもコモンズに参加・貢献できるよう UI を設計します。
 
-3. **`trigger` タグのクライアント生成ガイドライン（TOITOI_PROTOCOL_SCHEMA v0.1.2 §2.5 準拠）：**
+3. **`trigger` タグのクライアント生成ガイドライン（NOSTR_INQUIRY_SCHEMA.md 準拠）：**
    - センサー連携機能を実装する場合、センサー値が閾値を超えた際に `["trigger", "sensor_anomaly", "<センサー種別>"]` タグを自動付与することを推奨します。
    - 農家の観察入力からの場合は `["trigger", "farmer_observation", "<観察種別>"]` をサジェスト選択式で付与します。
    - `trigger` タグが付与されない問い（自発的な直感による問い）も完全に有効であり、UI 上で差別化しません。
@@ -531,4 +531,4 @@ const dslModels = parseDslModels(inquiry.tags);
 
 *FRONTEND_UX_DESIGN.md v0.2.0 — May 2026*
 
-*Conforms to: ARCHITECTURE v0.3.0 / TOITOI_PROTOCOL_SCHEMA v0.1.2 / API_REFERENCE v0.2.0 / INDEXER_API_SETUP v0.2.0*
+*Conforms to: OVERVIEW.md / NOSTR_INQUIRY_SCHEMA.md / API_REFERENCE v0.2.0 / INDEXER_API_SETUP v0.2.0*

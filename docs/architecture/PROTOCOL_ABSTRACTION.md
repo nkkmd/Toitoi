@@ -2,71 +2,124 @@
 
 ## 概要
 
-Toitoi は現在、主な transport layer として Nostr を利用しています。
+Toitoi は現在、最初の operational transport として Nostr を利用しています。
 
-しかし内部アーキテクチャは、特定プロトコルへ依存しない構造を目指しています。
+しかし内部アーキテクチャは、特定 protocol に閉じない構造を目指します。
 
-目的は：
+目的は、
 
-- 知識アーカイブの長期保存
 - protocol portability
 - semantic continuity
+- replayability
+- long-term preservation
 
-を、単一プロトコル寿命から切り離すことです。
+を transport 寿命から切り離すことです。
 
 ---
 
-## 設計方針
-
-Toitoi では以下を分離します。
+## 分離する層
 
 | Layer | Responsibility |
 |---|---|
-| Canonical Event Model | 内部イベント表現 |
-| Transport Protocol | イベント配送 |
-| Storage Layer | 永続化 |
-| Application Layer | UI / Interaction |
+| Canonical Event | 意味論的な内部共通表現 |
+| Converter | Canonical と transport 表現の相互変換 |
+| Transport | relay / PDS / filesystem 等での配送 |
+| Adapter / Normalizer | ingest 時の protocol 差異吸収 |
+| Standard API | UI / AI 向け統一アクセス面 |
 
 ---
 
-## 現在の構成
+## 読み込み時の抽象化
 
-現在の実装：
+```text
+Raw Protocol Events
+  ↓
+Validate
+  ↓
+Verify
+  ↓
+Deduplicate
+  ↓
+Ordering
+  ↓
+Normalize
+  ↓
+Canonicalize
+```
 
-- Nostr relay ベース同期
-- JSON event transport
-- signature-based verification
+この一連の処理を Adapter / Normalizer が担います。
 
-Nostr は「最初の operational transport layer」として扱われています。
+ここで重要なのは、
+
+```text
+protocol event ≠ semantic event
+```
+
+であることです。
 
 ---
 
-## 将来的な可能性
+## 書き込み時の抽象化
 
-将来的には以下の adapter を探索する可能性があります。
+```text
+Canonical Event
+  ↓
+Converter
+  ↓
+Protocol-specific Representation
+  ↓
+Transport
+```
 
-- AT Protocol
+この構造により、内部中心を保ったまま複数 protocol へ出力できます。
+
+---
+
+## raw event と canonicalized event
+
+Toitoi では次を分けて扱います。
+
+- raw event
+- normalized event
+- canonicalized event
+- derived index
+
+理由:
+
+- 監査
+- replay
+- 再 canonicalize
+- 再 index
+
+を可能にするためです。
+
+---
+
+## 現在の transport と将来
+
+現在の主 transport:
+
+- Nostr
+
+将来的に追加を検討するもの:
+
+- ATProto
 - ActivityPub
-- local-first synchronization
-- file-based exchange
+- LocalFS
 
-これらは現時点では未実装です。
+これらを追加しても、
+
+- Canonical Event
+- Standard API
+- AI / UI のアクセス面
+
+を大きく壊さないことを目標にします。
 
 ---
 
-## Canonical Archive
+## 関連
 
-Toitoi は protocol-independent な canonical archive format を目指しています。
-
-これにより：
-
-- replayability
-- protocol migration
-- long-term preservation
-- semantic interoperability
-
-を可能にします。
-
-関連：
-
-- ../protocols/CANONICAL_JSONL.md
+- [OVERVIEW.md](./OVERVIEW.md)
+- [EVENT_MODEL.md](./EVENT_MODEL.md)
+- [../protocols/CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
+- [../protocols/NOSTR_TRANSPORT.md](../protocols/NOSTR_TRANSPORT.md)

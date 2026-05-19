@@ -2,79 +2,123 @@
 
 ## 概要
 
-Toitoi は append-only なイベントモデルを中心に設計されています。
+Toitoi は append-only な event model を中心に設計されています。
 
-問い、観察、応答、注釈などを「変更可能な状態」ではなく、
-時系列に蓄積される immutable なイベントとして扱います。
+問い、観察、応答、注釈などを、変更可能な状態ではなく
+時系列に蓄積されるイベントとして扱います。
 
-この構造により、以下を可能にします。
+この構造により、
 
-- provenance（来歴）の保持
-- replayable なアーカイブ
-- 分散同期
-- protocol portability
+- provenance
+- replayability
+- distributed sync
 - semantic continuity
+
+を保ちます。
 
 ---
 
 ## 基本原則
 
-### Immutable Events
+### Immutable
 
-イベントは公開後に変更されません。
+公開後の event は破壊的に更新しません。
 
-修正や更新は、新しいイベントとして追加されます。
+修正や再解釈は、新しい event と lineage relation で表現します。
 
----
+### Append-Only
 
-### Append-Only Structure
+保存は append-only log を基本とします。
 
-アーカイブは append-only なログとして扱われます。
+### Relational
 
-これにより：
+event は単独で終わらず、
 
-- deterministic replay
-- offline synchronization
-- historical traceability
+- derived_from
+- synthesis
+- annotates
+- revises
 
-を可能にします。
-
----
-
-### Semantic Relationships
-
-イベントは他のイベントを参照できます。
-
-例：
-
-- 問いへの応答
-- 観察の補足
-- 概念間の意味的リンク
+などの関係を持てます。
 
 ---
 
-## イベント種別
+## Event の層
 
-現在想定しているイベントカテゴリ：
+Toitoi では event を少なくとも次の層で区別します。
 
-| Type | 説明 |
-|---|---|
-| question | 問い |
-| observation | 観察・記録 |
-| response | 他イベントへの応答 |
-| annotation | 補足情報 |
+```text
+Raw Protocol Event
+  ↓
+Normalized Event
+  ↓
+Canonicalized Event
+  ↓
+Derived Index
+```
 
-この一覧は固定ではなく、将来的に変更される可能性があります。
+### Raw Protocol Event
+
+- relay や PDS などから取得した生の transport event
+
+### Normalized Event
+
+- validate / verify / dedupe / ordering を経た中間状態
+
+### Canonicalized Event
+
+- Toitoi 内部で扱う semantic event
+
+### Derived Index
+
+- 検索や参照のための派生構造
 
 ---
 
-## Canonical Representation
+## Canonical Event との関係
 
-Toitoi は内部的に protocol-independent な canonical event structure を目指しています。
+Toitoi の内部中心は Canonical Event です。
 
-Nostr などの外部プロトコルは transport layer として扱われます。
+そのため、
 
-関連：
+- Nostr event をそのまま内部 event model と見なさない
+- protocol 差異は adapter / normalizer で吸収する
+- indexer は canonicalized event を受け取る
 
-- ../protocols/CANONICAL_JSONL.md
-- PROTOCOL_ABSTRACTION.md
+という構成を取ります。
+
+---
+
+## 代表的な event type
+
+現在の代表例:
+
+- `inquiry`
+- `observation`
+- `response`
+- `annotation`
+- `synthesis`
+
+この分類は固定ではなく、将来拡張される可能性があります。
+
+---
+
+## replay
+
+append-only event model の重要な性質は replay 可能性です。
+
+raw event を保持していれば、
+
+- canonicalization ルール変更後の再処理
+- index の再生成
+- 履歴監査
+
+ができます。
+
+---
+
+## 関連
+
+- [PROTOCOL_ABSTRACTION.md](./PROTOCOL_ABSTRACTION.md)
+- [OVERVIEW.md](./OVERVIEW.md)
+- [../protocols/CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
