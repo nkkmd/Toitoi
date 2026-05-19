@@ -115,6 +115,20 @@ Protocol-specific Representation
 }
 ```
 
+## スキーマ補足
+
+`schemas/canonical-event.schema.json` は、このドキュメントの最小構造を機械可読にしたものです。
+
+実装上は、次の任意フィールドを追加できます。
+
+- `trigger`
+- `labels`
+- `meta`
+- `dsl.models[].meta`
+
+`provenance.sources[]` は、どの protocol event から来たかを追跡するための必須情報です。
+`id` は `tt:evt:<ULID>` を推奨し、移行期間の互換として `tt:obj:<ULID>` も受け入れられます。
+
 ---
 
 ## フィールド方針
@@ -162,6 +176,14 @@ Protocol-specific Representation
 
 - どの protocol event から来たか
 - canonicalization に必要だった source を追えること
+- `sources` 配列で source reference を保持すること
+
+`sources` の各要素は少なくとも次を持ちます。
+
+- `protocol`
+- `sourceId`
+
+必要に応じて `relay` や `kind` を補助情報として持てます。
 
 ---
 

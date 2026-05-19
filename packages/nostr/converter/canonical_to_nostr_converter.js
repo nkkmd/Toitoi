@@ -16,8 +16,8 @@
  *
  * lineage-map format:
  * {
- *   "tt:obj:AAA": "<nostr_event_id>",
- *   "tt:obj:BBB": { "eventId": "<nostr_event_id>", "relay": "wss://relay.example" }
+ *   "tt:evt:AAA": "<nostr_event_id>",
+ *   "tt:evt:BBB": { "eventId": "<nostr_event_id>", "relay": "wss://relay.example" }
  * }
  *
  * Notes:
@@ -136,8 +136,8 @@ function printHelp() {
     '',
     'Lineage map JSON format:',
     '  {',
-    '    "tt:obj:AAA": "<nostr_event_id>",',
-    '    "tt:obj:BBB": { "eventId": "<nostr_event_id>", "relay": "wss://relay.example" }',
+    '    "tt:evt:AAA": "<nostr_event_id>",',
+    '    "tt:evt:BBB": { "eventId": "<nostr_event_id>", "relay": "wss://relay.example" }',
     '  }',
   ].join('\n'));
 }

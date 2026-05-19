@@ -1,54 +1,36 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://toitoi.dev/schemas/canonical-event.schema.json",
-  "title": "Toitoi Canonical Object",
-  "description": "Schema for Toitoi Canonical JSONL objects (spec v0.2.0).",
+  "title": "Toitoi Canonical Event",
+  "description": "Schema for Toitoi Canonical Event JSONL objects (spec v0.3.0).",
   "type": "object",
 
   "required": [
     "id",
     "schemaVersion",
     "type",
-    "author",
     "createdAt",
-    "body"
+    "body",
+    "provenance"
   ],
 
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^tt:obj:[0-9A-HJKMNP-TV-Z]{26}$",
-      "description": "Transport-independent canonical object ID. Recommended format: tt:obj:<ULID>."
+      "pattern": "^tt:(evt|obj):[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "Transport-independent canonical event ID. Recommended format: tt:evt:<ULID>; tt:obj:<ULID> remains accepted for legacy data."
     },
 
     "schemaVersion": {
       "type": "string",
-      "const": "0.2.0",
+      "const": "0.3.0",
       "description": "Canonical schema version."
     },
 
     "type": {
       "type": "string",
-      "minLength": 1,
-      "description": "Semantic object type. Recommended values: inquiry, annotation, observation, hypothesis, synthesis, dataset."
-    },
-
-    "author": {
-      "type": "object",
-      "required": ["scheme", "id"],
-      "properties": {
-        "scheme": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Identity scheme (e.g. nostr, atproto, ethereum)."
-        },
-        "id": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Author identifier in the specified scheme."
-        }
-      },
-      "additionalProperties": false
+      "enum": ["inquiry", "observation", "annotation", "response", "synthesis"],
+      "description": "Semantic event type."
     },
 
     "createdAt": {
@@ -76,7 +58,7 @@
 
     "contexts": {
       "type": "object",
-      "description": "Ecological/translational contextual metadata. Custom keys are allowed.",
+      "description": "Abstracted locality/context metadata. Custom keys are allowed.",
       "additionalProperties": true
     },
 
@@ -129,17 +111,33 @@
       }
     },
 
+    "provenance": {
+      "type": "object",
+      "required": ["sources"],
+      "properties": {
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/provenanceSource"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+
     "labels": {
       "type": "array",
       "items": {
         "type": "string",
         "minLength": 1
-      }
+      },
+      "description": "Optional topical labels used for transport projections."
     },
 
     "meta": {
       "type": "object",
-      "description": "Non-semantic implementation metadata. Do not store transport-specific data here.",
+      "description": "Optional non-semantic implementation metadata.",
       "additionalProperties": true
     }
   },
@@ -200,6 +198,39 @@
           "items": {
             "$ref": "#/definitions/relation"
           }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Optional model-level implementation metadata.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "provenanceSource": {
+      "type": "object",
+      "required": ["protocol", "sourceId"],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Source protocol name, such as nostr or atproto."
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Protocol-specific source identifier."
+        },
+        "relay": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional transport endpoint for the source."
+        },
+        "kind": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Optional source kind or event type when applicable."
         }
       },
       "additionalProperties": false
