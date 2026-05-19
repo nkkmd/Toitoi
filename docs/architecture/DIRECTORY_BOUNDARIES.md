@@ -77,15 +77,15 @@
 
 ## 多プロトコル拡張時の配置
 
-transport と indexer は、同じ粒度でプロトコル別に揃えます。
+transports と indexers は、同じ粒度でプロトコル別に揃えます。
 
 ```text
 infra/
-├── transport/
+├── transports/
 │   ├── nostr/
 │   ├── atproto/        (future)
 │   └── activitypub/    (future)
-└── indexer/
+└── indexers/
     ├── nostr/
     ├── atproto/        (future)
     └── activitypub/    (future)
@@ -110,4 +110,3 @@ infra/
 2. ファイル移動は責務変更が起きたときだけ行う
 3. 移動時はリンク更新を同一変更で完了させる
 4. `README.md` と `REPOSITORY_STRUCTURE.md` を必ず同期する
-

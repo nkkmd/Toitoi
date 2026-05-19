@@ -48,11 +48,13 @@ Toitoi/
 │   ├── frontend/
 │   └── edge-ai/
 ├── infra/
-│   ├── transport/
+│   ├── transports/
 │   │   └── nostr/
-│   └── indexer/
+│   └── indexers/
 │       └── nostr/
 ├── packages/
+│   └── nostr/
+│       └── converter/
 │
 └── archive/
 ```
@@ -360,7 +362,7 @@ Toitoi の viewer / UI layer。
 
 ---
 
-# infra/transport/nostr/
+# infra/transports/nostr/
 
 ## 役割
 
@@ -386,7 +388,7 @@ Toitoi commons の transport infrastructure。
 
 ---
 
-# infra/indexer/nostr/
+# infra/indexers/nostr/
 
 ## 役割
 
@@ -408,6 +410,30 @@ distributed event indexing layer。
 | File | 内容 |
 |---|---|
 | INDEXER_API_SETUP.md | setup guide |
+
+---
+
+# packages/nostr/converter/
+
+## 役割
+
+Canonical Event と Nostr event の相互変換を担う protocol-specific package。
+
+---
+
+## 含まれる内容
+
+- canonical to nostr conversion
+- nostr to canonical conversion
+- JSONL transformation
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| canonical_nostr_converter.js | 変換 CLI / utility |
 
 ---
 
