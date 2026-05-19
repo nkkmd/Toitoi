@@ -1,5 +1,7 @@
 # Boundary Object
 
+**Status: stable** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi は「問い」を Boundary Object（境界対象）として扱います。

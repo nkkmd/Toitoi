@@ -1,5 +1,7 @@
 # Toitoi AI System Overview
 
+**Status: evolving** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi における AI は、答えを確定する authority ではありません。

@@ -1,5 +1,7 @@
 # Nostr Transport
 
+**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi は現在、Nostr を最初の operational transport として利用しています。

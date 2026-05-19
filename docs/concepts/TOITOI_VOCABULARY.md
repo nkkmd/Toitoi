@@ -1,6 +1,6 @@
 # Toitoi 標準語彙リスト（暫定）
 
-**バージョン: 0.1.0**
+**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-19**
 
 本ドキュメントは、`NOSTR_INQUIRY_SCHEMA.md` および `OVERVIEW.md` に基づく標準語彙（Controlled Vocabulary）を、実装者・エッジAI開発者・コントリビューターが参照しやすい形に整理したリファレンスです。
 

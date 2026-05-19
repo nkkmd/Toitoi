@@ -1,5 +1,7 @@
 # Protocol Abstraction
 
+**Status: evolving** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi は現在、最初の operational transport として Nostr を利用しています。

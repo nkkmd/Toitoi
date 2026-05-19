@@ -1,5 +1,7 @@
 # Toitoi 実装ロードマップ
 
+**Status: evolving** | **Last updated: 2026-05-19**
+
 ## 目的
 
 このドキュメントは、Toitoi のアーキテクチャを実装へ落とすための作業手順を定義します。
@@ -23,6 +25,7 @@
 - 読み込み側では Adapter / Normalizer を経由してから Indexer に渡す
 - Standard API は protocol ではなく意味論に基づくアクセス面として設計する
 - Indexer は canonical semantics を変形せず、検索・参照のために補助構造を作る
+- 文書の版管理は [DOCUMENTATION_VERSION_POLICY.md](../architecture/DOCUMENTATION_VERSION_POLICY.md) に従う
 
 一方で、以下は固定しません。
 

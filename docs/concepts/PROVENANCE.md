@@ -1,5 +1,7 @@
 # Provenance
 
+**Status: stable** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi では provenance（来歴）を重要な要素として扱います。

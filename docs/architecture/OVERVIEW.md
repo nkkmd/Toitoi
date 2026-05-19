@@ -1,5 +1,7 @@
 # Toitoi Architecture Overview
 
+**Status: stable** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi は、特定 protocol を中心に据えるのではなく、

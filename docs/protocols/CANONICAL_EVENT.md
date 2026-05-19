@@ -1,5 +1,7 @@
 # Canonical Event
 
+**Version: 0.3.0** | **Status: stable** | **Last updated: 2026-05-19**
+
 ## 目的
 
 このドキュメントは、Toitoi の内部中心モデルである Canonical Event を定義します。

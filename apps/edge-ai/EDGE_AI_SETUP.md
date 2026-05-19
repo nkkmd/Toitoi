@@ -1,6 +1,8 @@
 # Toitoi エッジ・アーキテクチャ設計書：ローカルAIと「問い」の生成
 
-**バージョン: 0.3.1**　｜　前バージョン (v0.3.0) からの主な修正：
+**Version: 0.3.1** | **Status: evolving** | **Last updated: 2026-05-19**
+
+前バージョン (v0.3.0) からの主な修正：
 
 * 冒頭：現在の実装状態（conceptually coherent / implementation-evolving）を明示。
 * §2：Problematizing Pipelineを2ステップから6ステップへ詳細化（Schema Validation・Vocabulary Normalization・DSL Reliability Handlingを独立ステップとして分離）。

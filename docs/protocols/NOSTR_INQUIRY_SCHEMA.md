@@ -1,5 +1,7 @@
 # Nostr Inquiry Schema
 
+**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-19**
+
 ## 目的
 
 このドキュメントは、Toitoi が Nostr 上で inquiry を流通させる際の transport schema を定義します。

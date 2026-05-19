@@ -1,5 +1,7 @@
 # Question Model
 
+**Status: stable** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi において「問い」は単なる質問ではありません。

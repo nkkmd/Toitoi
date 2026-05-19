@@ -1,5 +1,7 @@
 # Event Model
 
+**Status: stable** | **Last updated: 2026-05-19**
+
 ## 概要
 
 Toitoi は append-only な event model を中心に設計されています。
