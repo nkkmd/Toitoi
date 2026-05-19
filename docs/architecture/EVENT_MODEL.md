@@ -20,6 +20,32 @@ Toitoi は append-only な event model を中心に設計されています。
 
 ---
 
+## 用語の固定
+
+この文書では、イベントの層を次のように呼び分けます。
+
+### Raw Protocol Event
+
+- relay や PDS などから取得した生の transport event
+- まだ検証や正規化を終えていない
+
+### Normalized Event
+
+- validate / verify / dedupe / ordering を経た中間状態
+- protocol 固有のノイズを整理したが、まだ semantic ではない
+
+### Canonicalized Event
+
+- Toitoi 内部で扱う semantic event
+- Canonical Event に落とし込まれた状態
+
+### Derived Index
+
+- 検索や参照のための派生構造
+- Canonical semantics を置き換えない
+
+---
+
 ## 基本原則
 
 ### Immutable

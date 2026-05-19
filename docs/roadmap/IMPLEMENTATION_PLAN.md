@@ -47,6 +47,15 @@
 
 ## フェーズ 1: 境界の確定
 
+このフェーズは完了済みです。以下の文書で境界と責務を固定しました。
+
+- [CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
+- [PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)
+- [ADOPTED_ARCHITECTURE_DECISIONS.md](../architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)
+- [EVENT_MODEL.md](../architecture/EVENT_MODEL.md)
+- [OVERVIEW.md](../architecture/OVERVIEW.md)
+- [NOSTR_INQUIRY_SCHEMA.md](../protocols/NOSTR_INQUIRY_SCHEMA.md)
+
 ### 目的
 
 実装前に、どこまでが Canonical で、どこからが protocol 固有かを固定する。
@@ -55,13 +64,15 @@
 
 - Canonical Event の最小スキーマを定義する
 - raw event / normalized event / canonical event の用語を確定する
-- Converter と Adapter / Normalizer の責務境界を文書化する
+- Converter と Adapter / Normalizer / Indexer / Standard API の責務境界を文書化する
 - delete semantics / replace semantics / ordering / trust の扱い方針を整理する
+- Nostr 固有の validate / verify / dedupe / ordering を adapter 配下に閉じる
 
 ### 完了条件
 
 - `docs/architecture` に境界定義がある
 - 「Nostr event をそのまま Canonical と見なさない」ことが明文化されている
+- delete / replace / ordering / trust の扱いが protocol 固有責務として整理されている
 - ingest 時の状態遷移が説明できる
 
 ---

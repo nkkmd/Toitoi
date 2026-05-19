@@ -71,6 +71,13 @@ UI / AI
 
 をこの層で担う
 
+### 責務境界を分ける
+
+- Adapter / Normalizer: ingest と canonicalization
+- Converter: canonical と transport representation の相互変換
+- Indexer: 派生構造の生成
+- Standard API: canonical view の提供
+
 ### Standard API を意味アクセス面として設計する
 
 - UI や AI が protocol 差異を直接扱わなくてよいようにする
@@ -82,6 +89,13 @@ UI / AI
 - 再 index
 
 を可能にする
+
+### 用語を固定する
+
+- raw event: transport から直接得た生の protocol event
+- normalized event: protocol 固有の差異を整理した中間表現
+- canonicalized event: Canonical Event に落とし込まれた内部表現
+- derived index: 検索・参照のための派生構造
 
 ---
 

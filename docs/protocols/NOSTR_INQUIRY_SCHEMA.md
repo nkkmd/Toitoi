@@ -1,6 +1,6 @@
 # Nostr Inquiry Schema
 
-**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-19**
+**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-05-19**
 
 ## 目的
 
@@ -56,6 +56,7 @@ Canonicalized Event
 3. DSL は optional かつ non-authoritative とする
 4. protocol 固有情報は transport concern として扱う
 5. canonicalization は別層で行う
+6. delete / replace / ordering / trust は transport 由来の判断として扱う
 
 ---
 
@@ -260,6 +261,13 @@ Nostr event = semantic event
 
 validate, verify, dedupe, ordering, normalize を経た結果として、
 はじめて Canonicalized Event が得られます。
+
+### 追加の取り扱い
+
+- delete は tombstone や削除関係として別途表現し、Nostr event の消失と混同しない
+- replace は既存 event の上書きではなく、canonicalized event の再生成と lineage で扱う
+- ordering は created_at と replaceable semantics のための transport ルールとして扱う
+- trust は signature, pubkey, relay/source policy に分解して provenance 側に寄せる
 
 ---
 

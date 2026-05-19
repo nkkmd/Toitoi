@@ -1,6 +1,6 @@
 # Canonical Event
 
-**Version: 0.3.0** | **Status: stable** | **Last updated: 2026-05-19**
+**Version: 0.3.1** | **Status: stable** | **Last updated: 2026-05-19**
 
 ## 目的
 
@@ -39,6 +39,38 @@ Protocol-specific Representation
 ```
 
 の順で外部へ出します。
+
+---
+
+## 用語
+
+このドキュメントでは、次の用語を固定して使います。
+
+### raw event
+
+- transport からそのまま取得した生の protocol event
+- 署名検証、重複排除、順序付けの前段階にある
+
+### normalized event
+
+- raw event を検証し、protocol 固有の差異を整理した中間表現
+- まだ semantic な正規化は完了していない
+
+### canonical event
+
+- Toitoi 内部の意味的共通表現
+- protocol schema の写しではない
+- replay 可能な内部基準として扱う
+
+### canonicalized event
+
+- normalized event を Canonical Event に変換した結果
+- 以後の index / API / AI はこの層を前提に扱う
+
+### derived index
+
+- Canonical Event から派生した検索・参照用の補助構造
+- 意味論そのものではない
 
 ---
 
