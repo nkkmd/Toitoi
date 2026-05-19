@@ -433,7 +433,7 @@ Canonical Event と Nostr event の相互変換を担う protocol-specific packa
 
 | File | 内容 |
 |---|---|
-| canonical_nostr_converter.js | 変換 CLI / utility |
+| canonical_to_nostr_converter.js | Canonical Events -> Nostr 変換 CLI / utility |
 
 ---
 
