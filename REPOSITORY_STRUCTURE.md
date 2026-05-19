@@ -52,11 +52,9 @@ Toitoi/
 │   │   └── nostr/
 │   └── indexers/
 │       └── nostr/
-├── packages/
-│   └── nostr/
-│       └── converter/
-│
-└── archive/
+└── packages/
+    └── nostr/
+        └── converter/
 ```
 
 ---
@@ -137,6 +135,8 @@ Toitoi の：
 | ADOPTED_ARCHITECTURE_DECISIONS.md | 採用済み設計判断 |
 | AI_SYSTEM_OVERVIEW.md | AI subsystem の役割 |
 | EDGE_AI_SETUP.md | （将来的に docs 側へ移動する場合）edge AI設計 |
+| DOCUMENTATION_VERSION_POLICY.md | ドキュメント版管理ポリシー |
+| DIRECTORY_BOUNDARIES.md | ディレクトリ責務ルール |
 
 ---
 
@@ -253,8 +253,7 @@ Toitoi の背景思想・問題意識・論考。
 
 | File | 内容 |
 |---|---|
-| MULTI_PROTOCOL_VISION.md | protocol portability |
-| ROADMAP.md | development direction |
+| IMPLEMENTATION_PLAN.md | Toitoi 実装ロードマップ |
 
 ---
 
