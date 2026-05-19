@@ -14,8 +14,8 @@ To legally guarantee this philosophy while encouraging the participation of dive
 | Component | Applied License | Purpose |
 | :--- | :--- | :--- |
 | **1. Commons Relay & Indexer API**<br>(Backend Infrastructure) | **GNU AGPLv3** | Defend the commons by preventing infrastructure enclosure (closed SaaSification). |
-| **2. Frontend & Edge AI Tools**<br>(Client Applications) | **MIT License** | Maximize ecosystem diversity (UIs and devices) by lowering barriers for companies and individuals. |
-| **3. Data Schema & Documentation**<br>(Inquiry Formats, Architecture Docs) | **CC BY-SA 4.0** | Prevent distortion of philosophy and ensure derived standards are contributed back to the commons. |
+| **2. Frontend, Edge AI & Client Tools**<br>(Client Applications) | **MIT License** | Maximize ecosystem diversity (UIs and devices) by lowering barriers for companies and individuals. |
+| **3. Protocol Schema & Documentation**<br>(Inquiry Formats, Protocol Docs, Architecture Docs) | **CC BY-SA 4.0** | Prevent distortion of philosophy and ensure derived standards are contributed back to the commons. |
 
 ---
 
@@ -38,7 +38,7 @@ Client scripts that send data from the local AI to the Nostr network, smartphone
 ### 3. Data Schema Definition / Philosophical Documentation
 **👉 Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**
 
-This applies to the JSON schema definitions of the "Boundary Object (Form of Inquiry)"—the core of this project—and the architectural documentation based on our philosophy.
+This applies to the JSON schema definitions of the "Boundary Object (Form of Inquiry)"—the core of this project—and the protocol / architecture / concept documentation based on our philosophy.
 *   **Core Rule:** Requires "attribution to the original author (Toitoi Project)" (BY) and demands that "if you remix, transform, or build upon the material, you must distribute your contributions under the same license" (ShareAlike - SA). This prevents the project's ideals from being distorted or absorbed into proprietary (closed) standards.
 
 ---
@@ -59,7 +59,7 @@ Toitoiプロジェクトは、『[テクノロジーを手放す農業論](./doc
 
 本プロジェクトの最大の目的は、**「農家同士の暗黙知（問いの系譜）が特定のプラットフォーム資本によって囲い込まれるのを防ぎ、人類の共有財産（コモンズ）として永続させること」** にあります。
 
-この思想を法的なレベルで担保しつつ、多様な開発者や企業のエコシステム参画を促すため、Toitoiではコンポーネント（モジュール）の役割に応じて複数のライセンスを組み合わせる **「デュアル・ライセンス・アプローチ」** を採用しています。
+この思想を法的なレベルで担保しつつ、多様な開発者や企業のエコシステム参画を促すため、Toitoiではコンポーネント（モジュール）の役割に応じて複数のライセンスを組み合わせる **「マルチ・ライセンス・アプローチ」** を採用しています。
 
 ---
 
@@ -68,8 +68,8 @@ Toitoiプロジェクトは、『[テクノロジーを手放す農業論](./doc
 | コンポーネント | 適用ライセンス | 目的 |
 | :--- | :--- | :--- |
 | **① コモンズ・リレー ＆ インデクサーAPI**<br>(バックエンドインフラ) | **GNU AGPLv3** | インフラの囲い込み（クローズドなSaaS化）を防止し、コモンズを防衛する |
-| **② フロントエンド ＆ ローカルAI送信ツール**<br>(クライアントアプリ) | **MIT License** | 企業や個人の参入障壁を下げ、エコシステム（UIやデバイス）の多様性を最大化する |
-| **③ データスキーマ ＆ ドキュメント**<br>(問いの形式、アーキテクチャ設計書) | **CC BY-SA 4.0** | 思想の歪曲を防ぎ、派生した規格もコモンズに還元させる |
+| **② フロントエンド ＆ エッジAI ＆ クライアントツール**<br>(クライアントアプリ) | **MIT License** | 企業や個人の参入障壁を下げ、エコシステム（UIやデバイス）の多様性を最大化する |
+| **③ プロトコル・スキーマ ＆ ドキュメント**<br>(問いの形式、プロトコル文書、アーキテクチャ設計書) | **CC BY-SA 4.0** | 思想の歪曲を防ぎ、派生した規格もコモンズに還元させる |
 
 ---
 
@@ -92,7 +92,7 @@ Toitoiプロジェクトは、『[テクノロジーを手放す農業論](./doc
 ### ③ データスキーマ定義 / 思想的ドキュメント
 **👉 Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**
 
-本プロジェクトの核である「バウンダリー・オブジェクト（問いの形式）」のJSONスキーマ定義、および『テクノロジーを手放す農業論』に基づくアーキテクチャ解説ドキュメントに適用されます。
+本プロジェクトの核である「バウンダリー・オブジェクト（問いの形式）」のJSONスキーマ定義、および『テクノロジーを手放す農業論』に基づくプロトコル・アーキテクチャ・概念ドキュメントに適用されます。
 *   **ルールの核心:** 「原作者（Toitoiプロジェクト）のクレジットを表示すること（BY）」、および「このドキュメントやスキーマを改変して新しいものを公開する場合、同じCC BY-SA 4.0ライセンスで公開すること（SA = ShareAlike）」を条件とします。これにより、プロジェクトの理念が歪められたり、プロプライエタリ（非公開）な規格に吸収されたりすることを防ぎます。
 
 ---
