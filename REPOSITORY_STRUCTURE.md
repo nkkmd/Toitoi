@@ -134,6 +134,7 @@ Toitoi の：
 | OVERVIEW.md | 全体構成 |
 | EVENT_MODEL.md | event-centric architecture |
 | PROTOCOL_ABSTRACTION.md | protocol-independent design |
+| ADOPTED_ARCHITECTURE_DECISIONS.md | 採用済み設計判断 |
 | AI_SYSTEM_OVERVIEW.md | AI subsystem の役割 |
 | EDGE_AI_SETUP.md | （将来的に docs 側へ移動する場合）edge AI設計 |
 
