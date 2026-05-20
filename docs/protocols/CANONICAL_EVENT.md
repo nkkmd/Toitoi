@@ -1,6 +1,6 @@
 # Canonical Event
 
-**Version: 0.3.1** | **Status: stable** | **Last updated: 2026-05-19**
+**Version: 0.3.1** | **Status: stable** | **Last updated: 2026-05-20**
 
 ## 目的
 

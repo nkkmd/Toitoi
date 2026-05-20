@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-05-19**
+**Status: evolving** | **Last updated: 2026-05-20**
 
 ## 目的
 

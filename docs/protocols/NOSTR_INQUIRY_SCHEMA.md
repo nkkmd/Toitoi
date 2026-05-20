@@ -1,6 +1,6 @@
 # Nostr Inquiry Schema
 
-**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-05-19**
+**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-05-20**
 
 ## 目的
 
