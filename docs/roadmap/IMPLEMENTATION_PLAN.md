@@ -47,15 +47,6 @@
 
 ## フェーズ 1: 境界の確定
 
-このフェーズは完了済みです。以下の文書で境界と責務を固定しました。
-
-- [CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
-- [PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)
-- [ADOPTED_ARCHITECTURE_DECISIONS.md](../architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)
-- [EVENT_MODEL.md](../architecture/EVENT_MODEL.md)
-- [OVERVIEW.md](../architecture/OVERVIEW.md)
-- [NOSTR_INQUIRY_SCHEMA.md](../protocols/NOSTR_INQUIRY_SCHEMA.md)
-
 ### 目的
 
 実装前に、どこまでが Canonical で、どこからが protocol 固有かを固定する。
@@ -75,6 +66,15 @@
 - delete / replace / ordering / trust の扱いが protocol 固有責務として整理されている
 - ingest 時の状態遷移が説明できる
 
+### 完了メモ
+
+- [CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
+- [PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)
+- [ADOPTED_ARCHITECTURE_DECISIONS.md](../architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)
+- [EVENT_MODEL.md](../architecture/EVENT_MODEL.md)
+- [OVERVIEW.md](../architecture/OVERVIEW.md)
+- [NOSTR_INQUIRY_SCHEMA.md](../protocols/NOSTR_INQUIRY_SCHEMA.md)
+
 ---
 
 ## フェーズ 2: Canonical Event MVP
@@ -87,7 +87,7 @@
 
 - Canonical Event の必須フィールドを決める
 - provenance, source protocol, source id を保持する設計を追加する
-- raw payload への参照方法を決める
+- raw payload への参照方法を専用フィールドで決める
 - 将来拡張用の optional field を切り分ける
 
 ### 完了条件
@@ -95,6 +95,14 @@
 - 最小 Canonical schema が 1 つの文書として固定されている
 - Nostr event から loss-aware に変換できる
 - raw event を失わず再 canonicalize できる
+
+### 完了メモ
+
+- `schemaVersion` は `0.3.1` に更新済み
+- `rawRef` を専用フィールドとして追加済み
+- `sample-nostr-archive.jsonl` で意味的な往復確認を実施済み
+- `e` は `dsl:*` より前に出力するよう固定済み
+- `test` タグは本番 Canonical には保持しない方針で確認済み
 
 ---
 

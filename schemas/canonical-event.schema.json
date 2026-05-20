@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://toitoi.dev/schemas/canonical-event.schema.json",
   "title": "Toitoi Canonical Event",
-  "description": "Schema for Toitoi Canonical Event JSONL objects (spec v0.3.0).",
+  "description": "Schema for Toitoi Canonical Event JSONL objects (spec v0.3.1).",
   "type": "object",
 
   "required": [
@@ -23,7 +23,7 @@
 
     "schemaVersion": {
       "type": "string",
-      "const": "0.3.0",
+      "const": "0.3.1",
       "description": "Canonical schema version."
     },
 
@@ -121,6 +121,44 @@
           "items": {
             "$ref": "#/definitions/provenanceSource"
           }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "rawRef": {
+      "type": "object",
+      "required": ["protocol", "sourceId"],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Protocol name for the raw payload reference, such as nostr, atproto, or activitypub."
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Protocol-specific identifier for the raw payload."
+        },
+        "relay": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional transport endpoint or retrieval hint for the raw payload."
+        },
+        "storage": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional storage class or backend name that holds the raw payload."
+        },
+        "storageId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional storage-local identifier or path for the raw payload."
+        },
+        "payloadHash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional content hash for integrity checks on the raw payload."
         }
       },
       "additionalProperties": false

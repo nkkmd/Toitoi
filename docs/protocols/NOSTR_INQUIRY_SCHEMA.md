@@ -234,6 +234,7 @@ Canonicalized Event
 - non-authoritative
 - 複数 model 共存可
 - adapter / indexer は受信値を勝手に統合しない
+- transport projection では `e` を `dsl:*` より前に置くと、往復時の順序差分を抑えやすい
 
 ---
 

@@ -40,6 +40,8 @@ Protocol-specific Representation
 
 の順で外部へ出します。
 
+このときの transport projection では、`lineage` に由来する `e` タグを `dsl:*` タグより前に出力し、同一入力に対する再現性を高めます。
+
 ---
 
 ## 用語
@@ -114,7 +116,7 @@ Protocol-specific Representation
 ```json
 {
   "id": "tt:evt:01JV7Y8K7Y4Y2M4Q7W8J9R0ABC",
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.3.1",
   "type": "inquiry",
   "createdAt": "2026-05-19T00:00:00Z",
   "body": {
@@ -145,6 +147,14 @@ Protocol-specific Representation
         "sourceId": "<nostr_event_id>"
       }
     ]
+  },
+  "rawRef": {
+    "protocol": "nostr",
+    "sourceId": "<nostr_event_id>",
+    "relay": "wss://relay.example",
+    "storage": "append-log",
+    "storageId": "log-000123",
+    "payloadHash": "<raw_payload_hash>"
   }
 }
 ```
@@ -158,9 +168,12 @@ Protocol-specific Representation
 - `trigger`
 - `labels`
 - `meta`
+- `rawRef`
 - `dsl.models[].meta`
 
 `provenance.sources[]` は、どの protocol event から来たかを追跡するための必須情報です。
+`rawRef` は raw event または raw payload の参照先を保持するための専用フィールドです。
+`provenance` は来歴、`rawRef` は再取得・再 canonicalize のための参照を担います。
 `id` は `tt:evt:<ULID>` を推奨し、移行期間の互換として `tt:obj:<ULID>` も受け入れられます。
 
 ---
@@ -218,6 +231,24 @@ Protocol-specific Representation
 - `sourceId`
 
 必要に応じて `relay` や `kind` を補助情報として持てます。
+
+### `rawRef`
+
+- raw event または raw payload への参照
+- provenance と分離して、再取得・再 canonicalize 用の入口を明示する
+- protocol ごとの参照形を吸収する
+
+`rawRef` は少なくとも次を持ちます。
+
+- `protocol`
+- `sourceId`
+
+必要に応じて次の補助情報を持てます。
+
+- `relay`
+- `storage`
+- `storageId`
+- `payloadHash`
 
 ---
 

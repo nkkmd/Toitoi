@@ -232,6 +232,25 @@ function convertCanonicalToNostrDraft(canonical, options) {
     pushTag(tags, 'trigger', canonical.trigger.category, canonical.trigger.value);
   }
 
+  if (Array.isArray(canonical.lineage)) {
+    for (const lin of canonical.lineage) {
+      const type = lin?.type;
+      const target = lin?.target;
+      if (typeof type !== 'string' || typeof target !== 'string') {
+        continue;
+      }
+
+      const mapped = options.lineageMap.get(target);
+      if (!mapped) {
+        warnings.push(`lineage target not mapped: ${target}`);
+        continue;
+      }
+
+      const relay = mapped.relay || options.defaultRelay || '';
+      tags.push(['e', mapped.eventId, relay, type]);
+    }
+  }
+
   const models = canonical?.dsl?.models;
   if (Array.isArray(models)) {
     for (const model of models) {
@@ -258,25 +277,6 @@ function convertCanonicalToNostrDraft(canonical, options) {
           }
         }
       }
-    }
-  }
-
-  if (Array.isArray(canonical.lineage)) {
-    for (const lin of canonical.lineage) {
-      const type = lin?.type;
-      const target = lin?.target;
-      if (typeof type !== 'string' || typeof target !== 'string') {
-        continue;
-      }
-
-      const mapped = options.lineageMap.get(target);
-      if (!mapped) {
-        warnings.push(`lineage target not mapped: ${target}`);
-        continue;
-      }
-
-      const relay = mapped.relay || options.defaultRelay || '';
-      tags.push(['e', mapped.eventId, relay, type]);
     }
   }
 

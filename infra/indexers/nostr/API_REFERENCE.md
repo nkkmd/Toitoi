@@ -146,7 +146,7 @@ curl "https://api.your-domain.com/api/v1/inquiries?limit=50"
 
 | フィールド | 型 | 説明 |
 |---|---|---|
-| `tagKey` | string | タグの種別（`context` / `relationship` / `phase` / `trigger` / `e` / `dsl:model` / `dsl:var` / `dsl:rel` / `dsl:meta` など） |
+| `tagKey` | string | タグの種別（`context` / `relationship` / `phase` / `trigger` / `e` / `dsl:model` / `dsl:var` / `dsl:rel` / `dsl:meta` など）。出力順は意味順序ではなく、transport projection の安定化のために固定されることがあります。 |
 | `tagValue1` | string | タグの第1値。`context` なら分類キー、`dsl:*` なら `model_id` |
 | `tagValue2` | string \| null | タグの第2値。`context` なら値、`dsl:*` なら変数名・モデル名・役割など（「タグの読み方」参照） |
 
