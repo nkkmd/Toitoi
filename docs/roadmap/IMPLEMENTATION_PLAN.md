@@ -158,6 +158,16 @@
 - canonicalized event から index を再生成できる
 - ingest と replay が同じルールで動く
 
+### 完了メモ
+
+- `packages/nostr/storage/append_only_log.js` で append-only JSONL 基盤を追加
+- `packages/nostr/storage/persistence.js` で raw / canonical / ingest log の追記処理を追加
+- `packages/nostr/storage/replay.js` で raw event からの replay と derived index 再構築を追加
+- `packages/nostr/storage/replay_cli.js` で replay の実行入口を追加
+- `packages/nostr/adapter/ingest_jsonl.js` と `infra/transports/nostr/relay_ingest_worker.js` に `--storage-dir` を追加
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` で復旧手順を追加
+- `packages/nostr/storage/test_*` で保存・replay・CLI の回帰確認を追加
+
 ---
 
 ## フェーズ 5: Indexer MVP

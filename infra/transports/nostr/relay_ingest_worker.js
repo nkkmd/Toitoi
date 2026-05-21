@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ingestRelayUrl } = require('../../../packages/nostr/adapter/relay_ingest');
+const { persistIngestResult } = require('../../../packages/nostr/storage/persistence');
 
 function parseJson(value, fallback) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -23,6 +24,7 @@ function parseArgs(argv) {
     output: process.env.RELAY_INGEST_OUTPUT || '',
     format: process.env.RELAY_INGEST_FORMAT || 'report',
     verify: process.env.RELAY_VERIFY === '1',
+    storageDir: process.env.RELAY_STORAGE_DIR || '',
     help: false,
   };
 
@@ -36,6 +38,15 @@ function parseArgs(argv) {
 
     if (arg === '--verify') {
       args.verify = true;
+      continue;
+    }
+
+    if (arg.startsWith('--storage-dir=')) {
+      args.storageDir = arg.slice('--storage-dir='.length);
+      continue;
+    }
+    if (arg === '--storage-dir') {
+      args.storageDir = argv[++i];
       continue;
     }
 
@@ -102,6 +113,7 @@ function printHelp() {
     '  --format report|accepted|canonical',
     '  --output <path>      optional output file path',
     '  --verify             run signature verification when available',
+    '  --storage-dir <dir>  persist raw/canonical/replay logs',
     '  -h, --help           show this help',
     '',
     'Environment variables:',
@@ -148,6 +160,13 @@ async function main() {
   const result = await ingestRelayUrl(args.relayUrl, args.filter, {
     skipVerify: !args.verify,
   });
+
+  if (args.storageDir) {
+    persistIngestResult(args.storageDir, result, {
+      source: 'relay',
+      sourceLabel: args.relayUrl,
+    });
+  }
 
   writeResult(args.output, args.format, result);
 

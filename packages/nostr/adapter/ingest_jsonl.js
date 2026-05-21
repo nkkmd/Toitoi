@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const { ingestNostrEvents } = require('./ingest_pipeline');
+const { persistIngestResult } = require('../storage/persistence');
 
 function parseArgs(argv) {
   const args = {
@@ -11,6 +12,7 @@ function parseArgs(argv) {
     out: null,
     format: 'report',
     skipVerify: true,
+    storageDir: null,
     help: false,
   };
 
@@ -24,6 +26,15 @@ function parseArgs(argv) {
 
     if (arg === '--verify') {
       args.skipVerify = false;
+      continue;
+    }
+
+    if (arg.startsWith('--storage-dir=')) {
+      args.storageDir = arg.slice('--storage-dir='.length);
+      continue;
+    }
+    if (arg === '--storage-dir') {
+      args.storageDir = argv[++i];
       continue;
     }
 
@@ -82,6 +93,7 @@ function printHelp() {
     'Options:',
     '  --format report|accepted|canonical  output shape (default: report)',
     '  --verify                            run signature verification when available',
+    '  --storage-dir <dir>                 persist raw/canonical/replay logs',
     '  -h, --help                          show this help',
     '',
     'Formats:',
@@ -149,6 +161,14 @@ async function main() {
   const ingestResult = ingestNostrEvents(rawEvents, {
     skipVerify: args.skipVerify,
   });
+
+  if (args.storageDir) {
+    persistIngestResult(args.storageDir, ingestResult, {
+      source: 'jsonl',
+      sourceLabel: path.resolve(args.in),
+    });
+  }
+
   await writeOutput(args.out, args.format, ingestResult);
 
   process.stderr.write(

@@ -24,7 +24,10 @@ function ingestRelaySubscription(relay, filter, options = {}) {
           if (typeof options.onResult === 'function') {
             options.onResult(result);
           }
-          resolve(result);
+          resolve({
+            ...result,
+            rawEvents,
+          });
         },
         onclose(reason) {
           if (typeof options.onClose === 'function') {

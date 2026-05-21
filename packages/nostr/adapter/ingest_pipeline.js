@@ -17,25 +17,43 @@ function ingestNostrEvents(rawEvents, options = {}) {
   const invalid = [];
   const duplicates = [];
   const unverified = [];
+  const processedEvents = [];
 
   for (const rawEvent of orderedEvents) {
     const classified = classifyEvent(rawEvent, options);
 
     if (classified.status === 'invalid') {
-      invalid.push({
+      const item = {
+        status: 'invalid',
         rawEvent,
         errors: classified.errors,
         warnings: classified.warnings,
-      });
+        normalizedEvent: classified.normalizedEvent,
+        canonicalEvent: classified.canonicalEvent,
+        verification: classified.verification ?? null,
+        dedupeKey: classified.dedupeKey ?? null,
+        ordering: classified.ordering ?? null,
+      };
+      invalid.push(item);
+      processedEvents.push(item);
       continue;
     }
 
     const key = dedupeKey(rawEvent);
     if (key && seenKeys.has(key)) {
-      duplicates.push({
+      const item = {
+        status: 'duplicate',
         rawEvent,
         dedupeKey: key,
-      });
+        errors: [],
+        warnings: classified.warnings,
+        normalizedEvent: classified.normalizedEvent,
+        canonicalEvent: null,
+        verification: classified.verification ?? null,
+        ordering: classified.ordering ?? null,
+      };
+      duplicates.push(item);
+      processedEvents.push(item);
       continue;
     }
 
@@ -43,12 +61,28 @@ function ingestNostrEvents(rawEvents, options = {}) {
       seenKeys.add(key);
     }
 
+    const item = {
+      status: classified.status === 'unverified' ? 'unverified' : 'accepted',
+      rawEvent,
+      normalizedEvent: classified.normalizedEvent,
+      canonicalEvent: classified.canonicalEvent,
+      warnings: classified.warnings,
+      verification: classified.verification,
+      dedupeKey: key,
+      ordering: classified.ordering,
+      errors: [],
+    };
+
     if (classified.status === 'unverified') {
       unverified.push({
         rawEvent,
         normalizedEvent: classified.normalizedEvent,
         canonicalEvent: classified.canonicalEvent,
         warnings: classified.warnings,
+        verification: classified.verification,
+        status: 'unverified',
+        dedupeKey: key,
+        ordering: classified.ordering,
       });
     }
 
@@ -59,6 +93,7 @@ function ingestNostrEvents(rawEvents, options = {}) {
       warnings: classified.warnings,
       verification: classified.verification,
     });
+    processedEvents.push(item);
   }
 
   return {
@@ -66,6 +101,7 @@ function ingestNostrEvents(rawEvents, options = {}) {
     invalid,
     duplicates,
     unverified,
+    processedEvents,
     orderedEvents,
   };
 }
