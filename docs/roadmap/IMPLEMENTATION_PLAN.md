@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-05-20**
+**Status: evolving** | **Last updated: 2026-05-21**
 
 ## 目的
 
@@ -126,6 +126,15 @@
 - 同一入力に対して canonicalize 結果が安定する
 - duplicate と invalid event を区別して扱える
 - protocol 固有ロジックが adapter 配下に閉じている
+
+### 完了メモ
+
+- `packages/nostr/adapter/nostr_adapter.js` で validate / verify / normalize / canonicalize を実装済み
+- `packages/nostr/adapter/ingest_pipeline.js` で duplicate / invalid / unverified の分類を実装済み
+- `packages/nostr/adapter/ingest_jsonl.js` で JSONL ingest 入口を実装済み
+- `packages/nostr/adapter/relay_ingest.js` で relay subscription ingest 入口を実装済み
+- `infra/transports/nostr/relay_ingest_worker.js` で運用向けの薄い worker 入口を実装済み
+- `packages/nostr/adapter/test_*` 群と `infra/transports/nostr/test_relay_ingest_worker.js` で回帰確認済み
 
 ---
 
