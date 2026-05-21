@@ -1,6 +1,6 @@
 # Event Model
 
-**Status: stable** | **Last updated: 2026-05-19**
+**Status: stable** | **Last updated: 2026-05-21**
 
 ## 概要
 
@@ -44,6 +44,12 @@ Toitoi は append-only な event model を中心に設計されています。
 - 検索や参照のための派生構造
 - Canonical semantics を置き換えない
 
+### Storage Snapshot
+
+- raw / canonical / ingest log を append-only に保存した状態
+- replay の再実行や index 再生成の基盤
+- 現行のフェーズ5実装では `packages/nostr/storage/` が担う
+
 ---
 
 ## 基本原則
@@ -82,6 +88,8 @@ Normalized Event
   ↓
 Canonicalized Event
   ↓
+Storage Snapshot
+  ↓
 Derived Index
 ```
 
@@ -96,6 +104,12 @@ Derived Index
 ### Canonicalized Event
 
 - Toitoi 内部で扱う semantic event
+
+### Storage Snapshot
+
+- append-only に保持された raw / canonical / ingest の記録
+- replay による再 canonicalize と再 index を可能にする
+- API の直接入力ではなく、派生構造の再構成元として扱う
 
 ### Derived Index
 
@@ -112,6 +126,8 @@ Toitoi の内部中心は Canonical Event です。
 - Nostr event をそのまま内部 event model と見なさない
 - protocol 差異は adapter / normalizer で吸収する
 - indexer は canonicalized event を受け取る
+
+Phase 6 では、Standard API は canonicalized event と derived index を読み取り専用で参照します。
 
 という構成を取ります。
 

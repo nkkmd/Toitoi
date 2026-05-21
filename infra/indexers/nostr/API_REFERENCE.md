@@ -1,17 +1,33 @@
 # Toitoi Commons API リファレンス
-**バージョン：v0.2.0** ｜ *デジタル・アグロエコロジー・コモンズ推進プロジェクト*
+**バージョン：v0.2.1** ｜ *デジタル・アグロエコロジー・コモンズ推進プロジェクト*
 
 前バージョン (v0.1.0) からの主な更新：
 * **`/api/v1/inquiries/query`**: `OVERVIEW.md` / `NOSTR_INQUIRY_SCHEMA.md` で定義された **問いの二層構造（DSL層）** に対応。クエリパラメータに `dsl_model` / `dsl_var` / `dsl_role` を追加しました。
 * **推奨語彙**: `dsl:*` タグの標準語彙（DSLサブキー・変数ロール）テーブルを新規追加しました。
 * **タグの読み方**: `dsl:*` タグの格納方式と読み取りルールを追記しました。
 * **よくある質問**: DSLフィルタリングに関するQ&Aを追加しました。
+* **実装反映**: フェーズ5の Indexer MVP に合わせ、`lookup` / `list` / `search` / `relation` / `lineage tree` の実装形状を追記しました。
 
 ---
 
 ## はじめに
 
 本ドキュメントは、デジタル・アグロエコロジー・コモンズ「Toitoi」のインデクサーAPIの使用方法を解説するリファレンスです。フロントエンド開発者、農家・コミュニティ運営者、および外部システムとの連携を行う実装者を対象としています。
+
+### 実装状態
+
+このリファレンスは HTTP API の期待形を示しつつ、現在のフェーズ5実装である `packages/nostr/storage/indexer.js` と `packages/nostr/storage/replay.js` の派生 index 形状に合わせています。
+
+現在の MVP では、以下の関数が中心です。
+
+- `lookupEvent(indexSnapshot, eventId)`
+- `listEvents(indexSnapshot, options)`
+- `searchEvents(indexSnapshot, query, options)`
+- `findEventsByRelationTerm(indexSnapshot, term, options)`
+- `getEventReferences(indexSnapshot, eventId)`
+- `buildLineageTree(indexSnapshot, rootId, options)`
+
+なお、全文検索は現時点では token containment ベースの最小実装であり、`pg_trgm` や highlight 出力はまだ前提にしていません。
 
 ### ベースURL
 
@@ -155,6 +171,8 @@ curl "https://api.your-domain.com/api/v1/inquiries?limit=50"
 ### `GET /api/v1/inquiries/query`
 
 問いの本文（`content`）に対する**全文検索**と、`context`・`relationship`・`phase` タグによる**絞り込み検索**、および `dsl:*` タグによる**DSLフィルタリング**を1つのエンドポイントで統合しています。パラメータは自由に組み合わせて使用できます。
+
+現行のフェーズ5実装では、これに相当する検索は `searchEvents()` が担っており、canonical event を入力として token containment ベースで判定します。将来の API 層では、この結果を HTTP レスポンスへ投影します。
 
 > **パラメータを何も指定しない場合は `400 Bad Request` が返ります。** 全件取得には `/api/v1/inquiries` を使用してください。
 
@@ -315,7 +333,6 @@ curl "https://api.your-domain.com/api/v1/inquiries/query"
       "pubkey": "9f8e7d6c5b4a...",
       "createdAt": 1714567890,
       "content": "北側斜面において、土壌の乾きの遅さとスギナの繁茂に相関が見られます。この微気候は天敵群集にどのような影響を与えているでしょうか？",
-      "highlight": "土壌の乾きの遅さと<em>スギナ</em>の繁茂に相関が見られます。",
       "tags": [
         { "tagKey": "context",      "tagValue1": "climate_zone", "tagValue2": "cool-temperate" },
         { "tagKey": "context",      "tagValue1": "soil_type",    "tagValue2": "volcanic_ash" },
@@ -339,9 +356,9 @@ curl "https://api.your-domain.com/api/v1/inquiries/query"
 | フィールド | 型 | 説明 |
 |---|---|---|
 | `results[].createdAt` | integer | 作成日時（`/inquiries` の `createdAt` と同義） |
-| `results[].highlight` | string \| null | `q` を指定した場合のみ返されます。マッチ箇所を `<em>...</em>` で囲んだ本文スニペット。`q` を指定しなかった場合は `null` |
+| `results[].highlight` | string \| null | 将来の拡張用フィールド。現行のフェーズ5実装では未生成です |
 
-> **`highlight` のレンダリングについて：** `highlight` フィールドはHTMLが含まれます。フロントエンドで表示する際は `innerHTML` を使用してください。ただし、本フィールドはAPIサーバー側でXSSエスケープ済みのため、そのまま利用しても安全です。
+> **`highlight` のレンダリングについて：** 将来導入する場合は HTML を含む可能性がありますが、現行の MVP では未使用です。
 
 #### レスポンス（エラー時）
 
@@ -367,6 +384,8 @@ curl "https://api.your-domain.com/api/v1/inquiries/query"
 ### `GET /api/v1/inquiries/:id/tree`
 
 指定したイベントIDをルート（根）として、`derived_from`（派生）や `synthesis`（結合）によってつながれた問いの系譜を、再帰的なツリー構造のJSONとして返します。フロントエンドのグラフ・マインドマップ描画に使用します。
+
+現行のフェーズ5実装では、`buildLineageTree()` がこの構造を生成します。親子関係は canonical event の `lineage` を基準にしつつ、raw source id も解決して辿れるようにしています。
 
 #### パスパラメータ
 
@@ -421,10 +440,10 @@ curl "https://api.your-domain.com/api/v1/inquiries/abc123def456.../tree"
 
 | フィールド | 型 | 説明 |
 |---|---|---|
-| `id` | string | NostrイベントID |
+| `id` | string | canonical event ID |
 | `content` | string | 問いの本文テキスト |
 | `createdAt` | integer | 作成日時（Unix timestamp） |
-| `parent_id` | string \| null | 親ノードのイベントID。ルートノードは `null` |
+| `parent_id` | string \| null | 親ノードの canonical event ID。ルートノードは `null` |
 | `children` | array | 子ノードの配列（同構造の再帰。派生・結合された問い） |
 
 #### レスポンス（エラー時）
@@ -664,7 +683,7 @@ tagKey = "dsl:meta"
 
 **Q. `q`（全文検索）は日本語に対応していますか？**
 
-はい。`pg_trgm` 拡張によるトライグラムインデックスを使用しており、日本語のキーワードでの部分一致検索が可能です。ただし形態素解析は行わないため、「土壌水分」で検索した場合に「土壌」や「水分」単独ではヒットしません。検索キーワードはできるだけ実際に `content` に含まれる表現を使用してください。
+はい。現行のフェーズ5実装では canonical event の索引に対する token containment ベースの検索を行っており、日本語のキーワードも `content` や関連語彙に含まれていればヒットします。形態素解析は行わないため、検索キーワードはできるだけ実際に `content` やタグ値に含まれる表現を使用してください。
 
 **Q. `context` の複数カテゴリを同時に指定した場合はどうなりますか？**
 
@@ -682,7 +701,7 @@ AND条件として動作します。たとえば `soil_type=volcanic_ash&climate
 
 ヒットしません。DSLタグは任意（optional）であり、`dsl_model` / `dsl_var` / `dsl_role` の各パラメータは指定したタグを実際に持つイベントのみを返します。DSLタグの有無に関わらず全件を取得したい場合は、これらのパラメータを省略して他のフィルタのみを使用してください。
 
-**Q. `highlight` フィールドの `<em>` タグはCSSでどう装飾しますか？**
+**Q. `highlight` フィールドを将来導入する場合、`<em>` タグはCSSでどう装飾しますか？**
 
 ```css
 em {

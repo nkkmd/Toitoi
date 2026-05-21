@@ -191,6 +191,46 @@ Canonical semantics を壊さずに、検索と参照のための最小機能を
 - lineage または relation を辿れる
 - index が canonical schema に依存しすぎていない
 
+### 完了メモ
+
+- `packages/nostr/storage/indexer.js` で `lookup` / `list` / `search` / `relation` / `lineage tree` の最小 API を追加
+- `packages/nostr/storage/replay.js` で `orderedIds` / `sourceIdIndex` / `lineageChildrenByTarget` / `relationshipIndex` / `searchableTextById` を派生 index に追加
+- `packages/nostr/storage/index.js` から indexer API を再公開
+- `packages/nostr/storage/test_indexer.js` で lookup / 時系列一覧 / 全文検索 / relation / lineage tree を回帰確認
+
+---
+
+## フェーズ 6 着手前チェックリスト
+
+### 目的
+
+Standard API に入る前に、Phase 5 の公開面と canonical view の前提を固定する。
+
+### 確認事項
+
+- Phase 5 の `lookup` / `list` / `search` / `relation` / `lineage tree` の返り値形を凍結する
+- event 取得 / list / filter / relation の canonical view を先に定義する
+- API 層が `packages/nostr/storage/indexer.js` を直接使うか、薄い service 層を挟むかを決める
+- `provenance` の露出範囲を決める
+- `highlight` や embeddings のような将来機能を API 契約に入れない
+- replay fixtures を API 契約テストへ流用できる形に整える
+
+### 着手条件
+
+- Phase 5 の公開形が大きく変わらない
+- Standard API の返却スキーマ草案が 1 つに収束している
+- API テストに使う fixture が replay 由来で再現可能
+
+---
+
+### 完了メモ
+
+- `docs/architecture/STANDARD_API_MVP.md` で canonical view と provenance の露出方針を定義
+- `packages/nostr/storage/standard_api_views.js` で lookup / detail / list / relation / search / lineage の view 投影を追加
+- `packages/nostr/storage/test_fixtures.js` を追加し、replay fixture を再利用可能に整理
+- `packages/nostr/storage/test_standard_api_views.js` で canonical view が highlight や embeddings を含まないことを確認
+- API 層は薄い service layer を挟む方針で固定
+
 ---
 
 ## フェーズ 6: Standard API MVP

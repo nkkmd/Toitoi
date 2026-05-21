@@ -77,6 +77,7 @@ Please refer to the following directories for the overall picture of the project
 * 🤖 **Local AI Edge Layer**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
 * 🧠 **AI System Overview**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **Indexer API Layer**: **[`/infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
+* 🧩 **Current Indexer MVP**: `packages/nostr/adapter/` and `packages/nostr/storage/`
 * 📱 **Frontend UI Layer**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
 ### Repository Structure
@@ -99,6 +100,7 @@ This document explains:
 * **API**: `https://api.toitoi.cultivationdata.net`
 
 > These endpoints are currently live. Additional relay and API instances will be added over time as the commons grows.
+> The current phase-5 indexer MVP lives in `packages/nostr/adapter/` and `packages/nostr/storage/`, which provide ingest, replay, lookup, list, search, relation, and lineage-tree primitives.
 
 ## 🤝 Contribution & Community
 
@@ -207,6 +209,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * 🤖 **ローカルAI・エッジ層**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
 * 🧠 **AIシステム概要**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **インデクサー・API層**: **[`/infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
+* 🧩 **現行インデクサーMVP**: `packages/nostr/adapter/` と `packages/nostr/storage/`
 * 📱 **フロントエンド・UI層**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
 ### リポジトリ構成 (Repository Structure)
@@ -231,6 +234,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * **API**: `https://api.toitoi.cultivationdata.net`
 
 > これらは現在稼働中のエンドポイントです。今後もコモンズの成長に合わせて、リレーとAPIのインスタンスを順次追加していく予定です。
+> 現行のフェーズ5インデクサーMVPは `packages/nostr/adapter/` と `packages/nostr/storage/` にあり、ingest / replay / lookup / list / search / relation / lineage tree の基礎を提供します。
 
 ## 🤝 コントリビューションとコミュニティ
 

@@ -54,7 +54,9 @@ Toitoi/
 │       └── nostr/
 └── packages/
     └── nostr/
-        └── converter/
+        ├── adapter/
+        ├── converter/
+        └── storage/
 ```
 
 ---
@@ -436,6 +438,62 @@ Canonical Event と Nostr event の相互変換を担う protocol-specific packa
 | canonical_to_nostr_converter.js | Canonical Events -> Nostr 変換 CLI / utility |
 
 ---
+
+# packages/nostr/adapter/
+
+## 役割
+
+Nostr event の検証・正規化・canonical 化を担う protocol-specific package。
+
+---
+
+## 含まれる内容
+
+- validate / verify / normalize
+- ingest pipeline
+- JSONL ingest
+- relay ingest
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| nostr_adapter.js | Nostr event の validate / verify / normalize / canonicalize |
+| ingest_pipeline.js | ingest 分類（accepted / invalid / duplicate / unverified） |
+| ingest_jsonl.js | JSONL ingest 入口 |
+| relay_ingest.js | relay subscription ingest 入口 |
+
+---
+
+# packages/nostr/storage/
+
+## 役割
+
+append-only storage, replay, and derived indexing を担う persistence / index layer。
+
+---
+
+## 含まれる内容
+
+- append-only log
+- replay / rebuild
+- derived index
+- lookup / list / search / relation / lineage tree
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| append_only_log.js | append-only JSONL utilities |
+| persistence.js | raw / canonical / ingest log persistence |
+| replay.js | replay と derived index 再構築 |
+| replay_cli.js | replay CLI |
+| indexer.js | lookup / list / search / relation / lineage tree |
+| index.js | storage 層の公開入口 |
 
 # apps/edge-ai/
 

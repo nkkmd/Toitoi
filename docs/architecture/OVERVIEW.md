@@ -1,6 +1,6 @@
 # Toitoi Architecture Overview
 
-**Status: stable** | **Last updated: 2026-05-19**
+**Status: stable** | **Last updated: 2026-05-21**
 
 ## 概要
 
@@ -71,6 +71,8 @@ UI / AI
 
 をこの層で担う
 
+現行のフェーズ5実装では、この責務は主に `packages/nostr/adapter/` に置かれています。
+
 ### 責務境界を分ける
 
 - Adapter / Normalizer: ingest と canonicalization
@@ -90,6 +92,8 @@ UI / AI
 
 を可能にする
 
+現行のフェーズ5実装では、この保持と replay 基盤は主に `packages/nostr/storage/` に置かれています。
+
 ### 用語を固定する
 
 - raw event: transport から直接得た生の protocol event
@@ -106,8 +110,9 @@ UI / AI
 | Canonical Event | 意味論的な内部共通表現 |
 | Converter | Canonical と protocol 表現の相互変換 |
 | Transport | relay / PDS / filesystem などの配送・保存 |
-| Adapter / Normalizer | protocol 差異の吸収と canonicalization |
-| Indexer | 検索・参照のための派生構造生成 |
+| Adapter / Normalizer | protocol 差異の吸収と canonicalization（`packages/nostr/adapter/`） |
+| Storage / Replay | raw / canonical の append-only 保存と replay（`packages/nostr/storage/`） |
+| Indexer | 検索・参照のための派生構造生成（`packages/nostr/storage/indexer.js`） |
 | Standard API | UI / AI 向けの統一アクセス面 |
 
 ---
@@ -176,6 +181,8 @@ Indexer は Canonical Event を検索・参照のために最適化します。
 - graph construction
 
 ただし、これらはすべて派生構造であり、Canonical semantics を置き換えません。
+
+現行のフェーズ5 MVP では、`packages/nostr/storage/indexer.js` が lookup / list / search / relation / lineage tree の最小実装を提供します。
 
 Standard API は protocol schema を返す面ではなく、
 

@@ -1,6 +1,6 @@
 # ディレクトリ責務ルール
 
-**Status: stable** | **Last updated: 2026-05-19**
+**Status: stable** | **Last updated: 2026-05-21**
 
 ## 目的
 
@@ -61,6 +61,12 @@
 - canonical converter
 - protocol utility
 
+現行のフェーズ5実装では、Nostr の protocol-specific 共有コードを次のように分けています。
+
+- `packages/nostr/adapter/`: validate / verify / normalize / canonicalize
+- `packages/nostr/storage/`: append-only 保存、replay、derived index
+- `packages/nostr/converter/`: canonical と Nostr の相互変換
+
 デプロイ手順書や運用手順は `packages/` に置きません。
 
 ---
@@ -94,6 +100,8 @@ infra/
 ```
 
 この対称性を維持することで、責務と探索性を保てます。
+
+現時点では Nostr のみが実装対象ですが、`adapter` と `storage` の分離は将来の `atproto` / `activitypub` でも同じ粒度を保つ前提です。
 
 ---
 

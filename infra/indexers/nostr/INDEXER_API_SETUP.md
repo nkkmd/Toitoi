@@ -4,6 +4,8 @@
 * **§5.2（api.js）**: `/api/v1/inquiries/query` エンドポイントに DSL フィルタリングパラメータ（`dsl_model` / `dsl_var` / `dsl_role`）を追加。既存の `EXISTS` サブクエリパターンを流用し、モデル単位の絞り込みを実現。
 * **§5.1（worker.js）**: `dsl:*` タグを含む4要素配列（`["dsl:var", "m1", "microclimate", "independent"]` 等）を正しく格納するため、2行目レコードパターン（`tagValue2` に収まらない `value_2` を同一 `tagKey` / `model_id` で追加保存）を実装。
 
+> **現行フェーズ5との関係：** この文書は DB ベースの統合 API 方式を説明する歴史的なセットアップ手順です。現行のフェーズ5 MVP は、`packages/nostr/storage/indexer.js` と `packages/nostr/storage/replay.js` を中心にしたローカル indexer 実装が主経路であり、ここで示す Prisma / `pg_trgm` / `highlight` 前提の HTTP API は将来の展開形として読むのが安全です。
+
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」における**Nostrリレー（Nostream）** と**インデクサーAPI（Toitoi）** を、同一サーバー内で最も負荷を少なく、かつ効率的に運用するための「統合・低負荷アーキテクチャ」のセットアップ手順書です。
 
 メモリの少ない小規模なVPS（1GB〜2GB RAM）でも安定稼働させるため、データベースプロセスとWebサーバーを統合し、内部通信のオーバーヘッドを極限まで削ぎ落とした設計となっています。
@@ -121,7 +123,7 @@ GRANT ALL PRIVILEGES ON DATABASE toitoi_db TO toitoi_user;
 \q
 ```
 
-次に、作成した `toitoi_db` へ接続し直し、全文検索に使用する `pg_trgm` 拡張を有効化します。`pg_trgm` は PostgreSQL に標準で同梱されており、追加のソフトウェアインストールは不要です。
+次に、作成した `toitoi_db` へ接続し直し、全文検索に使用する `pg_trgm` 拡張を有効化します。これはこの文書が想定する DB ベース API 用の手順であり、現行フェーズ5の storage/indexer 実装では必須ではありません。`pg_trgm` は PostgreSQL に標準で同梱されており、追加のソフトウェアインストールは不要です。
 
 ```bash
 sudo docker exec -it nostream-db psql -U toitoi_user -d toitoi_db
@@ -138,7 +140,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 \q
 ```
 
-> **`pg_trgm` について：** トライグラム（3文字の連続部分文字列）を使った部分一致・曖昧検索を実現します。日本語は1文字が複数バイトのため、アルファベットほどの精度は出ませんが、追加パッケージなしで動作し、小規模VPS環境に適しています。検索は `ILIKE '%キーワード%'` 構文で動作し、GINインデックスによって高速化されます。
+> **`pg_trgm` について：** トライグラム（3文字の連続部分文字列）を使った部分一致・曖昧検索を実現します。日本語は1文字が複数バイトのため、アルファベットほどの精度は出ませんが、追加パッケージなしで動作し、小規模VPS環境に適しています。検索は `ILIKE '%キーワード%'` 構文で動作し、GINインデックスによって高速化されます。現行フェーズ5では、この全文検索はまだ storage/indexer 側の token containment 実装が主です。
 >
 > **高度な日本語検索（PGroonga）へのアップグレードについて：**　本ガイドでは、追加インストールが不要でリソース消費が少ない `pg_trgm` を採用していますが、本格的な運用において**より高い日本語の検索精度と速度**が求められるようになった場合は、PostgreSQL拡張である **[PGroonga (ピージールンガ)](https://pgroonga.github.io/ja/)** の導入を推奨します。まずは本ガイドの `pg_trgm` 構成で小さく立ち上げ、コミュニティの活動が活発になり検索要件が高まったタイミングで PGroonga への移行を検討してください。
 
@@ -435,6 +437,8 @@ runWorker();
 
 ### Step 5.2: APIサーバーの実装 (`api.js`)
 
+> **注意：** 以下の実装例は、DB に対して直接問い合わせる HTTP API の設計サンプルです。現行フェーズ5では、同等の参照・検索機能は `packages/nostr/storage/indexer.js` が担っています。
+
 ```bash
 nano api.js
 ```
@@ -505,6 +509,7 @@ app.get('/api/v1/inquiries', async (req, res) => {
 // ──────────────────────────────────────────────────
 // GET /api/v1/inquiries/query
 // 全文検索（pg_trgm / ILIKE）＋ タグ絞り込み 統合エンドポイント
+// ※ 現行フェーズ5の MVP では、同等機能は storage/indexer 側の token containment ベース実装が主経路
 //
 // クエリパラメータ:
 //   q              : 検索キーワード（content 全文検索）                ※ 任意
@@ -534,7 +539,7 @@ app.get('/api/v1/inquiries', async (req, res) => {
 // レスポンス:
 //   { total, limit, offset, results: [ { id, pubkey, createdAt,
 //     content, highlight, tags }, ... ] }
-//   highlight: q 指定時、マッチ箇所を <em>...</em> で囲んだスニペット
+//   highlight: q 指定時の将来拡張フィールド。現行フェーズ5では未採用
 // ──────────────────────────────────────────────────
 app.get('/api/v1/inquiries/query', async (req, res) => {
     try {
@@ -731,10 +736,9 @@ app.get('/api/v1/inquiries/query', async (req, res) => {
             : '';
 
         // ── ハイライト生成（q がある場合のみ） ─────────────────
-        // pg_trgm にはネイティブのハイライト関数がないため、
-        // アプリ側で <em> タグを挿入するシンプルな実装を使用する。
-        // フロントエンドは highlight フィールドをそのまま innerHTML に
-        // 渡すことでキーワード強調表示が可能。
+        // この文書では highlight を返す設計を示しているが、
+        // 現行フェーズ5では storage/indexer の最小検索実装に集中しているため
+        // 実装済みの必須機能ではない。
         function buildHighlight(content, keyword) {
             if (!keyword) return null;
             // XSS 対策: content に含まれる HTML 特殊文字をエスケープしてから
@@ -817,6 +821,7 @@ app.get('/api/v1/inquiries/query', async (req, res) => {
 // GET /api/v1/inquiries/:id/tree
 // 指定したイベントIDをルートとし、lineages テーブルを再帰結合して
 // N階層の子ノード（派生・結合された問い）をツリー構造の JSON で返す。
+// 現行フェーズ5では buildLineageTree() が canonical snapshot 上で同等の構造を返す。
 // ──────────────────────────────────────────────────
 app.get('/api/v1/inquiries/:id/tree', async (req, res) => {
     const rootId = req.params.id;

@@ -1,6 +1,6 @@
 # Provenance
 
-**Status: stable** | **Last updated: 2026-05-19**
+**Status: stable** | **Last updated: 2026-05-21**
 
 ## 概要
 
@@ -53,6 +53,19 @@ Toitoi では provenance（来歴）を重要な要素として扱います。
 
 詳細仕様は今後変更される可能性があります。
 
+### Phase 6 での扱い
+
+Standard API では、provenance は canonical view の一部として扱います。
+
+その際の基本方針は次の通りです。
+
+- raw protocol event の全体をそのまま露出しない
+- provenance は追跡可能な最小単位で返す
+- source protocol, source id, timestamp, references は優先的に保持する
+- relay や transport の詳細は必要な場合のみ補助情報として返す
+
+現行のフェーズ5実装では、`packages/nostr/storage/persistence.js` の `rawRef` と `provenance.sources` が、この考え方の実装基盤になっています。
+
 ---
 
 ## Translation History
@@ -78,3 +91,5 @@ Toitoi は provenance を：
 
 これは単なるメタデータではなく、
 commons の記憶そのものとして機能します。
+
+Phase 6 では、この commons memory を API でどう要約するかが設計上の焦点になります。
