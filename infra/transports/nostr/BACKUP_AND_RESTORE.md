@@ -11,6 +11,12 @@
 
 を 1 つにまとめています。
 
+## どこで使うか
+
+- 対象: リレー運用者、インデクサー運用者、障害対応担当
+- 使用場面: 日次バックアップ、障害復旧、クリーンスタート前の退避
+- 関連実装: `packages/nostr/storage/persistence.js`、`packages/nostr/storage/replay.js`
+
 ---
 
 ## 1. 基本方針

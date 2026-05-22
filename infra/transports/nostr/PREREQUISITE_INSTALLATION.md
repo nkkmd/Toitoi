@@ -4,6 +4,12 @@
 
 対象OS: **Ubuntu 22.04 LTS / Debian 12**
 
+## どこで使うか
+
+- 対象: リレー構築を始める人、VPS セットアップ担当
+- 使用場面: 初回導入、環境再構築、依存ツールの不足時
+- 関連実装: `infra/transports/nostr/NOSTR_RELAY_SETUP.md`
+
 ---
 
 ## 目次

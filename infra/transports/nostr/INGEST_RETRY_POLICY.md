@@ -5,6 +5,12 @@
 
 Phase 7 では、障害時に「何を再試行し、何を即時失敗とみなすか」を明確にして、運用判断を単純にすることを目的とします。
 
+## どこで使うか
+
+- 対象: ingest 実装者、運用者、障害解析担当
+- 使用場面: `relay_ingest_worker.js` の再試行方針確認、運用判断の基準化
+- 関連実装: `infra/transports/nostr/relay_ingest_worker.js`、`packages/nostr/adapter/relay_ingest.js`
+
 ---
 
 ## 1. 再試行するもの

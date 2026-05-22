@@ -5,6 +5,15 @@
 
 このリレーは、スパムや無関係なSNS投稿を一切遮断し、**アグロエコロジーの「問い（Kind: 1042）」のみを永続的に保存する「知識の図書館」** として機能します。あなたがこのリレーを立ち上げることで、特定の企業に依存しない強靭な分散ネットワーク（入れ子構造のコモンズ）が実現されます。
 
+## まず見るもの
+
+- 立ち上げ手順の本体: このファイル
+- 初期準備: [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md)
+- 運用監視: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
+- バックアップ: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
+- 異常時の初期化手順: [CLEAN_START.md](./CLEAN_START.md)
+- 取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)
+
 ---
 
 ## 1. 事前準備（システム要件）
@@ -834,6 +843,16 @@ cat questions_*.jsonl | nak event wss://new-relay.your-domain.com
 ```
 
 ---
+
+## 関連リンク
+
+- 運用の入口一覧: [README.md](../../../README.md)
+- ディレクトリ責務: [REPOSITORY_STRUCTURE.md](../../../REPOSITORY_STRUCTURE.md)
+- 事前準備の詳細: [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md)
+- 監視設定: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
+- バックアップと復元: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
+- 初回立ち上げのやり直し: [CLEAN_START.md](./CLEAN_START.md)
+- リレー取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)
 
 ---
 

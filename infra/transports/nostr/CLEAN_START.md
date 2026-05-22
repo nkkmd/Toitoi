@@ -8,6 +8,12 @@
 
 クリーンスタートの前に、必要なら [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を参照して storage を退避してください。
 
+## どこで使うか
+
+- 対象: リレー運用者、インデクサー運用者
+- 使用場面: 互換性のない設定変更後、データ破損時、再初期化が必要なとき
+- 関連実装: `infra/transports/nostr/NOSTR_RELAY_SETUP.md`、`infra/indexers/nostr/INDEXER_API_SETUP.md`
+
 ---
 
 ## 1. 事前確認

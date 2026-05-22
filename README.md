@@ -12,7 +12,7 @@ Toitoi is a **decentralized protocol platform (digital commons)** designed to sh
 
 Instead of depending on specific companies or centralized servers, it circulates farmers' "ecological intuition (tacit knowledge)" across the network in the form of "inquiries (questions)" that can be translated and adapted by others.
 
-> **Note:** Toitoi is an experimental project that aims to implement, as actual open-source software, the "inquiry circulation system" conceived within the essay *[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)*. It is as much a living proof-of-concept for the ideas in that text as it is a piece of software.
+> **Note:** Toitoi is an experimental project that aims to implement the "inquiry circulation system" conceived within the essay *[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)* as open-source software. It is as much a living proof-of-concept for the ideas in that text as it is a piece of software.
 
 ## 💡 Project Philosophy: Why Toitoi?
 
@@ -50,11 +50,11 @@ Toitoi is a "nested commons" composed of 3 modules connected through a common pr
 
 In the long term, Toitoi aims to preserve knowledge archives through a protocol-independent canonical event structure.
 
-Nostr is currently treated as the first operational transport layer.
+Nostr is currently the first operational transport layer.
 
 ## 📚 Documentation
 
-Please refer to the following directories for the overall picture of the project, specifications, and setup guides for each module. *(Note: Currently, most detailed docs are written in Japanese.)*
+For the project overview, specifications, and setup guides for each module, see the following directories. *(Note: Most detailed docs are currently written in Japanese.)*
 
 ### Core Documents
 
@@ -82,6 +82,47 @@ Please refer to the following directories for the overall picture of the project
 * 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
 * 📱 **Frontend UI Layer**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
+### 目的別の入口
+
+迷ったら、まずここから見てください。
+
+| 対象 | まず見るファイル | 主な使用箇所 |
+|---|---|---|
+| リレー運用者 | [`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md) | 初回構築、再構築、設定見直しの入口です。`PREREQUISITE_INSTALLATION.md`、`MONITOR_SETUP.md`、`BACKUP_AND_RESTORE.md` を併用します。 |
+| インデクサー運用者 | [`infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md) | 初回構築、再構築、構成見直しの入口です。`API_REFERENCE.md` と `packages/nostr/storage/` が実装の中心です。 |
+| API 利用者 | [`apps/api/README.md`](./apps/api/README.md) | HTTP API の利用確認、ローカル起動、クライアント実装の入口です。`server.js` と `standard_api_service.js` が実装本体です。 |
+| 変換・取り込みの実装担当 | `packages/nostr/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。`relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js` を見ます。 |
+| 永続化・再生・検索の実装担当 | `packages/nostr/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。`replay.js`、`indexer.js`、`replay_cli.js` が中心です。 |
+| フロントエンド実装担当 | [`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md) | UI 設計、画面実装、表示仕様の確認に使います。`apps/frontend/` が実装の入口です。 |
+
+### JS ファイルの役割
+
+各ディレクトリの JS は、だいたい次の役割分担です。
+
+| ディレクトリ | JS ファイル | 用途 | 主な使用箇所 |
+|---|---|---|---|
+| `apps/api/` | `server.js` | Standard API の HTTP エントリポイント | `node apps/api/server.js`、リバースプロキシ配下の常駐サーバー |
+| `apps/api/` | `standard_api_service.js` | ルーティングと canonical view への投影 | `server.js` から呼び出し、`test_standard_api_service.js` でも利用 |
+| `apps/api/` | `test_standard_api_service.js` | API サービスのテスト | ローカル検証、CI の単体テスト |
+| `infra/transports/nostr/` | `relay_ingest_worker.js` | リレーから問いを吸い上げて保存する運用 CLI | VPS 上の運用バッチ、cron、PM2 などの常駐/定期実行 |
+| `infra/transports/nostr/` | `test_relay.js` | リレー接続・応答のテスト | 開発時の疎通確認、CI |
+| `infra/transports/nostr/` | `test_relay_ingest_worker.js` | ingest worker のテスト | 取り込み処理の回帰確認、CI |
+| `infra/transports/nostr/` | `test_operational_e2e.js` | リレー運用の end-to-end テスト | リレー立ち上げ後の総合確認 |
+| `packages/nostr/adapter/` | `nostr_adapter.js` | 生 Nostr イベントの検証・正規化・分類 | `ingest_pipeline.js`、`relay_ingest.js`、`protocol.js`、各テスト |
+| `packages/nostr/adapter/` | `ingest_pipeline.js` | バッチ ingest の流れをまとめる中核 | `relay_ingest.js`、`ingest_jsonl.js`、テスト |
+| `packages/nostr/adapter/` | `relay_ingest.js` | relay subscription / retry / fetch の実装 | `relay_ingest_worker.js`、`protocol.js`、`test_relay_ingest.js` |
+| `packages/nostr/adapter/` | `ingest_jsonl.js` | JSONL から ingest する CLI | 手元データの取り込み、テスト用データ投入 |
+| `packages/nostr/adapter/` | `smoke_test.js` | 手元確認用の軽い検証 | ローカル環境の簡易チェック |
+| `packages/nostr/converter/` | `canonical_to_nostr_converter.js` | canonical JSONL から Nostr draft を作る変換器 | 変換 CLI、canonical から relay 投稿前の下書き生成 |
+| `packages/nostr/` | `protocol.js` | Nostr 用 protocol descriptor / registry | 他 package が Nostr 能力を参照するときの共通入口 |
+| `packages/nostr/storage/` | `append_only_log.js` | append-only JSONL の読み書き基盤 | `persistence.js`、`replay.js`、関連テスト |
+| `packages/nostr/storage/` | `persistence.js` | ingest 結果の永続化と snapshot 管理 | `ingest_jsonl.js`、`relay_ingest_worker.js`、`replay_cli.js` |
+| `packages/nostr/storage/` | `replay.js` | 保存ログから index snapshot を再構築 | `replay_cli.js`、`server.js`、`standard_api_service.js` |
+| `packages/nostr/storage/` | `indexer.js` | list/search/tree/relation などの派生 index | `standard_api_service.js`、API リファレンス、テスト |
+| `packages/nostr/storage/` | `standard_api_views.js` | API 向けの view projection | `standard_api_service.js`、API レスポンス整形 |
+| `packages/nostr/storage/` | `replay_cli.js` | replay を単体で実行する CLI | 手動再構築、運用時の再生成、CI |
+| `packages/nostr/storage/` | `index.js` | storage layer re-export entry | `packages/nostr/storage` をまとめて読む他 package |
+
 ### Repository Structure
 
 For the overall repository layout and directory responsibilities, see:
@@ -102,7 +143,7 @@ This document explains:
 * **API**: `https://api.toitoi.cultivationdata.net`
 
 > These endpoints are currently live. Additional relay and API instances will be added over time as the commons grows.
-> The current phase-5 indexer MVP lives in `packages/nostr/adapter/` and `packages/nostr/storage/`, which provide ingest, replay, lookup, list, search, relation, and lineage-tree primitives.
+> The current Phase 5 indexer MVP lives in `packages/nostr/adapter/` and `packages/nostr/storage/`, which provide ingest, replay, lookup, list, search, relation, and lineage-tree primitives.
 > The phase-6 Standard API reference implementation lives in `apps/api/` and projects those primitives into canonical views.
 
 ## 🤝 Contribution & Community

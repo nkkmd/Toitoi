@@ -2,6 +2,12 @@
 
 **目的**: Phase 7 の運用整備を、日常運用でそのまま使える短い手順に落とし込む。
 
+## どこで使うか
+
+- 対象: 日常運用の担当者、オンコール担当
+- 使用場面: ingest 失敗時の確認、監視確認、バックアップ前後のチェック
+- 関連実装: `infra/transports/nostr/MONITOR_SETUP.md`、`infra/transports/nostr/BACKUP_AND_RESTORE.md`
+
 ---
 
 ## 1. Ingest 失敗時

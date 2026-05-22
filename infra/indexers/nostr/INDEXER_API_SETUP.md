@@ -12,6 +12,15 @@
 
 メモリの少ない小規模なVPS（1GB〜2GB RAM）でも安定稼働させるため、データベースプロセスとWebサーバーを統合し、内部通信のオーバーヘッドを極限まで削ぎ落とした設計となっています。
 
+## まず見るもの
+
+- 立ち上げ手順の本体: このファイル
+- リレー側の前提: [NOSTR_RELAY_SETUP.md](../../transports/nostr/NOSTR_RELAY_SETUP.md)
+- API の呼び出し仕様: [infra/indexers/nostr/API_REFERENCE.md](./API_REFERENCE.md)
+- 現行の派生 index 実装: `packages/nostr/storage/indexer.js`
+- 再構築用の replay: `packages/nostr/storage/replay.js`
+- HTTP API の参照実装: `apps/api/server.js`, `apps/api/standard_api_service.js`
+
 ---
 
 ## 1. 統合アーキテクチャの概要とメリット
@@ -976,6 +985,15 @@ sudo docker exec -t nostream-db pg_dumpall -c -U postgres > full_dump_$(date +%Y
 ### スケールアウトのタイミング
 APIへのアクセスが急増し、Toitoiインデクサー側の複雑な再帰クエリ（WITH RECURSIVE）でDBのCPUリソースが枯渇した場合、同じDBエンジンを使っているNostream（リレー）の応答も遅くなる可能性があります。
 VPSのCPU使用率が慢性的に80%を超えるようになった場合は、この統合構成から「DBコンテナの分離」または「サーバーの分割」を検討してください。
+
+## 関連リンク
+
+- 入口一覧: [README.md](../../../README.md)
+- ディレクトリ責務: [REPOSITORY_STRUCTURE.md](../../../REPOSITORY_STRUCTURE.md)
+- リレー構築: [NOSTR_RELAY_SETUP.md](../../transports/nostr/NOSTR_RELAY_SETUP.md)
+- API リファレンス: [API_REFERENCE.md](./API_REFERENCE.md)
+- API 参照実装: [`apps/api/`](../../../apps/api/)
+- 派生 index 実装: [`packages/nostr/storage/`](../../../packages/nostr/storage/)
 
 ---
 

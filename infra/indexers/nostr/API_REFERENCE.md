@@ -14,6 +14,12 @@
 
 本ドキュメントは、デジタル・アグロエコロジー・コモンズ「Toitoi」のインデクサーAPIの使用方法を解説するリファレンスです。フロントエンド開発者、農家・コミュニティ運営者、および外部システムとの連携を行う実装者を対象としています。
 
+## どこで使うか
+
+- 対象: API 利用者、フロントエンド開発者、連携先実装者
+- 使用場面: エンドポイント確認、検索条件確認、レスポンス構造確認
+- 関連実装: `apps/api/server.js`、`apps/api/standard_api_service.js`、`packages/nostr/storage/indexer.js`
+
 ### 実装状態
 
 このリファレンスは HTTP API の期待形を示しつつ、現在のフェーズ5実装である `packages/nostr/storage/indexer.js` と `packages/nostr/storage/replay.js` の派生 index 形状に合わせています。
