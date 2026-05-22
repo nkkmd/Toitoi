@@ -5,6 +5,8 @@
 * **§5.1（worker.js）**: `dsl:*` タグを含む4要素配列（`["dsl:var", "m1", "microclimate", "independent"]` 等）を正しく格納するため、2行目レコードパターン（`tagValue2` に収まらない `value_2` を同一 `tagKey` / `model_id` で追加保存）を実装。
 
 > **現行フェーズ5との関係：** この文書は DB ベースの統合 API 方式を説明する歴史的なセットアップ手順です。現行のフェーズ5 MVP は、`packages/nostr/storage/indexer.js` と `packages/nostr/storage/replay.js` を中心にしたローカル indexer 実装が主経路であり、ここで示す Prisma / `pg_trgm` / `highlight` 前提の HTTP API は将来の展開形として読むのが安全です。
+>
+> **Phase 6 の現行参照実装:** `apps/api/standard_api_service.js` と `apps/api/server.js` が、canonical view を返す薄い service layer / HTTP entry として追加されています。以下の DB 直結サンプルは歴史的な運用案として読むのが安全です。
 
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」における**Nostrリレー（Nostream）** と**インデクサーAPI（Toitoi）** を、同一サーバー内で最も負荷を少なく、かつ効率的に運用するための「統合・低負荷アーキテクチャ」のセットアップ手順書です。
 

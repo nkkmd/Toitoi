@@ -75,9 +75,11 @@ Please refer to the following directories for the overall picture of the project
 
 * 🌐 **Commons Relay Layer**: **[`/infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
 * 🤖 **Local AI Edge Layer**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
+* 🧭 **Standard API Layer**: **[`/apps/api/README.md`](./apps/api/README.md)**
 * 🧠 **AI System Overview**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **Indexer API Layer**: **[`/infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
 * 🧩 **Current Indexer MVP**: `packages/nostr/adapter/` and `packages/nostr/storage/`
+* 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
 * 📱 **Frontend UI Layer**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
 ### Repository Structure
@@ -101,6 +103,7 @@ This document explains:
 
 > These endpoints are currently live. Additional relay and API instances will be added over time as the commons grows.
 > The current phase-5 indexer MVP lives in `packages/nostr/adapter/` and `packages/nostr/storage/`, which provide ingest, replay, lookup, list, search, relation, and lineage-tree primitives.
+> The phase-6 Standard API reference implementation lives in `apps/api/` and projects those primitives into canonical views.
 
 ## 🤝 Contribution & Community
 

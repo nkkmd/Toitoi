@@ -1,0 +1,31 @@
+# Standard API
+
+## 概要
+
+`apps/api/` は、Toitoi の Phase 6 Standard API reference implementation です。
+
+canonical event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。
+
+## 起動
+
+```bash
+TOITOI_STORAGE_DIR=/path/to/storage node apps/api/server.js
+```
+
+`TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。
+
+## エンドポイント
+
+- `GET /health`
+- `GET /api/v1/inquiries`
+- `GET /api/v1/inquiries/query`
+- `GET /api/v1/inquiries/relation`
+- `GET /api/v1/inquiries/:id`
+- `GET /api/v1/inquiries/:id/detail`
+- `GET /api/v1/inquiries/:id/tree`
+
+## テスト
+
+```bash
+node apps/api/test_standard_api_service.js
+```

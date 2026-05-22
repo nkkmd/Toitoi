@@ -46,7 +46,8 @@ Toitoi/
 │
 ├── apps/
 │   ├── frontend/
-│   └── edge-ai/
+│   ├── edge-ai/
+│   └── api/
 ├── infra/
 │   ├── transports/
 │   │   └── nostr/
@@ -73,6 +74,7 @@ Toitoi/
 - プロジェクト思想
 - アーキテクチャ概要
 - ドキュメント一覧
+- 実行アプリケーション群
 - ライセンス
 - 参加方法
 
@@ -256,6 +258,35 @@ Toitoi の背景思想・問題意識・論考。
 | File | 内容 |
 |---|---|
 | IMPLEMENTATION_PLAN.md | Toitoi 実装ロードマップ |
+
+---
+
+# apps/api/
+
+## 役割
+
+Phase 6 Standard API の reference implementation。
+
+canonical view の投影と HTTP entry を担う。
+
+---
+
+## 含まれる内容
+
+- standard API service
+- HTTP server entry
+- contract tests
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| README.md | 起動方法とエンドポイント概要 |
+| standard_api_service.js | canonical view projection / routing service |
+| server.js | Node 標準 HTTP サーバー入口 |
+| test_standard_api_service.js | contract test |
 
 ---
 
