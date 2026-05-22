@@ -310,19 +310,19 @@ MVP を継続運用できる形にする。
 - protocol registry を用意する
 - trust model の整理方法を決める
 - API に露出する provenance の範囲を固定する
-- Phase 7 の retry / backup / restore / checklist が参照可能であることを確認する
+- Phase 7 の retry / backup / restore 文書が参照可能であることを確認する
 - Standard API の契約を Phase 8 着手前に変えない
 
 ### 着手条件
 
 - `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に共通化前提が整理されている
-- `docs/roadmap/PHASE8_PREPARATION_CHECKLIST.md` で着手前の確認項目が明示されている
+- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で比較軸が整理されている
 - 現行の Nostr テストが通っている
 
 ### 完了メモ
 
 - `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で adapter / converter / capability / trust の整理軸を追加
-- `docs/roadmap/PHASE8_PREPARATION_CHECKLIST.md` で Phase 8 着手前の確認項目を追加
+- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で三 protocol の capability 差分を文書化した
 
 ---
 
@@ -353,7 +353,7 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 - `packages/atproto/protocol.js` と `packages/localfs/protocol.js` で protocol skeleton を追加
 - `packages/protocol/protocol_catalog.js` で Nostr / ATProto / LocalFS の default registry を追加
 - `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で source capability の比較表を追加
-- `docs/roadmap/PHASE8_PREPARATION_CHECKLIST.md` と `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で着手前の整理軸を固定した
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` と `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で整理軸を固定した
 
 ### 完了メモ
 

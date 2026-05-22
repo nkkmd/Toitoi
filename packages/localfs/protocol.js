@@ -56,7 +56,7 @@ function createLocalFsProtocolDescriptor() {
       semanticSource: 'canonical',
     },
     notes: [
-      'LocalFS is a target protocol for Phase 8, represented here as a skeleton descriptor.',
+      'LocalFS is a target protocol for the multi-protocol expansion, represented here as a skeleton descriptor.',
     ],
   });
 }

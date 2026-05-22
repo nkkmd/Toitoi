@@ -2,7 +2,7 @@
 
 **Status: draft** | **Last updated: 2026-05-22**
 
-この表は、Phase 8 で protocol を追加する際に、どの capability がどの程度揃っているかを比較するためのものです。
+この表は、protocol を追加する際に、どの capability がどの程度揃っているかを比較するためのものです。
 
 重要なのは優劣ではなく、責務の違いです。
 
@@ -29,7 +29,7 @@
 - `yes`: 現行実装または設計上、明確に扱える
 - `partial`: 仕様や実装に制約があり、完全ではない
 - `no`: 現行の設計では扱わない
-- `unknown`: Phase 8 の調査対象であり、まだ固定しない
+- `unknown`: 調査対象であり、まだ固定しない
 
 ---
 
@@ -45,4 +45,3 @@
 
 - [MULTI_PROTOCOL_PREPARATION.md](./MULTI_PROTOCOL_PREPARATION.md)
 - [PROTOCOL_ABSTRACTION.md](./PROTOCOL_ABSTRACTION.md)
-- [PHASE8_PREPARATION_CHECKLIST.md](../roadmap/PHASE8_PREPARATION_CHECKLIST.md)

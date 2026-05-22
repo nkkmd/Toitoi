@@ -56,7 +56,7 @@ function createAtProtoProtocolDescriptor() {
       semanticSource: 'canonical',
     },
     notes: [
-      'ATProto is a target protocol for Phase 8, represented here as a skeleton descriptor.',
+      'ATProto is a target protocol for the multi-protocol expansion, represented here as a skeleton descriptor.',
     ],
   });
 }
