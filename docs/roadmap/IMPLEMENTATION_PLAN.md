@@ -287,7 +287,7 @@ MVP を継続運用できる形にする。
 - `infra/transports/nostr/BACKUP_AND_RESTORE.md` で storage バックアップと復旧の標準手順を追加
 - `infra/transports/nostr/MONITOR_SETUP.md` で監視と復旧の役割分担を明確化
 - `infra/transports/nostr/INGEST_RETRY_POLICY.md` で ingest failure の再試行方針を明文化
-- `infra/transports/nostr/PHASE7_OPERATION_CHECKLIST.md` で日常運用向けの短いチェックリストを追加
+- `infra/transports/nostr/OPERATION_CHECKLIST.md` で日常運用向けの短いチェックリストを追加
 - `infra/transports/nostr/CLEAN_START.md` からバックアップ手順へ参照を追加
 - `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` から復旧ランブックへ参照を追加
 - `infra/transports/nostr/test_operational_e2e.js` で sample archive 由来の storage -> replay -> API service のスモークテストを追加

@@ -427,7 +427,7 @@ Toitoi commons の transport infrastructure。
 | BACKUP_AND_RESTORE.md | storage のバックアップと復旧 | 日次バックアップ、障害復旧、退避作業 |
 | CLEAN_START.md | データを破棄して再初期化する手順 | 互換性のない変更後、破損時の再構築 |
 | INGEST_RETRY_POLICY.md | ingest 再試行ポリシー | `relay_ingest_worker.js` の retry 設計、障害切り分け |
-| PHASE7_OPERATION_CHECKLIST.md | 日常運用の確認項目 | オンコール、手順確認、障害対応の入口 |
+| OPERATION_CHECKLIST.md | 日常運用の確認項目 | オンコール、手順確認、障害対応の入口 |
 | relay_ingest_worker.js | relay から問いを取り込む運用 CLI | PM2/cron による継続 ingest |
 | test_relay.js | リレー接続テスト | 接続確認、CI |
 | test_relay_ingest_worker.js | ingest worker テスト | 取り込み回帰確認、CI |
