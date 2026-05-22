@@ -2,18 +2,6 @@
 
 **Version: 0.3.1** | **Status: evolving** | **Last updated: 2026-05-19**
 
-前バージョン (v0.3.0) からの主な修正：
-
-* 冒頭：現在の実装状態（conceptually coherent / implementation-evolving）を明示。
-* §2：Problematizing Pipelineを2ステップから6ステップへ詳細化（Schema Validation・Vocabulary Normalization・DSL Reliability Handlingを独立ステップとして分離）。
-* §2.3：Vocabulary Normalization セクションを新設。推奨語彙への正規化方針と、エッジ側バリデーションの許容方針（Permissive優先）を追加。
-* §2.4：DSL Reliability Handling セクションを新設。`dsl:confidence` の暫定使用方針と、cross-model比較不能の注記を追加（§10.4対応）。
-* §1.4：Interpretive Pluralityの補強。`model_id` の具体的な命名例を追加（§10.5対応）。
-* §5：リレー互換性セクションを新設。`["t", "agroecology"]` タグ付与責任がエッジ側にあることを明示（§10.2対応）。
-* §6：推奨ランタイム構成セクションを新設（Ollama / llama.cpp / オフライン推論）。
-* §7：未固定仕様とTIPsセクションを新設（§10.1・§10.3・§10.4・§10.7対応）。
-* §3・§4：ワイヤーフォーマット固定・DB射影は実装依存の注記を追加（§10.1対応）。
-
 > **現在の実装状態について:**
 > Toitoi は現時点で「概念的に整合（conceptually coherent）しているが、実装詳細は発展途上（implementation-evolving）」な段階にあります。これは分散実験・複数実装・意味的探索を許容するための意図的な設計です。本ドキュメントで「未固定」と記された仕様は、将来的にTIPs（Toitoi Improvement Proposals）を通じて形式化されます。
 

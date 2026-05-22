@@ -1,5 +1,6 @@
 # 運用ガイド：Nostr Storage のバックアップと復旧
-**バージョン：0.1.0**
+
+**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-22**
 
 本ドキュメントは、Toitoi の Nostr ingest / replay / API 運用で使う append-only storage を安全にバックアップし、障害時に復旧するための手順です。
 

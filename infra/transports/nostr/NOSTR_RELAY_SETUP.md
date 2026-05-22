@@ -1,5 +1,6 @@
 # 構築ガイド：アグロエコロジー・コモンズ専用リレーの立ち上げ方
-**バージョン：0.3.2**　｜　前バージョン (v0.3.1) からの主な修正：複数の処理を `python3` から `node` に変更。
+
+**Version: 0.3.2** | **Status: evolving** | **Last updated: 2026-05-22**
 
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」の基盤となる専用Nostrリレーサーバーを構築するための公式ガイドです。
 
@@ -853,8 +854,3 @@ cat questions_*.jsonl | nak event wss://new-relay.your-domain.com
 - バックアップと復元: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
 - 初回立ち上げのやり直し: [CLEAN_START.md](./CLEAN_START.md)
 - リレー取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)
-
----
-
-*このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*v0.3.2 — 2026年4月改訂*

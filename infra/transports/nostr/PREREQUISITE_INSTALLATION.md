@@ -447,8 +447,3 @@ sudo apt update
 - **Docker 公式インストールガイド（Debian）:** https://docs.docker.com/engine/install/debian/
 - **Docker Compose v2 ドキュメント:** https://docs.docker.com/compose/
 - **nak GitHub リポジトリ:** https://github.com/fiatjaf/nak
-
----
-
-*このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*最終更新: 2026年4月*

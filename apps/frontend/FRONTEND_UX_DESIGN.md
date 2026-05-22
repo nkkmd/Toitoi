@@ -523,12 +523,3 @@ const dslModels = parseDslModels(inquiry.tags);
 | `dependent` | 従属変数（問いの対象） |
 | `mediator` | 媒介変数（中間経路） |
 | `moderator` | 調整変数（条件付け要因） |
-
----
-
-*Created for the "Digital Agroecology Commons" Project.*
-*Based on the theory of "テクノロジーを手放す農業論 (Agriculture that Lets Go of Technology)".*
-
-*FRONTEND_UX_DESIGN.md v0.2.0 — May 2026*
-
-*Conforms to: OVERVIEW.md / NOSTR_INQUIRY_SCHEMA.md / API_REFERENCE v0.2.0 / INDEXER_API_SETUP v0.2.0*
