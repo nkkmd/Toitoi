@@ -71,7 +71,7 @@ UI / AI
 
 をこの層で担う
 
-現行のフェーズ5実装では、この責務は主に `packages/nostr/adapter/` に置かれています。
+現行の実装では、この責務は主に `packages/nostr/adapter/` に置かれています。
 
 ### 責務境界を分ける
 
@@ -92,7 +92,7 @@ UI / AI
 
 を可能にする
 
-現行のフェーズ5実装では、この保持と replay 基盤は主に `packages/nostr/storage/` に置かれています。
+現行の実装では、この保持と replay 基盤は主に `packages/nostr/storage/` に置かれています。
 
 ### 用語を固定する
 
@@ -182,7 +182,7 @@ Indexer は Canonical Event を検索・参照のために最適化します。
 
 ただし、これらはすべて派生構造であり、Canonical semantics を置き換えません。
 
-現行のフェーズ5 MVP では、`packages/nostr/storage/indexer.js` が lookup / list / search / relation / lineage tree の最小実装を提供します。
+現行の MVP では、`packages/nostr/storage/indexer.js` が lookup / list / search / relation / lineage tree の最小実装を提供します。
 
 Standard API は protocol schema を返す面ではなく、
 

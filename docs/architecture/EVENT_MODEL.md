@@ -127,7 +127,7 @@ Toitoi の内部中心は Canonical Event です。
 - protocol 差異は adapter / normalizer で吸収する
 - indexer は canonicalized event を受け取る
 
-Phase 6 では、Standard API は canonicalized event と derived index を読み取り専用で参照します。
+Standard API は canonicalized event と derived index を読み取り専用で参照します。
 
 という構成を取ります。
 

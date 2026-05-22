@@ -269,7 +269,7 @@ Toitoi の背景思想・問題意識・論考。
 
 ## 役割
 
-Phase 6 Standard API reference implementation.
+Standard API reference implementation.
 
 Canonical view projection and HTTP entry point.
 

@@ -2,7 +2,7 @@
 
 ## 概要
 
-`apps/api/` は、Toitoi の Phase 6 Standard API reference implementation です。
+`apps/api/` は、Toitoi の Standard API reference implementation です。
 
 canonical event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。
 

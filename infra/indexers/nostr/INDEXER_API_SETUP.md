@@ -2,7 +2,7 @@
 
 **Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-22**
 
-> **Phase 6 の現行参照実装:** `apps/api/standard_api_service.js` と `apps/api/server.js` が、canonical view を返す薄い service layer / HTTP entry として追加されています。以下の DB 直結サンプルは歴史的な運用案として読むのが安全です。
+> **現行参照実装:** `apps/api/standard_api_service.js` と `apps/api/server.js` が、canonical view を返す薄い service layer / HTTP entry として追加されています。以下の DB 直結サンプルは歴史的な運用案として読むのが安全です。
 
 本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」における**Nostrリレー（Nostream）** と**インデクサーAPI（Toitoi）** を、同一サーバー内で最も負荷を少なく、かつ効率的に運用するための「統合・低負荷アーキテクチャ」のセットアップ手順書です。
 

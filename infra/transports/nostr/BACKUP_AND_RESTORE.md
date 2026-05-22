@@ -4,7 +4,7 @@
 
 本ドキュメントは、Toitoi の Nostr ingest / replay / API 運用で使う append-only storage を安全にバックアップし、障害時に復旧するための手順です。
 
-このガイドは、Phase 7 の運用整備で必要な
+このガイドは、運用整備で必要な
 
 - バックアップ方針
 - 復旧手順
