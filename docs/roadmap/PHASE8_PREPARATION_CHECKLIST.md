@@ -23,6 +23,8 @@
 - [ ] source capability の比較軸
 - [ ] protocol ごとの trust model の整理方法
 - [ ] 欠損情報を API に出すか、内部メタデータに留めるか
+- [ ] capability matrix を文書化する
+- [ ] protocol registry を用意する
 
 ---
 
@@ -42,11 +44,13 @@
 - [ ] source capability の差分表を文書化する
 - [ ] trust model を protocol ごとに説明できる
 - [ ] Standard API の意味アクセス面を保つ
+- [ ] registry が protocol descriptor を並べられる
 
 ---
 
 ## 5. 参照
 
 - [MULTI_PROTOCOL_PREPARATION.md](../architecture/MULTI_PROTOCOL_PREPARATION.md)
+- [MULTI_PROTOCOL_CAPABILITY_MATRIX.md](../architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md)
 - [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)
 - [PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)

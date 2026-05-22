@@ -54,10 +54,14 @@ Toitoi/
 │   └── indexers/
 │       └── nostr/
 └── packages/
+    ├── atproto/
+    ├── localfs/
+    ├── protocol/
     └── nostr/
         ├── adapter/
         ├── converter/
-        └── storage/
+        ├── storage/
+        └── protocol.js
 ```
 
 ---
@@ -446,6 +450,68 @@ distributed event indexing layer。
 
 ---
 
+# packages/protocol/
+
+## 役割
+
+protocol 共通の descriptor / interface helper / capability table helper を置く。
+
+---
+
+## 含まれる内容
+
+- adapter interface helper
+- converter interface helper
+- capability descriptor / capability table
+- protocol descriptor validation
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| protocol_descriptor.js | protocol descriptor と capability helper |
+| protocol_registry.js | protocol registry と capability matrix helper |
+| protocol_catalog.js | Nostr / ATProto / LocalFS default catalog |
+| index.js | protocol helper の再公開 |
+
+---
+
+# packages/atproto/
+
+## 役割
+
+ATProto の protocol skeleton と将来の adapter / converter 入口を置く。
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| protocol.js | ATProto protocol descriptor skeleton |
+| test_protocol.js | descriptor 回帰確認 |
+
+---
+
+# packages/localfs/
+
+## 役割
+
+LocalFS の protocol skeleton と将来の archive / file ingestion 入口を置く。
+
+---
+
+## 主なファイル
+
+| File | 内容 |
+|---|---|
+| protocol.js | LocalFS protocol descriptor skeleton |
+| test_protocol.js | descriptor 回帰確認 |
+
+---
+
 # packages/nostr/converter/
 
 ## 役割
@@ -466,6 +532,7 @@ Canonical Event と Nostr event の相互変換を担う protocol-specific packa
 
 | File | 内容 |
 |---|---|
+| protocol.js | Nostr protocol descriptor / capability registry |
 | canonical_to_nostr_converter.js | Canonical Events -> Nostr 変換 CLI / utility |
 
 ---

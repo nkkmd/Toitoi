@@ -306,6 +306,8 @@ MVP を継続運用できる形にする。
 
 - adapter / converter の共通 interface 方針を文書化する
 - source capability の比較軸を固定する
+- capability matrix を文書化する
+- protocol registry を用意する
 - trust model の整理方法を決める
 - API に露出する provenance の範囲を固定する
 - Phase 7 の retry / backup / restore / checklist が参照可能であることを確認する
@@ -343,19 +345,137 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 - protocol 差分が adapter と converter に閉じる
 - Standard API が大きく変わらない
 
+### 着手メモ
+
+- `packages/protocol/protocol_descriptor.js` で共通 descriptor / capability helper を追加
+- `packages/protocol/protocol_registry.js` で protocol registry と capability matrix 生成を追加
+- `packages/nostr/protocol.js` で Nostr の adapter / converter / capability を 1 つの descriptor にまとめた
+- `packages/atproto/protocol.js` と `packages/localfs/protocol.js` で protocol skeleton を追加
+- `packages/protocol/protocol_catalog.js` で Nostr / ATProto / LocalFS の default registry を追加
+- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で source capability の比較表を追加
+- `docs/roadmap/PHASE8_PREPARATION_CHECKLIST.md` と `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で着手前の整理軸を固定した
+
+### 完了メモ
+
+- `packages/protocol/` に共通 descriptor / registry / catalog を追加
+- `packages/nostr/` に protocol descriptor を追加して registry へ登録
+- `packages/atproto/` と `packages/localfs/` に protocol skeleton を追加
+- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で三 protocol の capability 差分を文書化
+- `packages/protocol/test_protocol_*` と `packages/*/test_protocol.js` で registry / descriptor / skeleton の回帰確認を追加
+
+---
+
+## フェーズ 9: まず 1 つの追加 protocol を実装する
+
+### 目的
+
+ATProto か LocalFS のどちらか 1 つを、descriptor だけでなく実データ ingest まで通して、multi-protocol の実装手順を確立する。
+
+### 作業
+
+- 1 つの追加 protocol を選び、実データ ingest の入口を作る
+- adapter / normalizer / converter を skeleton から実装へ進める
+- raw acquisition, normalize, canonicalize, replay の流れを通す
+- protocol 固有の delete / replace / ordering / trust の扱いをコードで確かめる
+- replay fixture と回帰テストを追加する
+
+### 完了条件
+
+- 追加 protocol の実データを canonical event まで変換できる
+- raw event と canonical event の両方を保存・再処理できる
+- protocol 固有ロジックが共通層を壊さずに収まる
+
+### 完了メモ
+
+- ここから先は実装に応じて追記する
+
+---
+
+## フェーズ 10: registry 駆動の起動と選択
+
+### 目的
+
+protocol descriptor / registry を使って、どの protocol をどう起動するかをコード上で選べるようにする。
+
+### 作業
+
+- protocol descriptor を service / CLI / worker 起動に結びつける
+- source ごとの adapter / converter 選択を registry 経由にする
+- capability 情報を使って起動時の振る舞いを切り替える
+- health / introspection / help 出力に protocol metadata を反映する
+
+### 完了条件
+
+- 起動経路が protocol 固有コードの直参照に依存しすぎない
+- registry を見れば利用可能な protocol と capability が分かる
+- 新しい protocol 追加時の wiring 量が小さい
+
+### 完了メモ
+
+- ここから先は実装に応じて追記する
+
+---
+
+## フェーズ 11: Standard API の multi-protocol 対応
+
+### 目的
+
+UI と AI が protocol を意識せずに扱える Standard API を、複数 protocol に対しても維持する。
+
+### 作業
+
+- canonical view を protocol 横断で維持する
+- provenance / trust の露出範囲を再確認する
+- list / detail / relation / tree / search の返却差分を吸収する
+- protocol ごとの差分を metadata に閉じる
+
+### 完了条件
+
+- どの protocol でも同じ API 形で参照できる
+- API 契約が protocol 追加で壊れない
+- provenance と trust の露出方針が維持されている
+
+### 完了メモ
+
+- ここから先は実装に応じて追記する
+
+---
+
+## フェーズ 12: 運用・移行・拡張の固定化
+
+### 目的
+
+複数 protocol を安全に運用し続けるための backup, replay, monitor, migration の標準手順を固める。
+
+### 作業
+
+- protocol ごとの backup / restore / replay 手順を整える
+- retry, alert, health check を protocol 単位で整理する
+- fixture / sample archive / migration script を整備する
+- 新しい protocol を追加する際の運用チェックを標準化する
+
+### 完了条件
+
+- 障害時の復旧経路が protocol ごとに説明できる
+- 新しい protocol の追加手順が文書とテストで再現できる
+- 長期運用時の責務分離が崩れない
+
+### 完了メモ
+
+- ここから先は実装に応じて追記する
+
 ---
 
 ## 当面の優先順位
 
-最初の着手順は以下とします。
+Phase 8 を完了として扱ったうえで、次の順序で進めます。
 
-1. Canonical Event MVP を定義する
-2. Nostr Adapter / Normalizer の責務を文書化する
-3. raw event 保存と replay 方針を決める
-4. Indexer MVP を作る
-5. Standard API MVP を作る
+1. 追加 protocol 1 つを実データ ingest まで通す
+2. registry 駆動で起動と選択をまとめる
+3. Standard API の multi-protocol 対応を確認する
+4. 運用・移行・拡張の標準化を固める
 
-この順序により、単なる Nostr wrapper になることを避けつつ、最短で動く経路を確保できます。
+この順序により、単なる skeleton の追加で止めずに、実装・起動・公開・運用までを一連でつなげられます。
 
 ---
 
@@ -365,10 +485,12 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 
 - embeddings の本格導入
 - graph inference の高度化
-- ATProto 対応
 - ActivityPub 対応
 - 特定の DB 最適化
 - 特定の検索エンジン最適化
+- protocol 横断の高度な federation ルール
+
+なお、Phase 9 で選ばなかった追加 protocol は、ここでいう「後回し」に残します。
 
 これらは MVP の ingest, canonicalize, replay, API が安定した後に進めます。
 
