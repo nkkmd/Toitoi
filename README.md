@@ -256,7 +256,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * 🧩 **現行インデクサーMVP**: `packages/nostr/adapter/` と `packages/nostr/storage/`
 * 📱 **フロントエンド・UI層**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
-### リポジトリ構成 (Repository Structure)
+### 目的別の入口
 
 迷ったら、まずは次の入口から見てください。
 
@@ -268,6 +268,36 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 | 変換・取り込みの実装担当 | `packages/nostr/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。`relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js` を見ます。 |
 | 永続化・再生・検索の実装担当 | `packages/nostr/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。`replay.js`、`indexer.js`、`replay_cli.js` が中心です。 |
 | フロントエンド実装担当 | [`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md) | UI 設計、画面実装、表示仕様の確認に使います。`apps/frontend/` が実装の入口です。 |
+
+### JS ファイルの役割
+
+各ディレクトリの JS は、だいたい次の役割分担です。
+
+| ディレクトリ | JS ファイル | 用途 | 主な使用箇所 |
+|---|---|---|---|
+| `apps/api/` | `server.js` | Standard API の HTTP エントリポイント | リバースプロキシ配下の常駐サーバー、`node apps/api/server.js` |
+| `apps/api/` | `standard_api_service.js` | ルーティングと canonical view への投影 | `server.js` から呼び出し、`test_standard_api_service.js` でも利用 |
+| `apps/api/` | `test_standard_api_service.js` | API サービスのテスト | ローカル検証、CI の単体テスト |
+| `infra/transports/nostr/` | `relay_ingest_worker.js` | リレーから問いを吸い上げて保存する運用 CLI | VPS 上の運用バッチ、cron、PM2 などの常駐/定期実行 |
+| `infra/transports/nostr/` | `test_relay.js` | リレー接続・応答のテスト | 開発時の疎通確認、CI |
+| `infra/transports/nostr/` | `test_relay_ingest_worker.js` | ingest worker のテスト | 取り込み処理の回帰確認、CI |
+| `infra/transports/nostr/` | `test_operational_e2e.js` | リレー運用の end-to-end テスト | リレー立ち上げ後の総合確認 |
+| `packages/nostr/adapter/` | `nostr_adapter.js` | 生 Nostr イベントの検証・正規化・分類 | `ingest_pipeline.js`、`relay_ingest.js`、`protocol.js`、各テスト |
+| `packages/nostr/adapter/` | `ingest_pipeline.js` | バッチ ingest の流れをまとめる中核 | `relay_ingest.js`、`ingest_jsonl.js`、テスト |
+| `packages/nostr/adapter/` | `relay_ingest.js` | relay subscription / retry / fetch の実装 | `relay_ingest_worker.js`、`protocol.js`、`test_relay_ingest.js` |
+| `packages/nostr/adapter/` | `ingest_jsonl.js` | JSONL から ingest する CLI | 手元データの取り込み、テスト用データ投入 |
+| `packages/nostr/adapter/` | `smoke_test.js` | 手元確認用の軽い検証 | ローカル環境の簡易チェック |
+| `packages/nostr/converter/` | `canonical_to_nostr_converter.js` | canonical JSONL から Nostr draft を作る変換器 | 変換 CLI、canonical から relay 投稿前の下書き生成 |
+| `packages/nostr/` | `protocol.js` | Nostr 用 protocol descriptor / registry | 他 package が Nostr 能力を参照するときの共通入口 |
+| `packages/nostr/storage/` | `append_only_log.js` | append-only JSONL の読み書き基盤 | `persistence.js`、`replay.js`、関連テスト |
+| `packages/nostr/storage/` | `persistence.js` | ingest 結果の永続化と snapshot 管理 | `ingest_jsonl.js`、`relay_ingest_worker.js`、`replay_cli.js` |
+| `packages/nostr/storage/` | `replay.js` | 保存ログから index snapshot を再構築 | `replay_cli.js`、`server.js`、`standard_api_service.js` |
+| `packages/nostr/storage/` | `indexer.js` | list/search/tree/relation などの派生 index | `standard_api_service.js`、API リファレンス、テスト |
+| `packages/nostr/storage/` | `standard_api_views.js` | API 向けの view projection | `standard_api_service.js`、API レスポンス整形 |
+| `packages/nostr/storage/` | `replay_cli.js` | replay を単体で実行する CLI | 手動再構築、運用時の再生成、CI |
+| `packages/nostr/storage/` | `index.js` | storage layer re-export entry | `packages/nostr/storage` をまとめて読む他 package |
+
+### リポジトリ構成 (Repository Structure)
 
 リポジトリ全体の構造と、各ディレクトリの責務については以下を参照してください。
 
