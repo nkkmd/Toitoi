@@ -316,13 +316,13 @@ MVP を継続運用できる形にする。
 ### 着手条件
 
 - `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に共通化前提が整理されている
-- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で比較軸が整理されている
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に比較軸と capability matrix が整理されている
 - 現行の Nostr テストが通っている
 
 ### 完了メモ
 
 - `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で adapter / converter / capability / trust の整理軸を追加
-- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で三 protocol の capability 差分を文書化した
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に capability matrix を文書化した
 
 ---
 
@@ -352,15 +352,15 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 - `packages/nostr/protocol.js` で Nostr の adapter / converter / capability を 1 つの descriptor にまとめた
 - `packages/atproto/protocol.js` と `packages/localfs/protocol.js` で protocol skeleton を追加
 - `packages/protocol/protocol_catalog.js` で Nostr / ATProto / LocalFS の default registry を追加
-- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で source capability の比較表を追加
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` と `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で整理軸を固定した
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に source capability の比較表を追加
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で整理軸を固定した
 
 ### 完了メモ
 
 - `packages/protocol/` に共通 descriptor / registry / catalog を追加
 - `packages/nostr/` に protocol descriptor を追加して registry へ登録
 - `packages/atproto/` と `packages/localfs/` に protocol skeleton を追加
-- `docs/architecture/MULTI_PROTOCOL_CAPABILITY_MATRIX.md` で三 protocol の capability 差分を文書化
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で三 protocol の capability 差分を文書化
 - `packages/protocol/test_protocol_*` と `packages/*/test_protocol.js` で registry / descriptor / skeleton の回帰確認を追加
 
 ---
