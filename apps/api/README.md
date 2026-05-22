@@ -41,7 +41,7 @@ node apps/api/test_standard_api_service.js
 ## 関連リンク
 
 - 入口一覧: [README.md](../../README.md)
-- ディレクトリ責務: [REPOSITORY_STRUCTURE.md](../../REPOSITORY_STRUCTURE.md)
+- ディレクトリ責務: [DIRECTORY_BOUNDARIES.md](../../docs/architecture/DIRECTORY_BOUNDARIES.md)
 - 標準 API の実装: [server.js](./server.js)
 - ルーティングと投影: [standard_api_service.js](./standard_api_service.js)
 - 派生 index の元データ: [`packages/nostr/storage/`](../../packages/nostr/storage/)

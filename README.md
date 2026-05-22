@@ -123,11 +123,11 @@ The JS files in each directory are generally assigned the following roles.
 | `packages/nostr/storage/` | `replay_cli.js` | CLI for running replay on its own | Manual rebuilds, operational regeneration, and CI |
 | `packages/nostr/storage/` | `index.js` | Re-export entry for the storage layer | Used by other packages that want to import `packages/nostr/storage` as a whole |
 
-### Repository Structure
+### Directory Boundaries
 
 For the overall repository layout and directory responsibilities, see:
 
-* 🗂️ **[Repository Structure](./REPOSITORY_STRUCTURE.md)**
+* 🗂️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 
 This document explains:
 
@@ -295,11 +295,11 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 | `packages/nostr/storage/` | `replay_cli.js` | replay を単体で実行する CLI | 手動再構築、運用時の再生成、CI |
 | `packages/nostr/storage/` | `index.js` | storage layer re-export entry | `packages/nostr/storage` をまとめて読む他 package |
 
-### リポジトリ構成 (Repository Structure)
+### ディレクトリ責務 (Directory Boundaries)
 
 リポジトリ全体の構造と、各ディレクトリの責務については以下を参照してください。
 
-* 🗂️ **[Repository Structure](./REPOSITORY_STRUCTURE.md)**
+* 🗂️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 
 このドキュメントでは：
 

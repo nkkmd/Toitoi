@@ -848,7 +848,7 @@ cat questions_*.jsonl | nak event wss://new-relay.your-domain.com
 ## 関連リンク
 
 - 運用の入口一覧: [README.md](../../../README.md)
-- ディレクトリ責務: [REPOSITORY_STRUCTURE.md](../../../REPOSITORY_STRUCTURE.md)
+- ディレクトリ責務: [DIRECTORY_BOUNDARIES.md](../../../docs/architecture/DIRECTORY_BOUNDARIES.md)
 - 事前準備の詳細: [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md)
 - 監視設定: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
 - バックアップと復元: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
