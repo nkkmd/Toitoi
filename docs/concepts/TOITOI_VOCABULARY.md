@@ -2,7 +2,7 @@
 
 **Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-19**
 
-本ドキュメントは、`NOSTR_INQUIRY_SCHEMA.md` および `OVERVIEW.md` に基づく標準語彙（Controlled Vocabulary）を、実装者・エッジAI開発者・コントリビューターが参照しやすい形に整理したリファレンスです。
+本ドキュメントは、`NOSTR_INQUIRY_SCHEMA.md` と `CANONICAL_EVENT.md` に基づく標準語彙（Controlled Vocabulary）を、実装者・エッジAI開発者・コントリビューターが参照しやすい形に整理したリファレンスです。
 
 > **暫定リストについて:** 本語彙リストはシステムの初期バージョン（v0.1.0）のものです。未知の関係性・新たなコンテキストが発見された場合、エッジAIは暫定的に新しい文字列をタグ付けして送信できます。有用な新出語彙はコミュニティによる TIPs（Toitoi Improvement Proposals）を通じて本リストに追加されます（「4. 語彙拡張プロセス」参照）。
 

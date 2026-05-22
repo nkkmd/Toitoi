@@ -106,4 +106,3 @@ Toitoi は長期的に protocol-independent な構造を目指します。
 
 - [NOSTR_INQUIRY_SCHEMA.md](./NOSTR_INQUIRY_SCHEMA.md)
 - [CANONICAL_EVENT.md](./CANONICAL_EVENT.md)
-- [../architecture/PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)

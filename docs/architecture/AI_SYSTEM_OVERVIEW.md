@@ -215,7 +215,5 @@ Toitoi の AI は以下を主目的にしません。
 
 ## 関連
 
-- [ADOPTED_ARCHITECTURE_DECISIONS.md](./ADOPTED_ARCHITECTURE_DECISIONS.md)
-- [OVERVIEW.md](./OVERVIEW.md)
 - [../protocols/CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
 - [../protocols/NOSTR_INQUIRY_SCHEMA.md](../protocols/NOSTR_INQUIRY_SCHEMA.md)

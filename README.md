@@ -58,11 +58,7 @@ For the project overview, specifications, and setup guides for each module, see 
 
 ### Core Documents
 
-* 🏛️ **[Architecture Overview](./docs/architecture/OVERVIEW.md)**
 * 🗺️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
-* 📜 **[Event Model](./docs/architecture/EVENT_MODEL.md)**
-* 🔌 **[Protocol Abstraction](./docs/architecture/PROTOCOL_ABSTRACTION.md)**
-* ✅ **[Adopted Architecture Decisions](./docs/architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 📖 **[Standard Vocabulary List](./docs/concepts/TOITOI_VOCABULARY.md)**
 * ⚖️ **[License Policy](./LICENSE_POLICY.md)**
@@ -232,11 +228,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 ### コア・ドキュメント (Core Documents)
 
-* 🏛️ **[Architecture Overview](./docs/architecture/OVERVIEW.md)**
 * 🗺️ **[ディレクトリ責務ルール](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
-* 📜 **[Event Model](./docs/architecture/EVENT_MODEL.md)**
-* 🔌 **[Protocol Abstraction](./docs/architecture/PROTOCOL_ABSTRACTION.md)**
-* ✅ **[採用アーキテクチャ判断](./docs/architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 📖 **[標準語彙リスト](./docs/concepts/TOITOI_VOCABULARY.md)**
 * ⚖️ **[ライセンス・ポリシー](./LICENSE_POLICY.md)**

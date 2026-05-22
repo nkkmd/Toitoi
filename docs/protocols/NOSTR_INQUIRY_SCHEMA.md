@@ -284,5 +284,3 @@ validate, verify, dedupe, ordering, normalize を経た結果として、
 それらは次を参照してください。
 
 - [CANONICAL_EVENT.md](./CANONICAL_EVENT.md)
-- [../architecture/PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)
-- [../architecture/ADOPTED_ARCHITECTURE_DECISIONS.md](../architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)

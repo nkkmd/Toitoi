@@ -69,10 +69,6 @@
 ### 完了メモ
 
 - [CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
-- [PROTOCOL_ABSTRACTION.md](../architecture/PROTOCOL_ABSTRACTION.md)
-- [ADOPTED_ARCHITECTURE_DECISIONS.md](../architecture/ADOPTED_ARCHITECTURE_DECISIONS.md)
-- [EVENT_MODEL.md](../architecture/EVENT_MODEL.md)
-- [OVERVIEW.md](../architecture/OVERVIEW.md)
 - [NOSTR_INQUIRY_SCHEMA.md](../protocols/NOSTR_INQUIRY_SCHEMA.md)
 
 ---
@@ -296,6 +292,75 @@ MVP を継続運用できる形にする。
 
 ---
 
+## 多プロトコル前提
+
+Nostr 以外の protocol を追加する際は、次の共通前提で進めます。
+
+### 共通化したい interface
+
+- Adapter は protocol 由来の input を受け取り、canonicalize 前の状態まで整える
+- Converter は canonical event と protocol-specific representation の往復を扱う
+
+### 比較軸
+
+Protocol ごとの差は、次の観点で整理します。
+
+| Capability | 何を確認するか |
+|---|---|
+| raw acquisition | 生の event / record / file を取得できるか |
+| identity verification | 送信者や source の正当性を検証できるか |
+| ordering | 順序の安定性や再現性があるか |
+| delete semantics | 削除の意味をどう表すか |
+| replace semantics | 置換をどう表すか |
+| replayability | 同じ input から再処理できるか |
+| provenance fidelity | 来歴をどこまで残せるか |
+| storage snapshot | append-only もしくは snapshot で保持できるか |
+| source trust | どの程度 source を信頼できるか |
+
+### trust model
+
+Protocol ごとの trust は分けて考えます。
+
+- source trust
+- transport trust
+- signature / proof trust
+- storage trust
+- replay trust
+
+API では必要最小限の trust 情報だけを露出し、それ以外は provenance と内部メタデータに分離します。
+
+### registry と実装上の方針
+
+- adapter / converter の公開メソッド名は共通化する
+- 共通の error class の扱いを決める
+- capability table の記述形式を統一する
+- protocol registry の公開 API を定める
+- protocol ごとの欠損情報の表し方を揃える
+- Standard API に露出してよい provenance の範囲を固定する
+
+### Capability Matrix
+
+| Capability | Nostr | ATProto | LocalFS |
+|---|---|---|---|
+| rawAcquisition | yes | unknown | yes |
+| identityVerification | yes | unknown | no |
+| ordering | yes | partial | partial |
+| deleteSemantics | partial | partial | partial |
+| replaceSemantics | partial | partial | partial |
+| replayability | yes | partial | yes |
+| provenanceFidelity | yes | yes | partial |
+| storageSnapshot | yes | partial | yes |
+| sourceTrust | partial | partial | partial |
+
+読み方:
+
+- `yes`: 現行実装または設計上、明確に扱える
+- `partial`: 仕様や実装に制約があり、完全ではない
+- `no`: 現行の設計では扱わない
+- `unknown`: 調査対象であり、まだ固定しない
+
+---
+
 ## フェーズ 8 着手前チェックリスト
 
 ### 目的
@@ -315,14 +380,12 @@ MVP を継続運用できる形にする。
 
 ### 着手条件
 
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に共通化前提が整理されている
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に比較軸と capability matrix が整理されている
 - 現行の Nostr テストが通っている
 
 ### 完了メモ
 
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で adapter / converter / capability / trust の整理軸を追加
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に capability matrix を文書化した
+- この節の「多プロトコル前提」に adapter / converter / capability / trust の整理軸を集約した
+- この節の「多プロトコル前提」に capability matrix を文書化した
 
 ---
 
@@ -352,15 +415,14 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 - `packages/nostr/protocol.js` で Nostr の adapter / converter / capability を 1 つの descriptor にまとめた
 - `packages/atproto/protocol.js` と `packages/localfs/protocol.js` で protocol skeleton を追加
 - `packages/protocol/protocol_catalog.js` で Nostr / ATProto / LocalFS の default registry を追加
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に source capability の比較表を追加
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で整理軸を固定した
+- この節の前提整理に source capability の比較表を追加
 
 ### 完了メモ
 
 - `packages/protocol/` に共通 descriptor / registry / catalog を追加
 - `packages/nostr/` に protocol descriptor を追加して registry へ登録
 - `packages/atproto/` と `packages/localfs/` に protocol skeleton を追加
-- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で三 protocol の capability 差分を文書化
+- この節で三 protocol の capability 差分を文書化
 - `packages/protocol/test_protocol_*` と `packages/*/test_protocol.js` で registry / descriptor / skeleton の回帰確認を追加
 
 ---
