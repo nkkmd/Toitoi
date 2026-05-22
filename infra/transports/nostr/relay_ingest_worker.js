@@ -25,6 +25,12 @@ function parseArgs(argv) {
     format: process.env.RELAY_INGEST_FORMAT || 'report',
     verify: process.env.RELAY_VERIFY === '1',
     storageDir: process.env.RELAY_STORAGE_DIR || '',
+    retry: {
+      retries: Number.parseInt(process.env.RELAY_RETRY_ATTEMPTS || '3', 10),
+      initialDelayMs: Number.parseInt(process.env.RELAY_RETRY_INITIAL_DELAY_MS || '1000', 10),
+      maxDelayMs: Number.parseInt(process.env.RELAY_RETRY_MAX_DELAY_MS || '10000', 10),
+      factor: Number.parseFloat(process.env.RELAY_RETRY_FACTOR || '2'),
+    },
     help: false,
   };
 
@@ -38,6 +44,42 @@ function parseArgs(argv) {
 
     if (arg === '--verify') {
       args.verify = true;
+      continue;
+    }
+
+    if (arg.startsWith('--retry-attempts=')) {
+      args.retry.retries = Number.parseInt(arg.slice('--retry-attempts='.length), 10);
+      continue;
+    }
+    if (arg === '--retry-attempts') {
+      args.retry.retries = Number.parseInt(argv[++i], 10);
+      continue;
+    }
+
+    if (arg.startsWith('--retry-initial-delay-ms=')) {
+      args.retry.initialDelayMs = Number.parseInt(arg.slice('--retry-initial-delay-ms='.length), 10);
+      continue;
+    }
+    if (arg === '--retry-initial-delay-ms') {
+      args.retry.initialDelayMs = Number.parseInt(argv[++i], 10);
+      continue;
+    }
+
+    if (arg.startsWith('--retry-max-delay-ms=')) {
+      args.retry.maxDelayMs = Number.parseInt(arg.slice('--retry-max-delay-ms='.length), 10);
+      continue;
+    }
+    if (arg === '--retry-max-delay-ms') {
+      args.retry.maxDelayMs = Number.parseInt(argv[++i], 10);
+      continue;
+    }
+
+    if (arg.startsWith('--retry-factor=')) {
+      args.retry.factor = Number.parseFloat(arg.slice('--retry-factor='.length));
+      continue;
+    }
+    if (arg === '--retry-factor') {
+      args.retry.factor = Number.parseFloat(argv[++i]);
       continue;
     }
 
@@ -98,6 +140,19 @@ function parseArgs(argv) {
     }
   }
 
+  if (!Number.isInteger(args.retry.retries) || args.retry.retries < 0) {
+    throw new Error('--retry-attempts must be a non-negative integer');
+  }
+  if (!Number.isInteger(args.retry.initialDelayMs) || args.retry.initialDelayMs < 0) {
+    throw new Error('--retry-initial-delay-ms must be a non-negative integer');
+  }
+  if (!Number.isInteger(args.retry.maxDelayMs) || args.retry.maxDelayMs < args.retry.initialDelayMs) {
+    throw new Error('--retry-max-delay-ms must be an integer greater than or equal to initial delay');
+  }
+  if (!(typeof args.retry.factor === 'number' && args.retry.factor > 1)) {
+    throw new Error('--retry-factor must be greater than 1');
+  }
+
   return args;
 }
 
@@ -114,6 +169,10 @@ function printHelp() {
     '  --output <path>      optional output file path',
     '  --verify             run signature verification when available',
     '  --storage-dir <dir>  persist raw/canonical/replay logs',
+    '  --retry-attempts <n>          retry count for transient relay errors (default: 3)',
+    '  --retry-initial-delay-ms <n>  initial retry delay in ms (default: 1000)',
+    '  --retry-max-delay-ms <n>      maximum retry delay in ms (default: 10000)',
+    '  --retry-factor <n>            backoff multiplier (default: 2)',
     '  -h, --help           show this help',
     '',
     'Environment variables:',
@@ -122,6 +181,10 @@ function printHelp() {
     '  RELAY_INGEST_OUTPUT',
     '  RELAY_INGEST_FORMAT',
     '  RELAY_VERIFY=1',
+    '  RELAY_RETRY_ATTEMPTS',
+    '  RELAY_RETRY_INITIAL_DELAY_MS',
+    '  RELAY_RETRY_MAX_DELAY_MS',
+    '  RELAY_RETRY_FACTOR',
   ].join('\n'));
 }
 
@@ -159,6 +222,12 @@ async function main() {
 
   const result = await ingestRelayUrl(args.relayUrl, args.filter, {
     skipVerify: !args.verify,
+    retry: args.retry,
+    onRetry({ attempt, retries, delayMs, error }) {
+      process.stderr.write(
+        `[RETRY] relay=${args.relayUrl} attempt=${attempt}/${retries} delayMs=${delayMs} reason=${error instanceof Error ? error.message : String(error)}\n`
+      );
+    },
   });
 
   if (args.storageDir) {

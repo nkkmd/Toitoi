@@ -515,6 +515,10 @@ sudo systemctl disable toitoi-monitor
 
 `toitoi-worker` は起動直後にリレーの全件同期を実行するため、初回起動時やアーカイブ復元後はCPUが閾値を一時的に超えることがあります。この場合、スクリプトは `pm2 reload` で対処しますが、workerは `SyncState` テーブルに保存された最終同期タイムスタンプを参照して差分から処理を再開するため、データは失われません。
 
+バックアップと復旧の手順自体は [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) にまとめています。監視では「異常を止める」、復旧では「storage を安全に戻す」という役割分担で読むと把握しやすいです。
+
+relay ingest の一時障害に対する再試行方針は [INGEST_RETRY_POLICY.md](./INGEST_RETRY_POLICY.md) を参照してください。
+
 ---
 
 *このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*

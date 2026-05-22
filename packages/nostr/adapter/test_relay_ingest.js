@@ -1,7 +1,11 @@
 'use strict';
 
 const assert = require('assert');
-const { ingestRelaySubscription } = require('./relay_ingest');
+const {
+  ingestRelaySubscription,
+  ingestRelayUrl,
+  isRetryableRelayError,
+} = require('./relay_ingest');
 
 function makeEvent(overrides = {}) {
   return {
@@ -33,6 +37,16 @@ function makeRelay(events) {
   };
 }
 
+function makeClosingRelay(reason) {
+  return {
+    subscribe(filters, handlers) {
+      assert.deepStrictEqual(filters, [{ kinds: [1042] }]);
+      handlers.onclose(reason);
+      return { close() {} };
+    },
+  };
+}
+
 const tests = [
   {
     name: 'ingestRelaySubscription classifies relay events',
@@ -51,6 +65,71 @@ const tests = [
       assert.strictEqual(result.duplicates.length, 1);
       assert.strictEqual(result.invalid.length, 1);
       assert.strictEqual(result.unverified.length, 1);
+    },
+  },
+  {
+    name: 'ingestRelayUrl retries transient relay failures',
+    async run() {
+      let attempt = 0;
+      const calls = [];
+      const relay = makeRelay([makeEvent({ id: 'a', created_at: 1 })]);
+
+      const result = await ingestRelayUrl(
+        'wss://relay.example.com',
+        { kinds: [1042] },
+        {
+          skipVerify: true,
+          retry: {
+            retries: 2,
+            initialDelayMs: 0,
+            maxDelayMs: 0,
+            factor: 2,
+          },
+          connectRelay: async () => {
+            attempt += 1;
+            if (attempt < 3) {
+              const error = new Error('socket hang up');
+              error.code = attempt === 1 ? 'ECONNRESET' : 'ETIMEDOUT';
+              throw error;
+            }
+            return relay;
+          },
+          onRetry({ attempt: nextAttempt, delayMs, error }) {
+            calls.push({
+              attempt: nextAttempt,
+              delayMs,
+              error: error.message,
+            });
+          },
+        }
+      );
+
+      assert.strictEqual(result.accepted.length, 1);
+      assert.strictEqual(attempt, 3);
+      assert.deepStrictEqual(calls, [
+        { attempt: 1, delayMs: 0, error: 'socket hang up' },
+        { attempt: 2, delayMs: 0, error: 'socket hang up' },
+      ]);
+    },
+  },
+  {
+    name: 'ingestRelaySubscription rejects early relay close',
+    async run() {
+      await assert.rejects(
+        ingestRelaySubscription(
+          makeClosingRelay('relay closed before EOSE'),
+          { kinds: [1042] },
+          { skipVerify: true }
+        ),
+        /relay closed before EOSE/i
+      );
+    },
+  },
+  {
+    name: 'isRetryableRelayError separates transient and permanent failures',
+    run() {
+      assert.strictEqual(isRetryableRelayError(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' })), true);
+      assert.strictEqual(isRetryableRelayError(new Error('invalid signature')), false);
     },
   },
 ];

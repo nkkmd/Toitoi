@@ -282,6 +282,46 @@ MVP を継続運用できる形にする。
 - データ欠落時の再同期手順がある
 - 運用手順が `infra/` に整理されている
 
+### 完了メモ
+
+- `infra/transports/nostr/BACKUP_AND_RESTORE.md` で storage バックアップと復旧の標準手順を追加
+- `infra/transports/nostr/MONITOR_SETUP.md` で監視と復旧の役割分担を明確化
+- `infra/transports/nostr/INGEST_RETRY_POLICY.md` で ingest failure の再試行方針を明文化
+- `infra/transports/nostr/PHASE7_OPERATION_CHECKLIST.md` で日常運用向けの短いチェックリストを追加
+- `infra/transports/nostr/CLEAN_START.md` からバックアップ手順へ参照を追加
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` から復旧ランブックへ参照を追加
+- `infra/transports/nostr/test_operational_e2e.js` で sample archive 由来の storage -> replay -> API service のスモークテストを追加
+- `packages/nostr/adapter/relay_ingest.js` と `infra/transports/nostr/relay_ingest_worker.js` に transient failure の retry を追加
+- `packages/nostr/adapter/test_relay_ingest.js` で retry / early close / retryable error の回帰確認を追加
+
+---
+
+## フェーズ 8 着手前チェックリスト
+
+### 目的
+
+多プロトコル化に入る前に、Nostr の既存契約と共通化対象の前提を固定する。
+
+### 確認事項
+
+- adapter / converter の共通 interface 方針を文書化する
+- source capability の比較軸を固定する
+- trust model の整理方法を決める
+- API に露出する provenance の範囲を固定する
+- Phase 7 の retry / backup / restore / checklist が参照可能であることを確認する
+- Standard API の契約を Phase 8 着手前に変えない
+
+### 着手条件
+
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` に共通化前提が整理されている
+- `docs/roadmap/PHASE8_PREPARATION_CHECKLIST.md` で着手前の確認項目が明示されている
+- 現行の Nostr テストが通っている
+
+### 完了メモ
+
+- `docs/architecture/MULTI_PROTOCOL_PREPARATION.md` で adapter / converter / capability / trust の整理軸を追加
+- `docs/roadmap/PHASE8_PREPARATION_CHECKLIST.md` で Phase 8 着手前の確認項目を追加
+
 ---
 
 ## フェーズ 8: 多プロトコル化

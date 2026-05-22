@@ -26,6 +26,8 @@ Toitoi の Nostr ingest を append-only に保存し、raw event から再 canon
 2. `replayStorage(storageDir)` を実行して canonical event と index snapshot を再生成する
 3. 必要なら `index-snapshot.json` をバックアップから比較して差分確認する
 
+バックアップと復旧の詳細な運用手順は [infra/transports/nostr/BACKUP_AND_RESTORE.md](../../infra/transports/nostr/BACKUP_AND_RESTORE.md) を参照してください。
+
 ## 注意
 
 - raw event を消さない
