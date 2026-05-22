@@ -2,9 +2,9 @@
 
 **Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-22**
 
-本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」の専用リレーサーバーに、**負荷監視と自動回復の仕組み**を導入するための手順書です。
+本ドキュメントは、Toitoi の Canonical Event 中心の運用基盤に、**負荷監視と自動回復の仕組み**を導入するための手順書です。
 
-このシステムは、Toitoiサーバー固有の構成（Nostream / PostgreSQL / Redis / PM2 / Caddy）を熟知した上で設計されており、**各サービスの性質に応じた最適な回復手段**を自動的に選択します。高負荷を検知した場合でも、データベースには原則として触れず、PM2プロセスの無停止リロードを優先することで、「問いの系譜」の損失リスクを最小化します。
+このシステムは、Toitoiサーバー固有の構成（Nostream / PostgreSQL / Redis / PM2 / Caddy）を熟知した上で設計されており、**各サービスの性質に応じた最適な回復手段**を自動的に選択します。高負荷を検知した場合でも、データベースには原則として触れず、PM2プロセスの無停止リロードを優先することで、raw event と canonicalized event の整合性損失を最小化します。
 
 ## どこで使うか
 
@@ -20,7 +20,7 @@
 
 | サービス | 種別 | 役割 |
 |---|---|---|
-| `toitoi-worker` | PM2 | リレーからKind 1042を定期収集しDBに保存 |
+| `toitoi-worker` | PM2 | リレーから transport event を収集し canonicalized event を保存 |
 | `toitoi-api` | PM2 | REST APIサーバー（ポート3000） |
 | `nostream` | Docker | Nostrリレーエンジン（ポート8008） |
 | `nostream-db` | Docker | PostgreSQL（リレーDB・ToitoiDB共有） |
@@ -287,8 +287,8 @@ check_and_recover_services() {
 }
 
 # ── メインループ ─────────────────────────────────────
-log "INFO" "============================================"
-log "INFO" " Toitoi 監視スクリプト 起動"
+    log "INFO" "============================================"
+    log "INFO" " Toitoi 監視スクリプト 起動"
 log "INFO" " CPU閾値: ${CPU_THRESHOLD}%  MEM閾値: ${MEM_THRESHOLD}%"
 log "INFO" " チェック間隔: ${CHECK_INTERVAL}s  クールダウン: ${COOLDOWN}s"
 log "INFO" "============================================"
@@ -514,13 +514,13 @@ sudo systemctl disable toitoi-monitor
 
 ### nostream-db が停止した場合
 
-**注意：** `nostream-db`（PostgreSQL）はリレーのイベントデータ（`nostr_ts_relay`）とToitoiのインデクサーデータ（`toitoi_db`）を同一コンテナで共有しています。このコンテナが停止した場合、Nostreamリレーと `toitoi-api` / `toitoi-worker` の両方が機能不全になります。
+**注意：** `nostream-db`（PostgreSQL）はリレーの raw event と canonicalized event、そして Toitoi のインデクサーデータ（`toitoi_db`）を同一コンテナで共有しています。このコンテナが停止した場合、Nostreamリレーと `toitoi-api` / `toitoi-worker` の両方が機能不全になります。`provenance` と `rawRef` を含む再構築可能性を守るため、停止時間は最小化します。
 
 スクリプトはDBコンテナの再起動後に10秒待機してからPM2プロセスも再起動します。これはPrismaの接続プールが古い接続情報を保持したままにならないようにするためです。
 
 ### toitoi-worker の高負荷について
 
-`toitoi-worker` は起動直後にリレーの全件同期を実行するため、初回起動時やアーカイブ復元後はCPUが閾値を一時的に超えることがあります。この場合、スクリプトは `pm2 reload` で対処しますが、workerは `SyncState` テーブルに保存された最終同期タイムスタンプを参照して差分から処理を再開するため、データは失われません。
+`toitoi-worker` は起動直後にリレーの全件同期を実行するため、初回起動時やアーカイブ復元後はCPUが閾値を一時的に超えることがあります。この場合、スクリプトは `pm2 reload` で対処しますが、worker は `SyncState` テーブルに保存された最終同期タイムスタンプを参照して差分から処理を再開するため、raw event から canonicalized event への再生成は継続できます。
 
 バックアップと復旧の手順自体は [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) にまとめています。監視では「異常を止める」、復旧では「storage を安全に戻す」という役割分担で読むと把握しやすいです。
 

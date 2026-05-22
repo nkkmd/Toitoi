@@ -4,6 +4,8 @@
 
 本ドキュメントは、Toitoi の Nostr ingest / replay / API 運用で使う append-only storage を安全にバックアップし、障害時に復旧するための手順です。
 
+ここでの前提は、Nostr の raw event を保持し、それを Canonical Event に再変換できることです。したがって、バックアップの目的は単なるファイル保全ではなく、raw event / canonicalized event / provenance / rawRef を含む再構築可能性の維持です。
+
 このガイドは、運用整備で必要な
 
 - バックアップ方針
@@ -40,7 +42,7 @@
 - `ingest-log.jsonl`
 - `index-snapshot.json`
 
-運用上は、storage ディレクトリを丸ごとアーカイブするのが最も安全です。
+運用上は、storage ディレクトリを丸ごとアーカイブするのが最も安全です。これにより、raw event と canonicalized event の両方をまとめて保持できます。
 
 ---
 
@@ -93,7 +95,7 @@ tar -xzf toitoi-storage-backup-YYYYMMDD-HHMMSS.tgz -C /path/to/storage
 node packages/nostr/storage/replay_cli.js --storage-dir /path/to/storage --verify
 ```
 
-`--verify` は、raw event から再 canonicalize する際に検証を再実行したい場合に使います。通常運用では、まず既存 storage を優先して復旧し、その後に必要な検証を追加してください。
+`--verify` は、raw event から再 canonicalize する際に検証を再実行したい場合に使います。通常運用では、まず既存 storage を優先して復旧し、その後に必要な検証を追加してください。`provenance` や `rawRef` の欠損がないかも合わせて確認してください。
 
 ### 4.4 API の疎通確認
 
@@ -107,9 +109,9 @@ curl "http://127.0.0.1:3000/api/v1/inquiries?limit=1"
 
 ## 5. データ欠落時の再同期
 
-raw-events.jsonl が残っている場合は、そこを source of truth として replay します。
+raw-events.jsonl が残っている場合は、そこを source of truth として replay します。canonical-events.jsonl はそこから再生成される派生物として扱います。
 
-raw-events.jsonl が失われている場合は、canonical-events.jsonl と index-snapshot.json を使って最低限の読み出しを復旧できますが、完全な再同期はできません。
+raw-events.jsonl が失われている場合は、canonical-events.jsonl と index-snapshot.json を使って最低限の読み出しを復旧できますが、完全な再同期はできません。`provenance` の一部が残らない可能性があるため、復旧ログに明記します。
 
 その場合は、可能であれば次の順で対処します。
 

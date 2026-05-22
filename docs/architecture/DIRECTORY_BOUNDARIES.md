@@ -241,7 +241,7 @@ Distributed event indexing layer の運用資産を置きます。
 含まれる主なファイル:
 
 - `INDEXER_API_SETUP.md`
-- `API_REFERENCE.md`
+- `apps/api/README.md`
 
 ## `apps/`
 

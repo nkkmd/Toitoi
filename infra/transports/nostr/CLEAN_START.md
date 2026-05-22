@@ -157,12 +157,12 @@ cd ~/nostream
 sudo docker compose restart nostream
 ```
 
-### 例）worker.js の修正
+### 例）relay_ingest_worker.js の修正
 
 設定変更がある場合は、以下のファイルを編集してください。
 
 ```
-nano ~/toitoi-indexer/worker.js
+nano ~/toitoi-indexer/relay_ingest_worker.js
 ```
 
 ---

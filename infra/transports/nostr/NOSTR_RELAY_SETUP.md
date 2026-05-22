@@ -1,10 +1,11 @@
-# 構築ガイド：アグロエコロジー・コモンズ専用リレーの立ち上げ方
+# 構築ガイド：Canonical Event 中心の Nostr リレー立ち上げ方
 
-**Version: 0.3.2** | **Status: evolving** | **Last updated: 2026-05-22**
+**Version: 0.4.0** | **Status: evolving** | **Last updated: 2026-05-22**
 
-本ドキュメントは、「デジタル・アグロエコロジー・コモンズ」の基盤となる専用Nostrリレーサーバーを構築するための公式ガイドです。
+本ドキュメントは、Toitoi の Canonical Event を Nostr transport projection として受け取る専用リレーサーバーを構築するための公式ガイドです。
 
-このリレーは、スパムや無関係なSNS投稿を一切遮断し、**アグロエコロジーの「問い（Kind: 1042）」のみを永続的に保存する「知識の図書館」** として機能します。あなたがこのリレーを立ち上げることで、特定の企業に依存しない強靭な分散ネットワーク（入れ子構造のコモンズ）が実現されます。
+このリレーは、Nostr `kind: 1042` を中心とする inquiry transport を受け、保存された raw event を後段の canonicalization に渡すための入口として機能します。  
+つまり、リレーは意味モデルそのものではなく、**Canonical Event を支える transport layer** です。Nostr 側で受けたイベントは、後続の adapter / normalizer によって canonicalized event へ変換され、Toitoi の内部中心モデルに接続されます。
 
 ## まず見るもの
 
@@ -123,9 +124,9 @@ nostream  | ... "Tor hidden service: disabled"
 
 **起動直後に `Error: ENOENT: no such file or directory, watch '/home/node/.nostr/settings.yaml'` が出ることがありますが、これは次のStep 2.7で設定ファイルを配置する前の一時的なエラーです。その後に上記の正常ログが続いていれば問題ありません。**
 
-### Step 2.7: アグロエコロジー専用設定（settings.yaml）
+### Step 2.7: Canonical Event projection に対応した設定（settings.yaml）
 
-Nostream v2.1.1 は設定ファイルとして `settings.yaml` を使用します。コンテナ内のテンプレートをホスト側にコピーして編集します。
+Nostream v2.1.1 は設定ファイルとして `settings.yaml` を使用します。ここでは、Nostr inquiry event を Canonical Event の transport projection として受ける前提で設定します。コンテナ内のテンプレートをホスト側にコピーして編集します。
 
 ```bash
 # テンプレートをコンテナからコピー
@@ -143,7 +144,7 @@ nano .nostr/settings.yaml
 
 **ファイルの内容をすべて削除し、以下の全文をそのまま貼り付けてください。**
 
-`pubkey` にはリレー運営者自身のNostr公開鍵（hex形式）を記載します。まだ鍵ペアを持っていない場合は `nak` で生成してください。
+`pubkey` にはリレー運営者自身のNostr公開鍵（hex形式）を記載します。これは運用主体の識別であり、Canonical Event の semantic identity とは別です。まだ鍵ペアを持っていない場合は `nak` で生成してください。
 
 ```bash
 # 鍵ペアを生成（一度だけ実行。秘密鍵は厳重に保管すること）
@@ -165,7 +166,7 @@ nak decode npub1xyz...
 info:
   relay_url: wss://relay.your-domain.com
   name: your-domain.com
-  description: Dedicated relay for the Digital Agroecology Commons. Only Kind 1042 events are stored.
+  description: Dedicated relay for Toitoi Canonical Event projections. Nostr kind 1042 inquiry events are accepted as transport input.
   banner: https://your-domain.com/logo.png
   icon: https://your-domain.com/logo.png
   pubkey: （nak decode で得たhex形式の公開鍵）
@@ -256,11 +257,11 @@ limits:
 | `nip05.mode` | `disabled` | NIP-05（ドメイン認証）を要求しない。参加障壁をゼロにする |
 | `nip45.enabled` | `true` | COUNTクエリを許可。インデクサーAPIからの件数取得に使用 |
 | `workers.count` | `0` | CPUコア数に応じて自動決定（1vCPU環境では実質1ワーカー） |
-| `kind.whitelist` | `[1042]` | Kind 1042（問いの循環）のみ受け付ける。スパム完全遮断 |
-| `retention.maxDays` | `-1` | 永続保存。問いの系譜を消さない |
+| `kind.whitelist` | `[1042]` | Canonical Event projection の transport input を Kind 1042 に限定する |
+| `retention.maxDays` | `-1` | raw event を永続保存し、後段の再 canonicalize を可能にする |
 | `retention.kind.whitelist` | `[]` | 保存対象kindの追加制限なし（kind.whitelistで制御済み） |
 | `createdAt.maxNegativeDelta` | `31536000` | 1年前までの過去イベントを受け付ける。アーカイブ復元時に必要 |
-| `content.maxLength` | `20480` | 20KB上限。画像スパム等の巨大データを防ぐ |
+| `content.maxLength` | `20480` | Canonical Event の body を運ぶ transport content の上限を抑える |
 | `trustedProxies` | ループバックのみ | docker-compose.ymlで固定IP設定を削除済みのため`10.10.10.x`系は不要 |
 
 編集が終わったら `Ctrl + O` → `Enter` で保存し、`Ctrl + X` で閉じます。その後、設定を反映するためにnostreamを再起動します。
@@ -329,7 +330,7 @@ sudo systemctl restart caddy
 
 ## 4. 動作確認（テスト）
 
-あなたの構築したリレーが、正しくコモンズのネットワークとして機能しているかテストします。
+あなたの構築したリレーが、Canonical Event projection の transport 入口として正しく機能しているかテストします。
 
 ### ブラウザでの確認 (NIP-11)
 ブラウザを開き、`https://relay.your-domain.com` にアクセスしてください。
@@ -337,7 +338,7 @@ sudo systemctl restart caddy
 リレー情報のJSONが表示されれば成功です。（Nostream v2.1.1ではブラウザからのアクセスに対してJSONを返します。これは正常な動作です。）
 
 ### WebSocket接続とフィルタリングのテスト
-Nostrの接続確認ツールを使用して、WebSocket（`wss://`）が機能しているか、そして**指定したKind以外がちゃんと弾かれるか**を確認します。
+Nostrの接続確認ツールを使用して、WebSocket（`wss://`）が機能しているか、そして**Canonical Event projection として想定した Kind 1042 以外が弾かれるか**を確認します。
 
 ここではシンプルな接続テストを紹介します。より高度な検証やスキーマ準拠テストについては、`infra/transports/nostr/test_relay.js` を参照してください。
 
@@ -356,7 +357,7 @@ async function test() {
 
     const sk = generateSecretKey();
 
-    // テスト1: 許可されている「問い」のイベント (Kind 1042)
+    // テスト1: 許可されている inquiry transport event (Kind 1042)
     const validEvent = finalizeEvent({
         kind: 1042,
         created_at: Math.floor(Date.now() / 1000),
@@ -366,7 +367,7 @@ async function test() {
 
     try {
         await relay.publish(validEvent);
-        console.log(`🟢 Kind 1042 (問い) の送信に成功しました！`);
+        console.log(`🟢 Kind 1042 の transport input 送信に成功しました！`);
     } catch (e) {
         console.error(`🔴 失敗:`, e);
     }
@@ -381,7 +382,7 @@ async function test() {
 
     try {
         await relay.publish(invalidEvent);
-        console.log(`🔴 失敗: Kind 1 が送信できてしまいました（設定ミス）`);
+        console.log(`🔴 失敗: Kind 1 が送信できてしまいました（transport filter の設定ミス）`);
     } catch (e) {
         console.log(`🟢 成功: Kind 1 の送信が正しく拒否されました！（スパム防御機能が作動）: ${e}`);
     }
@@ -395,10 +396,10 @@ test();
 
 ## 5. 運用と保守（データ・コモンズを守るために）
 
-リレーの運営者としての作業はほぼゼロですが、データベースのバックアップは重要です。
+リレーの運営者としての作業はほぼゼロですが、raw event と Canonical Event の再構築可能性を守るため、バックアップは重要です。
 
 ### データのバックアップ（PostgreSQL）
-蓄積された「問いの系譜」は地域の財産です。定期的に以下のコマンドでDBのダンプ（バックアップ）を取ることをお勧めします。
+蓄積された raw event は、canonicalization ルール変更後の再処理に必要な地域の財産です。定期的に以下のコマンドでDBのダンプ（バックアップ）を取ることをお勧めします。
 
 ```bash
 cd nostream
@@ -408,7 +409,7 @@ sudo docker exec -t nostream-db-1 pg_dumpall -c -U nostr_ts_relay > dump_`date +
 
 ### 保存データの確認（nak req）
 
-リレーに蓄積されたイベントを `nak req` コマンドで確認します。
+リレーに蓄積された transport event を `nak req` コマンドで確認します。ここで見ているのは Canonical Event の元になる raw projection です。
 
 ```bash
 # 全件取得（Ctrl+C で停止）
@@ -450,7 +451,7 @@ sudo docker compose up -d
 
 > **なぜこれが必要か？**
 >
-> PostgreSQLのダンプはリレーを復元するためのものです。一方、**JSONLアーカイブ**はNostrイベントをプロトコル中立なテキスト形式で保存します。Nostrのイベントはすでに秘密鍵で署名された自己完結データのため、このJSONLファイルさえあれば、リレーソフトウェアが変わっても、VPSが廃止されても、いつでもどこでも完全復元できます。Gitで管理することで、「問いの系譜」が**改ざん不可能な履歴**として残ります。
+> PostgreSQLのダンプはリレーを復元するためのものです。一方、**JSONLアーカイブ**は Nostr transport event をプロトコル中立なテキスト形式で保存します。Nostr のイベントは署名済み自己完結データなので、この JSONL ファイルさえあれば、リレーソフトウェアが変わっても、VPSが廃止されても、再投入して Canonical Event を再構築できます。Gitで管理することで、raw event と projection の履歴が**改ざん不可能な形**で残ります。
 
 ---
 
@@ -496,7 +497,7 @@ git commit -m "init: Initialize Agroecology Commons archive repository"
 
 ### Step 6.3: 手動エクスポート（初回・任意のタイミング）
 
-リレーに蓄積されたKind: 1042のイベントをJSONL形式でエクスポートします。
+リレーに蓄積された Kind: 1042 の transport event を JSONL 形式でエクスポートします。JSONL は保存形式であり、Canonical Event そのものではありません。
 
 ```bash
 cd ~/nostr-archive/agroecology-commons
@@ -508,20 +509,20 @@ nak req -k 1042 wss://relay.your-domain.com > archive_$(date +%Y-%m-%d).jsonl
 wc -l archive_$(date +%Y-%m-%d).jsonl
 ```
 
-> **JSONL形式とは？** 1行＝1イベントのJSON。`{"id":"...","pubkey":"...","kind":1042,"content":"問いの内容",...}` という形式で、各行が独立したNostrイベントです。テキストエディタでも読め、あらゆるツールで処理できます。
+> **JSONL形式とは？** 1行＝1イベントのJSON。`{"id":"...","pubkey":"...","kind":1042,"content":"問いの内容",...}` という形式で、各行が独立した Nostr transport event です。テキストエディタでも読め、あらゆるツールで処理できます。
 
 エクスポート後、Gitにコミットします。
 
 ```bash
 git add archive_$(date +%Y-%m-%d).jsonl
-git commit -m "archive: snapshot as of $(date +%Y-%m-%d) ($(wc -l < archive_$(date +%Y-%m-%d).jsonl) entries))"
+git commit -m "archive: snapshot as of $(date +%Y-%m-%d) ($(wc -l < archive_$(date +%Y-%m-%d).jsonl) entries)"
 ```
 
 ---
 
 ### Step 6.4: 差分アーカイブスクリプト（cronで自動化）
 
-毎回全件エクスポートではなく、**前回以降の新規イベントだけを追記する差分方式**にすることで、ファイルサイズと処理時間を最小化します。
+毎回全件エクスポートではなく、**前回以降の新規 transport event だけを追記する差分方式**にすることで、ファイルサイズと処理時間を最小化します。
 
 以下のスクリプトを作成してください。
 
@@ -532,8 +533,8 @@ nano ~/nostr-archive/archive_diff.sh
 ```bash
 #!/bin/bash
 # =====================================================
-# アグロエコロジー・コモンズ JSONL差分アーカイバ
-# 前回コミット以降の新規イベントのみを取得し、Gitにコミットする
+# Canonical Event projection JSONL差分アーカイバ
+# 前回コミット以降の新規 transport event のみを取得し、Gitにコミットする
 # =====================================================
 
 RELAY="wss://relay.your-domain.com"       # ← あなたのリレーURLに変更
@@ -545,7 +546,7 @@ TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
 
 cd "$ARCHIVE_DIR" || exit 1
 
-# 最後にエクスポートしたイベントのタイムスタンプを取得
+# 最後にエクスポートした transport event のタイムスタンプを取得
 # (ファイルが存在しない場合は0＝全件取得)
 if [ -f "$ARCHIVE_FILE" ]; then
     # JSONLの最終行からcreated_atを取得
@@ -556,7 +557,7 @@ fi
 
 echo "[$TIMESTAMP] 前回タイムスタンプ: $LAST_TS" >> "$LOG_FILE"
 
-# 前回以降の新規イベントを取得（since パラメータで差分取得）
+# 前回以降の新規 transport event を取得（since パラメータで差分取得）
 TMP_FILE=$(mktemp)
 nak req -k 1042 --since "$LAST_TS" "$RELAY" > "$TMP_FILE" 2>> "$LOG_FILE"
 
@@ -571,7 +572,7 @@ fi
 # 既存ファイルに追記（重複を避けるためIDで重複排除）
 cat "$TMP_FILE" >> "$ARCHIVE_FILE"
 
-# IDの重複排除（同じイベントが二重取得された場合の保険）
+# IDの重複排除（同じ transport event が二重取得された場合の保険）
 node - <<'EOF'
 const fs = require('fs');
 
@@ -624,7 +625,7 @@ crontab -e
 以下の行を追加します。
 
 ```cron
-# アグロエコロジー・コモンズ JSONL差分アーカイブ（毎日03:00）
+# Canonical Event projection JSONL差分アーカイブ（毎日03:00）
 0 3 * * * /bin/bash $HOME/nostr-archive/archive_diff.sh
 ```
 
@@ -632,7 +633,7 @@ crontab -e
 
 ### Step 6.6: リモートリポジトリへのpush（任意・強く推奨）
 
-Gitリポジトリをリモート（GitHub / Gitea / Forgejo など）にも push することで、VPS障害時の最終防衛ラインになります。
+Gitリポジトリをリモート（GitHub / Gitea / Forgejo など）にも push することで、VPS障害時の最終防衛ラインになります。raw event を Git に残すことは、Canonical Event の再生成可能性を確保することでもあります。
 
 ```bash
 # GitHubの場合（プライベートリポジトリ推奨）
@@ -644,14 +645,14 @@ git push -u origin main
 # git push origin main >> "$LOG_FILE" 2>&1
 ```
 
-> **プライバシーに関する注意：** Nostrのイベントはもともとパブリックなプロトコルのため、公開リポジトリにしても問題ありませんが、投稿者のpubkeyが含まれます。コミュニティの合意に基づいてプライベート/パブリックを選択してください。
+> **プライバシーに関する注意：** Nostrのイベントはもともとパブリックなプロトコルのため、公開リポジトリにしても問題ありませんが、投稿者の pubkey や provenance に相当する情報が含まれます。コミュニティの合意に基づいてプライベート/パブリックを選択してください。
 
 ---
 
 ### Step 6.7: アーカイブからの復元
 
 リレーを新しいサーバーに移行した際や、データが失われた際は、JSONLファイルから直接再インポートできます。
-`nak` の一括送信機能（ストリーミング）を利用するため、数万件のデータでも数秒〜数十秒で瞬時に復元可能です。
+`nak` の一括送信機能（ストリーミング）を利用するため、数万件のデータでも数秒〜数十秒で瞬時に復元可能です。これは Canonical Event を再構築するための transport input の復元です。
 
 ```bash
 # アーカイブから新リレーへ全件インポート（一括処理）
@@ -670,7 +671,7 @@ echo "✅ インポート完了"
 └── agroecology-commons/
     ├── .git/                        # Gitリポジトリ（問いの系譜の歴史）
     ├── .gitignore
-    ├── questions.jsonl              # 全イベントの蓄積（1行＝1問い）
+    ├── questions.jsonl              # 全 transport event の蓄積（1行＝1 projection）
     └── archive.log                  # 実行ログ
 ```
 
@@ -694,7 +695,7 @@ commit 2c4a1f0  archive: 2026-05-30 +5件追加（累計 320件）
 | **L3 JSONLアーカイブ** | **nak + Gitで差分管理** | **✕ 不要** | **◎ 完全** |
 | L4 リモートpush | GitHub / Gitea | ✕ 不要 | ◎ 完全 |
 
-> **Nostrの本質的な強み：** イベントは署名済み自己完結データです。JSONLファイルさえ手元にあれば、リレーソフトウェアが廃止されても、VPSが消えても、「問いの系譜」はコモンズの手に残り続けます。
+> **Nostrの本質的な強み：** イベントは署名済み自己完結データです。JSONLファイルさえ手元にあれば、リレーソフトウェアが廃止されても、VPSが消えても、transport projection を再投入して Canonical Event を再構築し続けられます。
 
 ---
 
