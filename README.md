@@ -142,9 +142,7 @@ This document explains:
 * **Relay server**: `wss://relay.toitoi.cultivationdata.net`
 * **API**: `https://api.toitoi.cultivationdata.net`
 
-> These endpoints are currently live. Additional relay and API instances will be added over time as the commons grows.
-> The current Phase 5 indexer MVP lives in `packages/nostr/adapter/` and `packages/nostr/storage/`, which provide ingest, replay, lookup, list, search, relation, and lineage-tree primitives.
-> The phase-6 Standard API reference implementation lives in `apps/api/` and projects those primitives into canonical views.
+> These endpoints are currently live. Additional relay and API instances will be updated and added over time as the commons grows.
 
 ## 🤝 Contribution & Community
 
@@ -318,8 +316,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * **リレーサーバー**: `wss://relay.toitoi.cultivationdata.net`
 * **API**: `https://api.toitoi.cultivationdata.net`
 
-> これらは現在稼働中のエンドポイントです。今後もコモンズの成長に合わせて、リレーとAPIのインスタンスを順次追加していく予定です。
-> 現行のフェーズ5インデクサーMVPは `packages/nostr/adapter/` と `packages/nostr/storage/` にあり、ingest / replay / lookup / list / search / relation / lineage tree の基礎を提供します。
+> これらは現在稼働中のエンドポイントです。今後もコモンズの成長に合わせて、リレーとAPIのインスタンスを順次更新・追加していく予定です。
 
 ## 🤝 コントリビューションとコミュニティ
 
