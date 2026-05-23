@@ -21,7 +21,7 @@
 今後の実装は、以下の前提を採用して進めます。
 
 - Canonical Event を内部の意味的共通表現として扱う
-- Canonical は特定 protocol schema の写しではなく semantic layer として設計する
+- Canonical Event は特定 protocol schema の写しではなく semantic layer として設計する
 - 読み込み側では Adapter / Normalizer を経由してから Indexer に渡す
 - Standard API は protocol ではなく意味論に基づくアクセス面として設計する
 - Indexer は canonical semantics を変形せず、検索・参照のために補助構造を作る
@@ -29,7 +29,7 @@
 
 一方で、以下は固定しません。
 
-- Canonical のみを唯一の保存対象にすること
+- Canonical Event のみを唯一の保存対象にすること
 - 特定 DB や検索エンジンを前提に設計を閉じること
 - Nostr 的な schema をそのまま Canonical に持ち込むこと
 
@@ -49,7 +49,7 @@
 
 ### 目的
 
-実装前に、どこまでが Canonical で、どこからが protocol 固有かを固定する。
+実装前に、どこまでが Canonical Event で、どこからが protocol 固有かを固定する。
 
 ### 作業
 

@@ -14,7 +14,7 @@ Canonical Event は、
 
 として扱われます。
 
-Nostr Event や将来の ATProto Record は、Canonical Event の transport projection です。
+Nostr Event や将来の ATProto Record は、Canonical Event の transport への projection です。
 
 ---
 
@@ -40,7 +40,7 @@ Protocol-specific Representation
 
 の順で外部へ出します。
 
-このときの transport projection では、`lineage` に由来する `e` タグを `dsl:*` タグより前に出力し、同一入力に対する再現性を高めます。
+このときの transport への projection では、`lineage` に由来する `e` タグを `dsl:*` タグより前に出力し、同一入力に対する再現性を高めます。
 
 ### Event Model の要点
 
