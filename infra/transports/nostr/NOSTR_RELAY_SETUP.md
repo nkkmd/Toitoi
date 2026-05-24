@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の Nostr リレー立ち上げ方
 
-**Version: 0.4.0** | **Status: evolving** | **Last updated: 2026-05-22**
+**Version: 0.4.1** | **Status: evolving** | **Last updated: 2026-05-24**
 
 本ドキュメントは、Toitoi の Canonical Event を Nostr transport projection として受け取る専用リレーサーバーを構築するための公式ガイドです。
 
@@ -14,7 +14,7 @@
 - 運用監視: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
 - バックアップ: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
 - 異常時の初期化手順: [CLEAN_START.md](./CLEAN_START.md)
-- 取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)
+- 取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)（adapter / normalizer を通して canonicalized event 化する入口）
 
 ---
 
@@ -854,4 +854,4 @@ cat questions_*.jsonl | nak event wss://new-relay.your-domain.com
 - 監視設定: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
 - バックアップと復元: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
 - 初回立ち上げのやり直し: [CLEAN_START.md](./CLEAN_START.md)
-- リレー取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)
+- リレー取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)（adapter / normalizer を通して canonicalized event 化する入口）
