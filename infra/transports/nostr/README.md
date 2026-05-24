@@ -47,6 +47,7 @@ relay_ingest_worker.js
 - 起動: `pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com`
 - テスト: `pnpm --filter @toitoi/nostr-transport test`
 - replay: `pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify`
+- `pnpm` に不慣れなら: [pnpm Workspace 早見表](/home/oruorane/github/Toitoi/docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 依存先
 

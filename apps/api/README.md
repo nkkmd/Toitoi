@@ -49,6 +49,7 @@ HTTP response
 - 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - テスト: `pnpm --filter @toitoi/api test`
 - 参照実装: `@toitoi/nostr/storage/`
+- `pnpm` に不慣れなら: [pnpm Workspace 早見表](/home/oruorane/github/Toitoi/docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 起動
 

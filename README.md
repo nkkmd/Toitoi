@@ -77,6 +77,7 @@ For the project overview, specifications, and setup guides for each module, see 
 * 🧩 **Current Indexer MVP**: `packages/nostr/adapter/` and `packages/nostr/storage/`
 * 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
 * 📱 **Frontend UI Layer**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
+* 🛠️ **pnpm Workspace Guide**: **[`/docs/operations/PNPM_WORKSPACE_GUIDE.md`](./docs/operations/PNPM_WORKSPACE_GUIDE.md)**
 
 ### Entry Points by Purpose
 
