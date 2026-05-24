@@ -387,8 +387,3 @@ Problematizing Pipeline
 | TIP-VOCABULARY | 語彙管理・synonym registry・多言語マッピング |
 | TIP-RELAY-POLICY | リレー側タグバリデーション・カスタムポリシー |
 | TIP-INDEXER-STORAGE | DSL 4th-value のDB保存戦略 |
-
----
-
-*このドキュメントはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*v0.3.1 — 2026年5月*
