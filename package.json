@@ -1,9 +1,10 @@
 {
   "name": "@toitoi/workspace",
   "private": true,
+  "packageManager": "pnpm@11.3.0",
   "scripts": {
-    "test": "pnpm -r --if-present test",
-    "start:api": "pnpm --filter @toitoi/api start",
-    "start:worker": "pnpm --filter @toitoi/nostr-transport start"
+    "test": "corepack pnpm -r --if-present test",
+    "start:api": "corepack pnpm --filter @toitoi/api start",
+    "start:worker": "corepack pnpm --filter @toitoi/nostr-transport start"
   }
 }

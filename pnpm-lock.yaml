@@ -1,0 +1,50 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  apps/api:
+    dependencies:
+      '@toitoi/nostr':
+        specifier: workspace:*
+        version: link:../../packages/nostr
+
+  apps/edge-ai: {}
+
+  apps/frontend: {}
+
+  infra/indexers/nostr: {}
+
+  infra/transports/nostr:
+    dependencies:
+      '@toitoi/api':
+        specifier: workspace:*
+        version: link:../../../apps/api
+      '@toitoi/nostr':
+        specifier: workspace:*
+        version: link:../../../packages/nostr
+
+  packages/atproto:
+    dependencies:
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
+  packages/localfs:
+    dependencies:
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
+  packages/nostr:
+    dependencies:
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
+  packages/protocol: {}
