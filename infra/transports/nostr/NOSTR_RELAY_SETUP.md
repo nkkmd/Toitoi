@@ -18,6 +18,31 @@
 
 ---
 
+## 0. 最終的なディレクトリ構成
+
+このガイドを最後まで進めた後の、ホスト側の配置イメージは次のとおりです。
+
+```text
+~/nostream/
+├── .env
+├── docker-compose.yml
+├── postgresql.conf
+└── .nostr/
+    ├── data/
+    ├── db-logs/
+    └── settings.yaml
+
+~/nostr-archive/
+└── agroecology-commons/
+    ├── .git/
+    ├── .gitignore
+    └── archive_YYYY-MM-DD.jsonl
+```
+
+`~/nostream/` はリレー本体と PostgreSQL の永続データを抱える作業ディレクトリで、`~/nostr-archive/agroecology-commons/` は raw transport event の JSONL アーカイブを Git で管理するための別ディレクトリです。
+
+---
+
 ## 1. 事前準備（システム要件）
 
 サーバーを構築する前に、以下の準備をお願いします。

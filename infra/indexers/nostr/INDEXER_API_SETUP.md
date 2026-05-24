@@ -276,16 +276,42 @@ CREATE INDEX IF NOT EXISTS idx_event_content_trgm
 \q
 ```
 
-ディレクトリ構成はこのようになります。
+## 4.4 最終的なディレクトリ構成
+
+この手順を完了した後の配置は、次の3か所に分かれます。
 
 ```
+~/nostream/
+├── docker-compose.yml
+├── postgresql.conf
+└── .nostr/
+    ├── data/
+    └── db-logs/
+
 ~/toitoi-indexer/
 ├── .env                ← DATABASE_URL を記述
+├── ecosystem.config.cjs
 ├── prisma/
 │   └── schema.prisma
 ├── package.json
 └── node_modules/
+
+このリポジトリの作業コピー/
+├── apps/
+│   └── api/
+│       ├── server.js
+│       └── standard_api_service.js
+├── infra/
+│   └── transports/
+│       └── nostr/
+│           └── relay_ingest_worker.js
+└── packages/
+    └── nostr/
+        ├── adapter/
+        └── storage/
 ```
+
+`~/nostream/` はリレーの実体、`~/toitoi-indexer/` は Node.js の実行基盤、`このリポジトリの作業コピー` は Toitoi のソースコード本体です。
 
 ---
 

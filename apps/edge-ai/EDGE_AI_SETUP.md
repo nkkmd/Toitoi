@@ -354,6 +354,36 @@ publishToCommons();
 
 ---
 
+### 最終的なディレクトリ構成
+
+このガイドが想定する実装の置き場は、次の3か所です。
+
+```text
+このリポジトリの作業コピー/
+├── apps/
+│   └── edge-ai/
+│       └── EDGE_AI_SETUP.md
+├── infra/
+│   └── transports/
+│       └── nostr/
+│           └── relay_ingest_worker.js
+└── packages/
+    └── nostr/
+        ├── adapter/
+        │   ├── ingest_pipeline.js
+        │   ├── nostr_adapter.js
+        │   └── relay_ingest.js
+        ├── converter/
+        │   └── canonical_to_nostr_converter.js
+        └── storage/
+            ├── indexer.js
+            └── standard_api_views.js
+```
+
+`apps/edge-ai/` は設計ガイド、`infra/transports/nostr/relay_ingest_worker.js` はリレー側の参照実装、`packages/nostr/` は変換・保存まわりの実装です。
+
+---
+
 ## 5. リレー互換性とエッジ側の責任
 
 ### 5.1 エッジが必ず満たすべき条件
