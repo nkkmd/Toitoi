@@ -24,7 +24,7 @@ apps/
 
 まずは各アプリ固有の README を見ます。
 
-- [api/README.md](/home/oruorane/github/Toitoi/apps/api/README.md)
+- [api/README.md](./api/README.md)
 
 ## 依存の考え方
 

@@ -63,7 +63,7 @@ pnpm test
 
 ## 関連
 
-- [README.md](/home/oruorane/github/Toitoi/README.md)
-- [apps/api/README.md](/home/oruorane/github/Toitoi/apps/api/README.md)
-- [infra/transports/nostr/README.md](/home/oruorane/github/Toitoi/infra/transports/nostr/README.md)
-- [infra/indexers/nostr/INDEXER_API_SETUP.md](/home/oruorane/github/Toitoi/infra/indexers/nostr/INDEXER_API_SETUP.md)
+- [README.md](../../README.md)
+- [apps/api/README.md](../../apps/api/README.md)
+- [infra/transports/nostr/README.md](../../infra/transports/nostr/README.md)
+- [infra/indexers/nostr/INDEXER_API_SETUP.md](../../infra/indexers/nostr/INDEXER_API_SETUP.md)

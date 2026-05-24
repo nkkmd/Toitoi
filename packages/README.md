@@ -17,10 +17,10 @@ packages/
 
 ## まず見るもの
 
-- [protocol/README.md](/home/oruorane/github/Toitoi/packages/protocol/README.md)
-- [nostr/README.md](/home/oruorane/github/Toitoi/packages/nostr/README.md)
-- [atproto/README.md](/home/oruorane/github/Toitoi/packages/atproto/README.md)
-- [localfs/README.md](/home/oruorane/github/Toitoi/packages/localfs/README.md)
+- [protocol/README.md](./protocol/README.md)
+- [nostr/README.md](./nostr/README.md)
+- [atproto/README.md](./atproto/README.md)
+- [localfs/README.md](./localfs/README.md)
 
 ## 役割の分け方
 

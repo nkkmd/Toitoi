@@ -71,15 +71,15 @@ This repository uses `pnpm` at the workspace root, so run `corepack pnpm install
 
 ### Module Setup & Design
 
-* 🌐 **Commons Relay Layer**: **[`/infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
-* 🤖 **Local AI Edge Layer**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
-* 🧭 **Standard API Layer**: **[`/apps/api/README.md`](./apps/api/README.md)**
-* 🧠 **AI System Overview**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
-* ⚙️ **Indexer API Layer**: **[`/infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
+* 🌐 **Commons Relay Layer**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
+* 🤖 **Local AI Edge Layer**: **[`apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
+* 🧭 **Standard API Layer**: **[`apps/api/README.md`](./apps/api/README.md)**
+* 🧠 **AI System Overview**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
+* ⚙️ **Indexer API Layer**: **[`infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
 * 🧩 **Current Indexer MVP**: `packages/nostr/adapter/` and `packages/nostr/storage/`
 * 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
-* 📱 **Frontend UI Layer**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
-* 🛠️ **pnpm Workspace Guide**: **[`/docs/operations/PNPM_WORKSPACE_GUIDE.md`](./docs/operations/PNPM_WORKSPACE_GUIDE.md)**
+* 📱 **Frontend UI Layer**: **[`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
+* 🛠️ **pnpm Workspace Guide**: **[`docs/operations/PNPM_WORKSPACE_GUIDE.md`](./docs/operations/PNPM_WORKSPACE_GUIDE.md)**
 
 ### Entry Points by Purpose
 
@@ -216,12 +216,12 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 ### モジュール別セットアップ・設計書 (Modules)
 
-* 🌐 **コモンズ・リレー層**: **[`/infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
-* 🤖 **ローカルAI・エッジ層**: **[`/apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
-* 🧠 **AIシステム概要**: **[`/docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
-* ⚙️ **インデクサー・API層**: **[`/infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
+* 🌐 **コモンズ・リレー層**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
+* 🤖 **ローカルAI・エッジ層**: **[`apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
+* 🧠 **AIシステム概要**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
+* ⚙️ **インデクサー・API層**: **[`infra/indexers/nostr/INDEXER_API_SETUP.md`](./infra/indexers/nostr/INDEXER_API_SETUP.md)**
 * 🧩 **現行インデクサーMVP**: `packages/nostr/adapter/` と `packages/nostr/storage/`
-* 📱 **フロントエンド・UI層**: **[`/apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
+* 📱 **フロントエンド・UI層**: **[`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
 
 ### 目的別の入口
 
