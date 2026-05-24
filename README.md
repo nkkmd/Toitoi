@@ -10,7 +10,7 @@
 
 Toitoi is a **decentralized protocol platform (digital commons)** designed to share and evolve agroecological knowledge, based on the philosophy of "[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)".
 
-Instead of depending on specific companies or centralized servers, it circulates farmers' "ecological intuition (tacit knowledge)" across the network in the form of "inquiries (questions)" that can be translated and adapted by others.
+Instead of depending on specific companies or centralized servers, it circulates farmers' "ecological intuition (tacit knowledge)" across the network in the form of "inquiries" that can be translated and adapted by others. In this repository, `inquiry` is the term used for protocol and implementation layers, while `question` is kept as a general-language translation.
 
 > **Note:** Toitoi is an experimental project that aims to implement the "inquiry circulation system" conceived within the essay *[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)* as open-source software. It is as much a living proof-of-concept for the ideas in that text as it is a piece of software.
 
@@ -168,7 +168,7 @@ Please see [LICENSE_POLICY.md](./LICENSE_POLICY.md) for details.
 
 Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、アグロエコロジーの知を共有・進化させるための **分散型プロトコル・プラットフォーム（デジタル・コモンズ）** です。
 
-特定の企業や中央サーバーに依存せず、農家の「生態学的直感（暗黙知）」を、他者が翻訳可能な『問いの形式』としてネットワーク上で循環させます。
+特定の企業や中央サーバーに依存せず、農家の「生態学的直感（暗黙知）」を、他者が翻訳可能な『問いの形式』としてネットワーク上で循環させます。なお、本リポジトリでは `inquiry` をプロトコル／実装層の用語として使い、`question` は一般語の訳語としてのみ使います。
 
 > **本プロジェクトについて：** Toitoiは、論考『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』のなかで構想した「問いの循環システム」を、実際のOSSとして実装することを目指した実験的プロジェクトです。ソフトウェアであると同時に、あの論考で提示した思想の「泥臭い実証」そのものでもあります。
 

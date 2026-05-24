@@ -174,7 +174,7 @@ canonical structure の schema 定義を置きます。
 
 ## `examples/`
 
-実際の event / archive / question の例を置きます。
+実際の event / archive / inquiry の例を置きます。
 
 Toitoi では、example も重要な仕様補助資料として扱います。
 

@@ -93,7 +93,7 @@ Nostr Inquiry Event
 
 出力例:
 
-- possible questions
+- possible inquiries
 - hypotheses
 - uncertainty markers
 - reflective prompts

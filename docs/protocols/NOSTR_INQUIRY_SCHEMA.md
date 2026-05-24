@@ -6,6 +6,8 @@
 
 このドキュメントは、Toitoi が Nostr 上で inquiry を流通させる際の transport schema を定義します。
 
+`question` は一般語としては使えますが、この層では `inquiry` を正式な用語として扱います。
+
 重要なのは、これは Toitoi 全体の中心仕様ではなく、
 
 - Nostr transport における表現
