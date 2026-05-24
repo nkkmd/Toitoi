@@ -4,7 +4,7 @@ const {
   createProtocolDescriptor,
   createCapability,
   renderCapabilityRows,
-} = require('../protocol');
+} = require('@toitoi/protocol');
 
 function notImplemented(label) {
   return () => {

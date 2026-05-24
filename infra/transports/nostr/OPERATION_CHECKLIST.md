@@ -7,7 +7,7 @@
 - 対象: 日常運用の担当者、オンコール担当
 - 使用場面: ingest 失敗時の確認、監視確認、バックアップ前後のチェック
 - 関連実装: `infra/transports/nostr/MONITOR_SETUP.md`、`infra/transports/nostr/BACKUP_AND_RESTORE.md`
-- 前提モデル: Canonical Event を内部中心にし、Nostr は transport projection として扱う
+- 前提モデル: canonicalized event を内部中心にし、Nostr は transport projection として扱う
 
 ---
 
@@ -19,7 +19,7 @@
 - [ ] `relay_ingest_worker` の retry 回数が上限以内か確認する
 - [ ] 上限超過なら relay 側・ネットワーク側を確認する
 - [ ] 再試行しても失敗する場合は手動 ingest を止める
-- [ ] raw event が残っているなら canonicalization 再実行の余地を確認する
+- [ ] raw event が残っているなら canonicalize 再実行の余地を確認する
 - [ ] `provenance.sources[]` と `rawRef` を失っていないか確認する
 
 ---
@@ -41,7 +41,7 @@
 - [ ] `toitoi-worker` と `toitoi-api` を停止する
 - [ ] storage ディレクトリを退避する
 - [ ] `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を確認する
-- [ ] `provenance` と `rawRef` を含む canonical snapshot が揃っているか確認する
+- [ ] `provenance` と `rawRef` を含む canonicalized snapshot が揃っているか確認する
 - [ ] バックアップを別場所に保管する
 
 ---
@@ -51,7 +51,7 @@
 - [ ] storage バックアップを展開する
 - [ ] `replay_cli.js --storage-dir <dir>` を実行する
 - [ ] `index-snapshot.json` が再生成されることを確認する
-- [ ] `TOITOI_STORAGE_DIR=<dir> node apps/api/server.js` を起動できることを確認する
+- [ ] `TOITOI_STORAGE_DIR=<dir> pnpm --filter @toitoi/api start` を起動できることを確認する
 - [ ] `/health` と `lookup` / `list` / `query` / `relation` / `tree` を確認する
 - [ ] 必要なら raw event から canonicalized event を再生成する
 
@@ -62,7 +62,7 @@
 - [ ] 直近バックアップを探す
 - [ ] raw event が残っているか確認する
 - [ ] raw があるなら replay する
-- [ ] raw がないなら canonical / index snapshot で暫定復旧する
+- [ ] raw がないなら canonicalized event / index snapshot で暫定復旧する
 - [ ] 不足分は relay から再 ingest する
 - [ ] provenance が欠ける場合は復旧ログに明記する
 

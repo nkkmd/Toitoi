@@ -4,7 +4,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { createStandardApiService, normalizeIndexSnapshot } = require('./standard_api_service');
-const { replayStorage } = require('../../packages/nostr/storage/replay');
+const { replayStorage } = require('@toitoi/nostr/storage/replay');
 
 function loadIndexSnapshotFromOptions(options = {}) {
   if (typeof options.getIndexSnapshot === 'function') {

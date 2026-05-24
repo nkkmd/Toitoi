@@ -28,13 +28,13 @@ HTTP response
 - HTTP エントリポイント: [server.js](./server.js)
 - ルーティングと view 投影: [standard_api_service.js](./standard_api_service.js)
 - テスト: [test_standard_api_service.js](./test_standard_api_service.js)
-- データの元: `packages/nostr/storage/`
+- データの元: `@toitoi/nostr/storage/`
 
 ## 呼び出し関係
 
 - `server.js` が `standard_api_service.js` を呼びます
-- `server.js` が `packages/nostr/storage/replay.js` を使って storage snapshot を読みます
-- `standard_api_service.js` が `packages/nostr/storage/indexer.js` と `packages/nostr/storage/standard_api_views.js` を使います
+- `server.js` が `@toitoi/nostr/storage/replay.js` を使って storage snapshot を読みます
+- `standard_api_service.js` が `@toitoi/nostr/storage/indexer.js` と `@toitoi/nostr/storage/standard_api_views.js` を使います
 - `test_standard_api_service.js` が service layer の契約を確認します
 - `infra/transports/nostr/test_operational_e2e.js` が API 層との通し確認で参照します
 
@@ -44,10 +44,16 @@ HTTP response
 - replay 由来の snapshot を API に載せたいとき
 - canonical view の契約を確認したいとき
 
+## pnpm 入口
+
+- 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
+- テスト: `pnpm --filter @toitoi/api test`
+- 参照実装: `@toitoi/nostr/storage/`
+
 ## 起動
 
 ```bash
-TOITOI_STORAGE_DIR=/path/to/storage node apps/api/server.js
+TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 ```
 
 `TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。
@@ -56,11 +62,11 @@ TOITOI_STORAGE_DIR=/path/to/storage node apps/api/server.js
 
 - 対象: API 利用者、フロントエンド開発者、連携先実装者
 - 使用場面: エンドポイント確認、検索条件確認、レスポンス構造確認
-- 関連実装: `apps/api/server.js`、`apps/api/standard_api_service.js`、`packages/nostr/storage/indexer.js`
+- 関連実装: `apps/api/server.js`、`apps/api/standard_api_service.js`、`@toitoi/nostr/storage/indexer.js`
 
 ## 実装状態
 
-現在の API は、`packages/nostr/storage/indexer.js` と `packages/nostr/storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。
+現在の API は、`@toitoi/nostr/storage/indexer.js` と `@toitoi/nostr/storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。
 
 現在の主要関数は次の通りです。
 
@@ -446,4 +452,4 @@ def fetch_inquiries(q=None, soil_type=None, phase=None, limit=20, offset=0):
 - HTTP エントリポイント: [server.js](./server.js)
 - ルーティングと投影: [standard_api_service.js](./standard_api_service.js)
 - テスト: [test_standard_api_service.js](./test_standard_api_service.js)
-- 派生 index の元データ: [`packages/nostr/storage/`](../../packages/nostr/storage/)
+- 派生 index の元データ: [`@toitoi/nostr/storage/`](../../packages/nostr/storage/)

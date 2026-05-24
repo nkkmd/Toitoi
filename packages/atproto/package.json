@@ -1,0 +1,12 @@
+{
+  "name": "@toitoi/atproto",
+  "private": true,
+  "type": "commonjs",
+  "main": "protocol.js",
+  "scripts": {
+    "test": "node ../../scripts/run-tests.js"
+  },
+  "dependencies": {
+    "@toitoi/protocol": "workspace:*"
+  }
+}

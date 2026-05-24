@@ -5,7 +5,7 @@ const {
   createCapability,
   renderCapabilityRows,
   createProtocolRegistry,
-} = require('../protocol');
+} = require('@toitoi/protocol');
 const {
   classifyEvent,
   canonicalizeNostrEvent,

@@ -1,0 +1,13 @@
+{
+  "name": "@toitoi/nostr",
+  "private": true,
+  "type": "commonjs",
+  "main": "protocol.js",
+  "scripts": {
+    "test": "node ../../scripts/run-tests.js",
+    "replay": "node storage/replay_cli.js"
+  },
+  "dependencies": {
+    "@toitoi/protocol": "workspace:*"
+  }
+}

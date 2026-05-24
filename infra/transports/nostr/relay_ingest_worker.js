@@ -2,8 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ingestRelayUrl } = require('../../../packages/nostr/adapter/relay_ingest');
-const { persistIngestResult } = require('../../../packages/nostr/storage/persistence');
+const { ingestRelayUrl } = require('@toitoi/nostr/adapter/relay_ingest');
+const { persistIngestResult } = require('@toitoi/nostr/storage/persistence');
 
 function parseJson(value, fallback) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -161,7 +161,7 @@ function printHelp() {
     'Toitoi Nostr relay ingest worker',
     '',
     'Usage:',
-    '  node infra/transports/nostr/relay_ingest_worker.js --relay-url <wss://...> [options]',
+    '  pnpm --filter @toitoi/nostr-transport start -- --relay-url <wss://...> [options]',
     '',
     'Options:',
     '  --filter <json>      Nostr subscription filter JSON (default: {"kinds":[1042]})',

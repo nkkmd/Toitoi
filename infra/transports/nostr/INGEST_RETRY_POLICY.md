@@ -10,7 +10,7 @@
 
 - 対象: ingest 実装者、運用者、障害解析担当
 - 使用場面: `relay_ingest_worker.js` の再試行方針確認、運用判断の基準化
-- 関連実装: `infra/transports/nostr/relay_ingest_worker.js`、`packages/nostr/adapter/relay_ingest.js`
+- 関連実装: `infra/transports/nostr/relay_ingest_worker.js`、`@toitoi/nostr/adapter/relay_ingest.js`
 
 ---
 
@@ -59,7 +59,7 @@ relay ingest worker のデフォルトは次の通りです。
 ### CLI
 
 ```bash
-node infra/transports/nostr/relay_ingest_worker.js \
+pnpm --filter @toitoi/nostr-transport start -- \
   --relay-url wss://relay.example.com \
   --retry-attempts 3 \
   --retry-initial-delay-ms 1000 \

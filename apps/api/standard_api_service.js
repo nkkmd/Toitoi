@@ -5,17 +5,17 @@ const {
   findEventsByRelationTerm,
   listEvents,
   searchEvents,
-} = require('../../packages/nostr/storage/indexer');
+} = require('@toitoi/nostr/storage/indexer');
 const {
   buildDerivedIndex,
-} = require('../../packages/nostr/storage/replay');
+} = require('@toitoi/nostr/storage/replay');
 const {
   projectCanonicalEvent,
   projectEventDetailView,
   projectEventLookupView,
   projectLineageView,
   projectRelationView,
-} = require('../../packages/nostr/storage/standard_api_views');
+} = require('@toitoi/nostr/storage/standard_api_views');
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';

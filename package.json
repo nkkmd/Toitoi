@@ -1,0 +1,9 @@
+{
+  "name": "@toitoi/workspace",
+  "private": true,
+  "scripts": {
+    "test": "pnpm -r --if-present test",
+    "start:api": "pnpm --filter @toitoi/api start",
+    "start:worker": "pnpm --filter @toitoi/nostr-transport start"
+  }
+}

@@ -3,11 +3,11 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
-const { ingestNostrEvents } = require('../../../packages/nostr/adapter/ingest_pipeline');
-const { persistIngestResult } = require('../../../packages/nostr/storage/persistence');
-const { replayStorage } = require('../../../packages/nostr/storage/replay');
-const { createStandardApiService } = require('../../../apps/api/standard_api_service');
-const { makeTempDir } = require('../../../packages/nostr/storage/test_fixtures');
+const { ingestNostrEvents } = require('@toitoi/nostr/adapter/ingest_pipeline');
+const { persistIngestResult } = require('@toitoi/nostr/storage/persistence');
+const { replayStorage } = require('@toitoi/nostr/storage/replay');
+const { createStandardApiService } = require('@toitoi/api/standard_api_service');
+const { makeTempDir } = require('@toitoi/nostr/storage/test_fixtures');
 
 function readJsonl(filePath) {
   return fs.readFileSync(filePath, 'utf8')

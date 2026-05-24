@@ -1,0 +1,13 @@
+{
+  "name": "@toitoi/api",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "node ../../scripts/run-tests.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@toitoi/nostr": "workspace:*"
+  }
+}

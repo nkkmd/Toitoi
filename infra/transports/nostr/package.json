@@ -1,0 +1,14 @@
+{
+  "name": "@toitoi/nostr-transport",
+  "private": true,
+  "type": "commonjs",
+  "main": "relay_ingest_worker.js",
+  "scripts": {
+    "test": "node ../../../scripts/run-tests.js",
+    "start": "node relay_ingest_worker.js"
+  },
+  "dependencies": {
+    "@toitoi/api": "workspace:*",
+    "@toitoi/nostr": "workspace:*"
+  }
+}

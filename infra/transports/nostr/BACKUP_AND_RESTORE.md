@@ -4,7 +4,7 @@
 
 本ドキュメントは、Toitoi の Nostr ingest / replay / API 運用で使う append-only storage を安全にバックアップし、障害時に復旧するための手順です。
 
-ここでの前提は、Nostr の raw event を保持し、それを Canonical Event に再変換できることです。したがって、バックアップの目的は単なるファイル保全ではなく、raw event / canonicalized event / provenance / rawRef を含む再構築可能性の維持です。
+ここでの前提は、Nostr の raw event を保持し、それを canonicalized event に再変換できることです。したがって、バックアップの目的は単なるファイル保全ではなく、raw event / canonicalized event / provenance / rawRef を含む再構築可能性の維持です。
 
 このガイドは、運用整備で必要な
 
@@ -18,18 +18,18 @@
 
 - 対象: リレー運用者、インデクサー運用者、障害対応担当
 - 使用場面: 日次バックアップ、障害復旧、クリーンスタート前の退避
-- 関連実装: `packages/nostr/storage/persistence.js`、`packages/nostr/storage/replay.js`
+- 関連実装: `@toitoi/nostr/storage/persistence.js`、`@toitoi/nostr/storage/replay.js`
 
 ---
 
 ## 1. 基本方針
 
 - raw event を一次保管する
-- canonical event と index snapshot は再生成可能な成果物として扱う
+- canonicalized event と index snapshot は再生成可能な成果物として扱う
 - 置換や修復は上書きではなく、新しい batch として追記する
 - 復旧後は replay と API 疎通で整合性を確認する
 
-現行実装では、`packages/nostr/storage/` が append-only storage の中心です。バックアップ対象は storage ディレクトリ全体です。
+現行実装では、`@toitoi/nostr/storage/` が append-only storage の中心です。バックアップ対象は storage ディレクトリ全体です。
 
 ---
 
@@ -92,7 +92,7 @@ tar -xzf toitoi-storage-backup-YYYYMMDD-HHMMSS.tgz -C /path/to/storage
 ### 4.3 replay で再構築
 
 ```bash
-node packages/nostr/storage/replay_cli.js --storage-dir /path/to/storage --verify
+pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify
 ```
 
 `--verify` は、raw event から再 canonicalize する際に検証を再実行したい場合に使います。通常運用では、まず既存 storage を優先して復旧し、その後に必要な検証を追加してください。`provenance` や `rawRef` の欠損がないかも合わせて確認してください。
@@ -100,10 +100,12 @@ node packages/nostr/storage/replay_cli.js --storage-dir /path/to/storage --verif
 ### 4.4 API の疎通確認
 
 ```bash
-TOITOI_STORAGE_DIR=/path/to/storage node apps/api/server.js
+TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 curl http://127.0.0.1:3000/health
 curl "http://127.0.0.1:3000/api/v1/inquiries?limit=1"
 ```
+
+`@toitoi/nostr` と `@toitoi/api` を使うと、復旧と疎通確認を workspace の入口だけで完結できます。
 
 ---
 

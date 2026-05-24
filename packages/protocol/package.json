@@ -1,0 +1,9 @@
+{
+  "name": "@toitoi/protocol",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ../../scripts/run-tests.js"
+  }
+}
