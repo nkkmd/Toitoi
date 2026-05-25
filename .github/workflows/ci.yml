@@ -16,17 +16,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # setup-node's built-in pnpm cache needs `pnpm` available on PATH.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # pnpm@11 requires Node >= 22.13
+          node-version: 22
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11.3.0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
         with:
-          node-version: 20
-          cache: pnpm
+          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
