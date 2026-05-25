@@ -525,8 +525,3 @@ sudo systemctl disable toitoi-monitor
 バックアップと復旧の手順自体は [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) にまとめています。監視では「異常を止める」、復旧では「storage を安全に戻す」という役割分担で読むと把握しやすいです。
 
 relay ingest の一時障害に対する再試行方針は [INGEST_RETRY_POLICY.md](./INGEST_RETRY_POLICY.md) を参照してください。
-
----
-
-*このガイドはデジタル・アグロエコロジー・コモンズ推進プロジェクトの一環として作成されました。*
-*v0.1.0 — 2026年5月*
