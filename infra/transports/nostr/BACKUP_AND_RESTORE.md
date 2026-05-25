@@ -135,6 +135,6 @@ raw-events.jsonl が失われている場合は、canonical-events.jsonl と ind
 ## 7. 関連
 
 - まず短く確認したい場合は [OPERATION_CHECKLIST.md](./OPERATION_CHECKLIST.md) を使う
-- [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
+- [NOSTR_STORAGE_AND_REPLAY.md](../../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
 - [MONITOR_SETUP.md](./MONITOR_SETUP.md)
 - [CLEAN_START.md](./CLEAN_START.md)
