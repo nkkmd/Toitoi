@@ -36,10 +36,17 @@
 └── agroecology-commons/
     ├── .git/
     ├── .gitignore
-    └── archive_YYYY-MM-DD.jsonl
+    └── inquiry_YYYY-MM-DD.jsonl
 ```
 
 `~/nostream/` はリレー本体と PostgreSQL の永続データを抱える作業ディレクトリで、`~/nostr-archive/agroecology-commons/` は raw transport event の JSONL アーカイブを Git で管理するための別ディレクトリです。
+
+このガイドでは、次の 2 系統を分けて扱います。
+
+- `~/nostr-archive/agroecology-commons/`: `nak req -k 1042` で取る transport archive。リレーから直接回収した raw transport event の履歴です。
+- `packages/nostr/storage` 相当の storageDir: `@toitoi/nostr/storage/` が保持する append-only storage。`raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を含み、`BACKUP_AND_RESTORE.md` の対象です。
+
+つまり、transport archive は「リレーの外側に残す長期保全」、storage は「canonicalized event を再構築するための運用バックアップ」です。両方を併用すると、リレーの再取得と内部モデルの復旧を別々に扱えます。
 
 ---
 
@@ -497,19 +504,15 @@ sudo chmod +x /usr/local/bin/nak
 
 ---
 
-### Step 6.2: Gitアーカイブリポジトリの初期化
+### Step 6.2: Transport archive の初期化
 
-アーカイブ専用のディレクトリとGitリポジトリを作成します。
+transport archive は、`nak req -k 1042` でリレーから直接回収した raw transport event を Git で保全する層です。`packages/nostr/storage` とは別管理にします。
 
 ```bash
-# アーカイブ用ディレクトリの作成
 mkdir -p ~/nostr-archive/agroecology-commons
 cd ~/nostr-archive/agroecology-commons
 
-# Gitリポジトリの初期化
 git init
-
-# .gitignoreの設定（一時ファイルを除外）
 echo "*.tmp" > .gitignore
 echo ".DS_Store" >> .gitignore
 git add .gitignore
@@ -518,356 +521,91 @@ git commit -m "init: Initialize Agroecology Commons archive repository"
 
 ※ Git のユーザー名・メールアドレスは [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md) の Step 3 でグローバル設定済みのため、ここでの設定は不要です。
 
----
+### Step 6.3: Canonical スクリプトを配置
 
-### Step 6.3: 手動エクスポート（初回・任意のタイミング）
+このリポジトリには、transport archive 用の実ファイル版スクリプトを `scripts/nostr/` に置いてあります。
 
-リレーに蓄積された Kind: 1042 の transport event を JSONL 形式でエクスポートします。JSONL は保存形式であり、Canonical Event そのものではありません。
+```bash
+cp scripts/nostr/archive_diff.sh ~/nostr-archive/archive_diff.sh
+cp scripts/nostr/split_archive.sh ~/nostr-archive/split_archive.sh
+chmod +x ~/nostr-archive/archive_diff.sh ~/nostr-archive/split_archive.sh
+```
+
+`archive_diff.sh` は差分追記と重複排除を担当し、`split_archive.sh` は `inquiry.jsonl` を年別ファイルへ分割する補助です。どちらも `inquiry` 命名を前提にしています。
+
+### Step 6.4: 初回の transport archive
+
+最初の 1 回は、リレーの現在状態を `inquiry.jsonl` に保存します。
 
 ```bash
 cd ~/nostr-archive/agroecology-commons
-
-# ── 全件エクスポート ──
-nak req -k 1042 wss://relay.your-domain.com > archive_$(date +%Y-%m-%d).jsonl
-
-# エクスポートされた件数を確認
-wc -l archive_$(date +%Y-%m-%d).jsonl
+nak req -k 1042 wss://relay.your-domain.com > inquiry.jsonl
+wc -l inquiry.jsonl
+git add inquiry.jsonl
+git commit -m "archive: initial inquiry snapshot ($(wc -l < inquiry.jsonl) entries)"
 ```
 
-> **JSONL形式とは？** 1行＝1イベントのJSON。`{"id":"...","pubkey":"...","kind":1042,"content":"問いの内容",...}` という形式で、各行が独立した Nostr transport event です。テキストエディタでも読め、あらゆるツールで処理できます。
+### Step 6.5: 差分アーカイブを自動化
 
-エクスポート後、Gitにコミットします。
-
-```bash
-git add archive_$(date +%Y-%m-%d).jsonl
-git commit -m "archive: snapshot as of $(date +%Y-%m-%d) ($(wc -l < archive_$(date +%Y-%m-%d).jsonl) entries)"
-```
-
----
-
-### Step 6.4: 差分アーカイブスクリプト（cronで自動化）
-
-毎回全件エクスポートではなく、**前回以降の新規 transport event だけを追記する差分方式**にすることで、ファイルサイズと処理時間を最小化します。
-
-以下のスクリプトを作成してください。
+以後は `archive_diff.sh` で新規分だけを追記します。
 
 ```bash
-nano ~/nostr-archive/archive_diff.sh
-```
-
-```bash
-#!/bin/bash
-# =====================================================
-# Canonical Event projection JSONL差分アーカイバ
-# 前回コミット以降の新規 transport event のみを取得し、Gitにコミットする
-# =====================================================
-
-RELAY="wss://relay.your-domain.com"       # ← あなたのリレーURLに変更
-ARCHIVE_DIR="$HOME/nostr-archive/agroecology-commons"
-ARCHIVE_FILE="$ARCHIVE_DIR/questions.jsonl"
-LOG_FILE="$ARCHIVE_DIR/archive.log"
-DATE=$(date +%Y-%m-%d)
-TIMESTAMP=$(date +%Y-%m-%dT%H:%M:%S)
-
-cd "$ARCHIVE_DIR" || exit 1
-
-# 最後にエクスポートした transport event のタイムスタンプを取得
-# (ファイルが存在しない場合は0＝全件取得)
-if [ -f "$ARCHIVE_FILE" ]; then
-    # JSONLの最終行からcreated_atを取得
-    LAST_TS=$(tail -1 "$ARCHIVE_FILE" | node -e "let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{ try{ process.stdout.write(String(JSON.parse(d).created_at||0)) }catch(e){ process.stdout.write('0') } })" 2>/dev/null || echo 0)
-else
-    LAST_TS=0
-fi
-
-echo "[$TIMESTAMP] 前回タイムスタンプ: $LAST_TS" >> "$LOG_FILE"
-
-# 前回以降の新規 transport event を取得（since パラメータで差分取得）
-TMP_FILE=$(mktemp)
-nak req -k 1042 --since "$LAST_TS" "$RELAY" > "$TMP_FILE" 2>> "$LOG_FILE"
-
-NEW_COUNT=$(wc -l < "$TMP_FILE")
-
-if [ "$NEW_COUNT" -eq 0 ]; then
-    echo "[$TIMESTAMP] 新規イベントなし。スキップ。" >> "$LOG_FILE"
-    rm "$TMP_FILE"
-    exit 0
-fi
-
-# 既存ファイルに追記（重複を避けるためIDで重複排除）
-cat "$TMP_FILE" >> "$ARCHIVE_FILE"
-
-# IDの重複排除（同じ transport event が二重取得された場合の保険）
-node - <<'EOF'
-const fs = require('fs');
-
-const lines = fs.readFileSync('questions.jsonl', 'utf8')
-  .split('\n')
-  .filter(l => l.trim());
-
-const seen = new Set();
-const unique = [];
-for (const line of lines) {
-  try {
-    const event = JSON.parse(line);
-    if (event.id && !seen.has(event.id)) {
-      seen.add(event.id);
-      unique.push(line);
-    }
-  } catch {}
-}
-
-fs.writeFileSync('questions.jsonl', unique.join('\n') + '\n');
-console.log(`重複排除後の総イベント数: ${unique.length}`);
-EOF
-
-rm "$TMP_FILE"
-
-# Gitにコミット
-TOTAL=$(wc -l < "$ARCHIVE_FILE")
-git add questions.jsonl
-git commit -m "archive: $DATE +${NEW_COUNT} items added (total ${TOTAL} items)" >> "$LOG_FILE" 2>&1
-
-echo "[$TIMESTAMP] 完了: ${NEW_COUNT}件追加、累計 ${TOTAL}件" >> "$LOG_FILE"
-```
-
-```bash
-# 実行権限を付与
-chmod +x ~/nostr-archive/archive_diff.sh
-
-# 動作テスト（手動実行）
 ~/nostr-archive/archive_diff.sh
 ```
 
----
-
-### Step 6.5: cronで自動化（毎日深夜3時）
-
-```bash
-crontab -e
-```
-
-以下の行を追加します。
+cron で毎日 03:00 に回すなら、次を追加します。
 
 ```cron
-# Canonical Event projection JSONL差分アーカイブ（毎日03:00）
 0 3 * * * /bin/bash $HOME/nostr-archive/archive_diff.sh
 ```
 
----
+### Step 6.6: リモートリポジトリへの push
 
-### Step 6.6: リモートリポジトリへのpush（任意・強く推奨）
-
-Gitリポジトリをリモート（GitHub / Gitea / Forgejo など）にも push することで、VPS障害時の最終防衛ラインになります。raw event を Git に残すことは、Canonical Event の再生成可能性を確保することでもあります。
+Git リポジトリをリモートにも push すると、VPS 障害時の最終防衛ラインになります。
 
 ```bash
-# GitHubの場合（プライベートリポジトリ推奨）
 cd ~/nostr-archive/agroecology-commons
 git remote add origin git@github.com:your-username/agroecology-commons-archive.git
 git push -u origin main
-
-# 以後、archive_diff.sh の末尾に以下を追加すれば自動pushも可能
-# git push origin main >> "$LOG_FILE" 2>&1
 ```
 
-> **プライバシーに関する注意：** Nostrのイベントはもともとパブリックなプロトコルのため、公開リポジトリにしても問題ありませんが、投稿者の pubkey や provenance に相当する情報が含まれます。コミュニティの合意に基づいてプライベート/パブリックを選択してください。
+### Step 6.7: transport archive からの復元
 
----
-
-### Step 6.7: アーカイブからの復元
-
-リレーを新しいサーバーに移行した際や、データが失われた際は、JSONLファイルから直接再インポートできます。
-`nak` の一括送信機能（ストリーミング）を利用するため、数万件のデータでも数秒〜数十秒で瞬時に復元可能です。これは Canonical Event を再構築するための transport input の復元です。
+transport archive は raw transport event の再投入に使います。`packages/nostr/storage` の復旧とは切り離して考えてください。
 
 ```bash
-# アーカイブから新リレーへ全件インポート（一括処理）
-cat ~/nostr-archive/agroecology-commons/questions.jsonl | nak event wss://new-relay.your-domain.com
-
-echo "✅ インポート完了"
+cat ~/nostr-archive/agroecology-commons/inquiry*.jsonl | nak event wss://new-relay.your-domain.com
 ```
 
----
+### Step 6.8: 年別分割
 
-### アーカイブディレクトリの構成（完成イメージ）
-
-```text
-~/nostr-archive/
-├── archive_diff.sh                  # 差分アーカイブスクリプト
-└── agroecology-commons/
-    ├── .git/                        # Gitリポジトリ（問いの系譜の歴史）
-    ├── .gitignore
-    ├── questions.jsonl              # 全 transport event の蓄積（1行＝1 projection）
-    └── archive.log                  # 実行ログ
-```
-
-`git log` を実行すると、コミットメッセージが「問いの系譜」の年表になります。
-
-```text
-commit a3f9c2d  archive: 2026-06-01 +12件追加（累計 340件）
-commit 7b1e804  archive: 2026-05-31 +8件追加（累計 328件）
-commit 2c4a1f0  archive: 2026-05-30 +5件追加（累計 320件）
-...
-```
-
----
-
-### 保存担保のレイヤー構成（まとめ）
-
-| レイヤー | 手段 | リレー依存 | 可搬性 |
-|---|---|---|---|
-| L1 運用DB | PostgreSQL（Nostream標準） | ◎ 高 | △ 実装依存 |
-| L2 DBダンプ | pg_dumpall → 外部ストレージ | ◎ 高 | △ 実装依存 |
-| **L3 JSONLアーカイブ** | **nak + Gitで差分管理** | **✕ 不要** | **◎ 完全** |
-| L4 リモートpush | GitHub / Gitea | ✕ 不要 | ◎ 完全 |
-
-> **Nostrの本質的な強み：** イベントは署名済み自己完結データです。JSONLファイルさえ手元にあれば、リレーソフトウェアが廃止されても、VPSが消えても、transport projection を再投入して Canonical Event を再構築し続けられます。
-
----
-
-### Step 6.8: JSONLアーカイブのファイル分割（50MB超過時）
-
-`questions.jsonl` は通常、数十年単位で単一ファイルのまま運用できます。ただし以下のいずれかを感じたタイミングで、年別ファイルへの分割を検討してください。
-
-- ファイルサイズが **50MB** を超えたとき
-- `git commit` に数秒以上かかるようになったとき
-- `wc -l questions.jsonl` が **10万行** を超えたとき
-
-#### サイズ警告ログの追加（`archive_diff.sh` の修正）
-
-`archive_diff.sh` の末尾のログ行を以下に置き換えておくと、50MB超過をログで気づけます。
+`inquiry.jsonl` が大きくなったら、`split_archive.sh` で年別ファイルに分けます。
 
 ```bash
-# 既存の最終ログ行を以下で置き換える
-SIZE_MB=$(du -m "$ARCHIVE_FILE" | cut -f1)
-echo "[$TIMESTAMP] 完了: ${NEW_COUNT}件追加、累計 ${TOTAL}件 / ファイルサイズ: ${SIZE_MB}MB" >> "$LOG_FILE"
-
-if [ "$SIZE_MB" -ge 50 ]; then
-    echo "[$TIMESTAMP] ⚠️  ファイルサイズが50MBを超えました。split_archive.sh の実行を検討してください。" >> "$LOG_FILE"
-fi
-```
-
-#### 分割スクリプトの作成
-
-```bash
-nano ~/nostr-archive/split_archive.sh
-```
-
-```bash
-#!/bin/bash
-# =====================================================
-# questions.jsonl 年別分割スクリプト
-# 50MB超えを検知したとき、または任意のタイミングで手動実行
-# =====================================================
-
-ARCHIVE_DIR="$HOME/nostr-archive/agroecology-commons"
-ARCHIVE_FILE="$ARCHIVE_DIR/questions.jsonl"
-DIFF_SCRIPT="$HOME/nostr-archive/archive_diff.sh"
-
-cd "$ARCHIVE_DIR" || exit 1
-
-# --- 事前チェック ---
-if [ ! -f "$ARCHIVE_FILE" ]; then
-    echo "❌ questions.jsonl が見つかりません"
-    exit 1
-fi
-
-SIZE_MB=$(du -m "$ARCHIVE_FILE" | cut -f1)
-echo "現在のファイルサイズ: ${SIZE_MB}MB"
-echo "年別分割を開始します..."
-
-# --- 年別に分割 ---
-node - <<'EOF'
-const fs = require('fs');
-
-const lines = fs.readFileSync('questions.jsonl', 'utf8')
-  .split('\n')
-  .filter(l => l.trim());
-
-const yearLines = {};
-for (const line of lines) {
-  try {
-    const event = JSON.parse(line);
-    const year = new Date(event.created_at * 1000).getUTCFullYear().toString();
-    (yearLines[year] ??= []).push(line);
-  } catch {}
-}
-
-let total = 0;
-for (const [year, lines] of Object.entries(yearLines).sort()) {
-  const fname = `questions_${year}.jsonl`;
-  fs.writeFileSync(fname, lines.join('\n') + '\n');
-  console.log(`  ✅ ${fname}: ${lines.length}件`);
-  total += lines.length;
-}
-console.log(`\n合計 ${total} 件を分割しました`);
-EOF
-
-# --- 元ファイルを削除 ---
-rm "$ARCHIVE_FILE"
-echo "questions.jsonl を削除しました"
-
-# --- archive_diff.sh の書き込み先を今年のファイルに更新 ---
-CURRENT_YEAR=$(date +%Y)
-NEW_FILENAME="questions_${CURRENT_YEAR}.jsonl"
-
-sed -i "s|ARCHIVE_FILE=\".*questions.*\"|ARCHIVE_FILE=\"$ARCHIVE_DIR/$NEW_FILENAME\"|" "$DIFF_SCRIPT"
-echo "archive_diff.sh の ARCHIVE_FILE を $NEW_FILENAME に更新しました"
-
-# --- Gitにコミット ---
-git add -A
-git commit -m "archive: Split questions.jsonl into yearly files"
-
-echo ""
-echo "✅ 分割完了。git log で確認してください。"
-echo "📌 復元時は: cat questions_*.jsonl | nak event wss://your-relay"
-```
-
-```bash
-# 実行権限を付与
-chmod +x ~/nostr-archive/split_archive.sh
-```
-
-**実行手順（必要になったとき）：**
-
-```bash
-# 1. 念のため事前にGitの状態を確認
-cd ~/nostr-archive/agroecology-commons
-git status
-
-# 2. 分割スクリプトを実行
 ~/nostr-archive/split_archive.sh
-
-# 3. 結果を確認
-ls -lh questions_*.jsonl
-git log --oneline -5
+ls -lh ~/nostr-archive/agroecology-commons/inquiry_*.jsonl
 ```
 
-#### 分割後のディレクトリ構成
-
-```text
-~/nostr-archive/
-├── archive_diff.sh                  # ARCHIVE_FILE が自動更新済み
-├── split_archive.sh                 # 本Stepで作成
-└── agroecology-commons/
-    ├── .git/
-    ├── .gitignore
-    ├── questions_2026.jsonl         # 分割済みアーカイブ
-    ├── questions_2027.jsonl
-    ├── questions_2028.jsonl         # archive_diff.sh が追記する現在年ファイル（例）
-    └── archive.log
-```
-
-#### 分割後の復元コマンド（Step 6.7 の変更点）
-
-分割後は Step 6.7 の復元コマンドを以下に読み替えてください。ワイルドカードで年順に連結されるため、手順はほぼ変わりません。
+分割後の復元は、ワイルドカードで年順に連結すれば同じです。
 
 ```bash
-# 分割前（単一ファイル）
-cat questions.jsonl | nak event wss://new-relay.your-domain.com
-
-# 分割後（年別ファイル）
-cat questions_*.jsonl | nak event wss://new-relay.your-domain.com
+cat ~/nostr-archive/agroecology-commons/inquiry_*.jsonl | nak event wss://new-relay.your-domain.com
 ```
+
+---
+
+## 7. storage backup / restore
+
+`packages/nostr/storage` の storage backup は、transport archive とは独立した canonicalized event 復旧用の層です。こちらは [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を正規手順として使います。
+
+最小限の流れだけ書くと、次のとおりです。
+
+```bash
+tar -czf toitoi-storage-backup-$(date +%Y%m%d-%H%M%S).tgz -C /path/to/storage .
+pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify
+```
+
+transport archive は「再投入できる raw transport event の履歴」、storage backup は「canonicalized event / provenance / rawRef / index snapshot の復旧」に使います。役割を混ぜないのが大事です。
 
 ---
 

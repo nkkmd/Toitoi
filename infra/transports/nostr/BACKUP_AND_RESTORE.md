@@ -6,6 +6,8 @@
 
 ここでの前提は、Nostr の raw event を保持し、それを canonicalized event に再変換できることです。したがって、バックアップの目的は単なるファイル保全ではなく、raw event / canonicalized event / provenance / rawRef を含む再構築可能性の維持です。
 
+これは `nak req -k 1042` で作る transport archive とは別の層です。transport archive はリレーから直接回収した raw transport event の長期保全、こちらの storage backup は `packages/nostr/storage` が保持する append-only storage の保全です。
+
 このガイドは、運用整備で必要な
 
 - バックアップ方針
@@ -28,6 +30,7 @@
 - canonicalized event と index snapshot は再生成可能な成果物として扱う
 - 置換や修復は上書きではなく、新しい batch として追記する
 - 復旧後は replay と API 疎通で整合性を確認する
+- transport archive がある場合は、storage backup と組み合わせて source of truth を二重化する
 
 現行実装では、`@toitoi/nostr/storage/` が append-only storage の中心です。バックアップ対象は storage ディレクトリ全体です。
 
@@ -68,6 +71,7 @@ tar -czf toitoi-storage-backup-$(date +%Y%m%d-%H%M%S).tgz -C /path/to/storage .
 必要なら次も一緒に退避します。
 
 - `examples/sample-nostr-archive.jsonl`
+- `~/nostr-archive/agroecology-commons/inquiry*.jsonl`
 - `docs/roadmap/IMPLEMENTATION_PLAN.md`
 - `docs/operations/NOSTR_STORAGE_AND_REPLAY.md`
 
@@ -119,7 +123,8 @@ raw-events.jsonl が失われている場合は、canonical-events.jsonl と ind
 
 1. 直近のバックアップを探す
 2. そのバックアップから replay する
-3. relay 側の再取得が必要なら、対象期間を絞って ingest をやり直す
+3. transport archive が残っているなら、そこから relay へ再投入する
+4. relay 側の再取得が必要なら、対象期間を絞って ingest をやり直す
 
 ---
 

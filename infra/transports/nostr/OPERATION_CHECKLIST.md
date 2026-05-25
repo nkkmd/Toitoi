@@ -39,9 +39,10 @@
 
 - [ ] `toitoi-monitor` を停止する
 - [ ] `toitoi-worker` と `toitoi-api` を停止する
-- [ ] storage ディレクトリを退避する
+- [ ] `packages/nostr/storage` の storage ディレクトリを退避する
 - [ ] `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を確認する
 - [ ] `provenance` と `rawRef` を含む canonicalized snapshot が揃っているか確認する
+- [ ] `~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive も必要に応じて確認する
 - [ ] バックアップを別場所に保管する
 
 ---
@@ -54,6 +55,7 @@
 - [ ] `TOITOI_STORAGE_DIR=<dir> pnpm --filter @toitoi/api start` を起動できることを確認する
 - [ ] `/health` と `lookup` / `list` / `query` / `relation` / `tree` を確認する
 - [ ] 必要なら raw event から canonicalized event を再生成する
+- [ ] transport archive がある場合は、必要に応じて relay 再投入も検討する
 
 ---
 

@@ -6,7 +6,7 @@
 
 **既存イベントとの互換性が失われる設定変更を行う際**に実施してください。本手順を実行すると、リレーのPostgreSQLデータベースおよびインデクサーのデータベースに保存されたすべてのイベントが完全に削除されます。**必ず内容を十分に理解した上で実行してください。**
 
-クリーンスタートの前に、必要なら [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を参照して storage を退避してください。
+クリーンスタートの前に、必要なら [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を参照して `packages/nostr/storage` の storage を退避してください。`~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive を残すかどうかは、運用方針に応じて別途決めてください。
 
 ## どこで使うか
 
@@ -204,7 +204,7 @@ curl https://api.your-domain.com/api/v1/inquiries
 cd ~/nostr-archive/agroecology-commons
 
 # 既存のJSONLファイルを削除
-rm -f questions.jsonl questions_*.jsonl archive.log
+rm -f inquiry.jsonl inquiry_*.jsonl archive.log
 
 # Gitに記録
 git add -A

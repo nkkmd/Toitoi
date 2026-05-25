@@ -6,6 +6,8 @@
 
 Toitoi の Nostr ingest を append-only に保存し、raw event から再 canonicalize し直せるようにするための運用メモです。
 
+`nak req -k 1042` で作る transport archive とは別に、こちらは `packages/nostr/storage` が保持する storageDir の運用メモです。
+
 ## 保存レイアウト
 
 - `raw-events.jsonl`
