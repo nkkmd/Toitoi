@@ -56,7 +56,7 @@ Nostr is currently the first operational transport layer.
 
 For the project overview, specifications, and setup guides for each module, see the following directories. *(Note: Most detailed docs are currently written in Japanese.)*
 
-This repository uses `pnpm` at the workspace root, so run `corepack pnpm install` there before working with the project.
+If you haven't cloned the repo yet, grab it first and then run `corepack pnpm install` at the workspace root before working with the project.
 
 ### Core Documents
 
@@ -201,7 +201,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 本プロジェクトの全体像と、各モジュールの仕様書・構築ガイドは以下のディレクトリを参照してください。
 
-このリポジトリはワークスペース全体で `pnpm` を使うため、作業前にルートで `corepack pnpm install` を実行してください。
+このリポジトリをまだ取得していない場合は、先に `git clone` してから、ワークスペースのルートで `corepack pnpm install` を実行してください。
 
 ### コア・ドキュメント (Core Documents)
 

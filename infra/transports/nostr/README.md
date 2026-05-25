@@ -5,6 +5,8 @@
 ここは library 層ではなく、実運用や統合確認のための薄い入口です。  
 本体ロジックは `@toitoi/nostr/adapter/` と `@toitoi/nostr/storage/` にあります。
 
+このリポジトリをまだ clone していない場合は、先に取得してから読むと流れが追いやすいです。
+
 ## 全体像
 
 ```text

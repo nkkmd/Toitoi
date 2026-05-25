@@ -7,6 +7,8 @@
 Canonical Event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。  
 この README は、API 利用者向けの単一の入口として、従来の詳細仕様を吸収しています。
 
+このリポジトリをまだ取っていない場合は、先に `git clone` してから読んでもらうのがいちばん自然です。
+
 ## 全体像
 
 ```text
