@@ -562,6 +562,7 @@ cron で毎日 03:00 に回すなら、次を追加します。
 ### Step 6.6: リモートリポジトリへの push
 
 Git リポジトリをリモートにも push すると、VPS 障害時の最終防衛ラインになります。
+この手順は `PREREQUISITE_INSTALLATION.md` で準備した SSH 鍵による GitHub 認証を前提にしています。
 
 ```bash
 cd ~/nostr-archive/agroecology-commons

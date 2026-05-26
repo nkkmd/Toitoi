@@ -75,6 +75,30 @@ git config --global user.email "admin@your-domain.com"
 git config --global --list
 ```
 
+### Step 4: GitHub への push 用 SSH 鍵の準備
+
+`NOSTR_RELAY_SETUP.md` の `git@github.com:...` 形式の push は、GitHub アカウントのパスワードではなく SSH 鍵で認証します。まだ鍵がない場合は、次の手順で作成して GitHub に登録してください。
+
+```bash
+# 鍵を作成（既存の鍵がある場合は上書きしない）
+ssh-keygen -t ed25519 -C "admin@your-domain.com"
+
+# ssh-agent に鍵を追加
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# 公開鍵を表示して GitHub の SSH keys に登録する
+cat ~/.ssh/id_ed25519.pub
+```
+
+GitHub 側では、表示された `id_ed25519.pub` の内容を **Settings > SSH and GPG keys** に追加します。登録後は次のコマンドで接続確認できます。
+
+```bash
+ssh -T git@github.com
+```
+
+`Hi <username>!` のような応答が返れば準備完了です。
+
 ---
 
 ## Docker のインストール
