@@ -247,6 +247,8 @@ relay.your-domain.com {
 }
 
 api.your-domain.com {
+  redir / /health 308
+
   reverse_proxy localhost:3000
 
   header {
