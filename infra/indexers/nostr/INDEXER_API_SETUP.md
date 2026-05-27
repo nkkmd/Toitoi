@@ -72,6 +72,9 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com
 ```
 
+Reference mode では `--relay-url` を明示して起動します。  
+Production mode では `ecosystem.config.cjs` に書いた `RELAY_URL` を PM2 が使うため、`--relay-url` を手で足しません。
+
 ### 2.5 replay と疎通確認
 
 ```bash
@@ -185,31 +188,35 @@ pm2 --version
 
 ```javascript
 // ecosystem.config.cjs
+const path = require('path');
+
+const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+
 module.exports = {
   apps: [
     {
       name: "toitoi-api",
-      cwd: ".",
+      cwd: __dirname,
       script: "./apps/api/server.js",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
       env_production: {
         NODE_ENV: "production",
-        TOITOI_STORAGE_DIR: process.env.TOITOI_STORAGE_DIR || "",
+        TOITOI_STORAGE_DIR: path.join(homeDir, "/path/to/storage"),
       },
     },
     {
       name: "toitoi-worker",
-      cwd: ".",
+      cwd: __dirname,
       script: "./infra/transports/nostr/relay_ingest_worker.js",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
       env_production: {
         NODE_ENV: "production",
-        RELAY_URL: process.env.RELAY_URL || "",
-        RELAY_STORAGE_DIR: process.env.RELAY_STORAGE_DIR || "",
+        RELAY_URL: "wss://relay.your-domain.com",
+        RELAY_STORAGE_DIR: path.join(homeDir, "/path/to/storage"),
       },
     },
   ],
@@ -218,18 +225,11 @@ module.exports = {
 
 `ecosystem.config.cjs` はリポジトリ root に置きます。
 
-起動前に、必要な環境変数を指定します。
+`RELAY_URL` を変える場合は、ここを編集してから `pm2 delete` と `pm2 start` をやり直します。  
+`pm2 start` に `--relay-url` を追加する運用にはしません。
 
 ```bash
-TOITOI_STORAGE_DIR=~/toitoi/storage \
-RELAY_URL=wss://relay.your-domain.com \
-RELAY_STORAGE_DIR=~/toitoi/storage \
 pm2 start ecosystem.config.cjs --env production
-```
-
-起動します。
-
-```bash
 pm2 save
 pm2 startup
 ```
@@ -312,10 +312,14 @@ curl "http://127.0.0.1:3000/api/v1/inquiries?limit=1"
 
 ```bash
 pm2 stop toitoi-api
+pm2 stop toitoi-worker
 TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com
 pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify
 ```
+
+PM2 運用中の worker は、`pm2 logs toitoi-worker` と `pm2 show toitoi-worker` で確認します。  
+`--relay-url is required` が出る場合は、`ecosystem.config.cjs` の `RELAY_URL` が空か、古い PM2 プロセスが残っています。
 
 ---
 

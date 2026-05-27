@@ -8,6 +8,8 @@
     "replay": "node storage/replay_cli.js"
   },
   "dependencies": {
-    "@toitoi/protocol": "workspace:*"
+    "@toitoi/protocol": "workspace:*",
+    "nostr-tools": "^2.16.2",
+    "ws": "^8.18.3"
   }
 }
