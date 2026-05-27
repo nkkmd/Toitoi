@@ -10,7 +10,40 @@
 
 ## まず覚える3つ
 
-### 0. pnpm を用意する
+### 0. Node.js を入れる
+
+`corepack` は Node.js に付いているので、まず Node.js を用意します。  
+この repo では、まず `node` と `corepack` が使える状態にすることが前提です。
+
+まずは次を確認します。
+
+```bash
+node --version
+corepack --version
+```
+
+`node` が見つからない場合は、Node.js をインストールしてください。入れ方の例は次のとおりです。
+
+- macOS
+  - 公式インストーラを使う
+  - `nvm` を使う
+  - `brew install node` を使う
+- Linux
+  - 公式インストーラを使う
+  - `nvm` を使う
+  - ディストリビューションのパッケージマネージャを使う
+- Windows
+  - 公式インストーラを使う
+  - `nvm-windows` を使う
+
+Node.js を入れたあと、`corepack` を有効化します。
+
+```bash
+corepack enable
+corepack --version
+```
+
+### 1. pnpm を用意する
 
 この repo は `package.json` の `packageManager` に `pnpm@11.3.0` を指定しています。  
 `pnpm` がまだ入っていない場合は、まず `corepack` を有効化してから使います。
@@ -28,7 +61,7 @@ corepack prepare pnpm@11.3.0 --activate
 corepack pnpm --version
 ```
 
-### 1. 依存を入れる
+### 2. 依存を入れる
 
 ```bash
 corepack pnpm install
@@ -36,7 +69,7 @@ corepack pnpm install
 
 workspace の依存をまとめて入れます。まず最初に 1 回だけ実行することが多いです。
 
-### 2. 入口を指定して実行する
+### 3. 入口を指定して実行する
 
 ```bash
 corepack pnpm --filter @toitoi/api start
@@ -48,7 +81,7 @@ corepack pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --
 - `@toitoi/api` などは package 名です
 - `--` の後ろは、その package の script に渡す引数です
 
-### 3. ルートから全体を回す
+### 4. ルートから全体を回す
 
 ```bash
 corepack pnpm test
@@ -78,6 +111,7 @@ corepack pnpm test
 
 ## 困ったとき
 
+- `node` や `corepack` が見つからない場合は、先に Node.js をインストールしてください
 - `pnpm` が見つからない場合は、`corepack enable` で有効化できることがあります
 - この repo では `pnpm` を直接打つより、`corepack pnpm ...` の形を使うと版ずれを避けやすいです
 - `corepack pnpm --filter ...` で対象 package をまず絞ると、原因を追いやすくなります
