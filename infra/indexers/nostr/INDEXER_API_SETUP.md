@@ -189,32 +189,47 @@ module.exports = {
   apps: [
     {
       name: "toitoi-api",
+      cwd: ".",
       script: "./apps/api/server.js",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
       env_production: {
         NODE_ENV: "production",
+        TOITOI_STORAGE_DIR: process.env.TOITOI_STORAGE_DIR || "",
       },
     },
     {
       name: "toitoi-worker",
+      cwd: ".",
       script: "./infra/transports/nostr/relay_ingest_worker.js",
       instances: 1,
       exec_mode: "fork",
       autorestart: true,
       env_production: {
         NODE_ENV: "production",
+        RELAY_URL: process.env.RELAY_URL || "",
+        RELAY_STORAGE_DIR: process.env.RELAY_STORAGE_DIR || "",
       },
     },
   ],
 };
 ```
 
+`ecosystem.config.cjs` はリポジトリ root に置きます。
+
+起動前に、必要な環境変数を指定します。
+
+```bash
+TOITOI_STORAGE_DIR=~/toitoi/storage \
+RELAY_URL=wss://relay.your-domain.com \
+RELAY_STORAGE_DIR=~/toitoi/storage \
+pm2 start ecosystem.config.cjs --env production
+```
+
 起動します。
 
 ```bash
-pm2 start ecosystem.config.cjs --env production
 pm2 save
 pm2 startup
 ```
@@ -285,7 +300,18 @@ ls infra/transports/nostr/relay_ingest_worker.js
 
 ### 6.3 主要な起動確認
 
+PM2 で `toitoi-api` をすでに起動している場合は、ここで `pnpm --filter @toitoi/api start` をもう一度実行しないでください。  
+その場合は `curl` で疎通確認します。
+
 ```bash
+curl http://127.0.0.1:3000/health
+curl "http://127.0.0.1:3000/api/v1/inquiries?limit=1"
+```
+
+手動起動を確認したい場合は、先に PM2 側を止めてから実行します。
+
+```bash
+pm2 stop toitoi-api
 TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com
 pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify
