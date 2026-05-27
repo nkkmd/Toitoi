@@ -235,11 +235,20 @@ module.exports = {
 `RELAY_URL` を変える場合は、ここを編集してから `pm2 delete` と `pm2 start` をやり直します。  
 `pm2 start` に `--relay-url` を追加する運用にはしません。
 
+### 5.1.1 設定変更後の再起動手順
+
+`ecosystem.config.cjs` や PM2 の起動構成を変更した場合は、既存プロセスをいったん削除してから起動し直します。  
+この順番にすると、古い設定を引きずらずに `toitoi-api` と `toitoi-worker` を再登録できます。
+
 ```bash
+pm2 delete toitoi-worker toitoi-api
 pm2 start ecosystem.config.cjs --env production
 pm2 save
 pm2 startup
 ```
+
+`pm2 startup` は、PM2 をOS起動時に自動復帰させるための設定です。  
+初回設定時だけでなく、PM2 の自動起動まわりを再作成したいときにも実行します。
 
 ### 5.2 Caddy の設定
 
