@@ -553,10 +553,10 @@ git commit -m "archive: initial inquiry snapshot ($(wc -l < inquiry.jsonl) entri
 ~/nostr-archive/archive_diff.sh
 ```
 
-cron で毎日 03:00 に回すなら、次を追加します。
+cron で毎日 03:00 に回すなら、対象ユーザーの `crontab -e` を開いて、次の行を追記します。標準出力と標準エラーを `archive_diff.log` に残しておくと、失敗時の確認がしやすくなります。
 
 ```cron
-0 3 * * * /bin/bash $HOME/nostr-archive/archive_diff.sh
+0 3 * * * /bin/bash $HOME/nostr-archive/archive_diff.sh >> $HOME/nostr-archive/archive_diff.log 2>&1
 ```
 
 ### Step 6.6: リモートリポジトリへの push
