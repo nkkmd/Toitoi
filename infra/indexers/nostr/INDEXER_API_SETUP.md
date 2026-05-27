@@ -166,6 +166,19 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 本番公開では、API と worker を PM2 で常駐化し、Caddy で HTTPS と WebSocket を受けます。
 
+### 5.0 PM2 のインストール
+
+作業ディレクトリ: `任意`（Node.js が使える環境）
+
+PM2 は Node.js のプロセスマネージャーなので、まずはグローバルに入れるのが分かりやすいです。
+
+```bash
+npm install -g pm2
+pm2 --version
+```
+
+`npm` のグローバルインストールを避けたい場合は、`npx pm2` でも起動できますが、このガイドでは `pm2` コマンドがそのまま使える前提で進めます。
+
 ### 5.1 PM2 の設定
 
 作業ディレクトリ: `ローカルのリポジトリ root`
