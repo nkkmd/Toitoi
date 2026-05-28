@@ -11,7 +11,7 @@ infra/
 ├─ transports/
 │  └─ nostr/   -> relay ingest / ops
 └─ indexers/
-   └─ nostr/   -> indexer ops
+   └─ nostr/   -> indexer ops / migration wrapper
 ```
 
 ## 役割
@@ -26,3 +26,4 @@ infra/
 - `infra/transports/nostr/`
 
 そのため、まずは transport 単位で README を読むのがわかりやすいです。
+indexer 側は、現時点では Nostr 向けの運用入口が中心ですが、設計上は multi-protocol 共通化を前提にしています。

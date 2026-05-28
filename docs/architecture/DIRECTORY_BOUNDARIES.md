@@ -164,10 +164,13 @@ Nostr relay layer の運用資産を置きます。
 Distributed event indexing layer の運用資産を置きます。
 
 現時点ではセットアップ / 参照用ドキュメント中心です。
+長期的には multi-protocol indexer の共通運用入口に寄せますが、移行期間中は Nostr 専用の wrapper として残してよいです。
 
 含まれる主なファイル:
 
 - `INDEXER_API_SETUP.md`
+
+今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提にこの配下の運用入口を整理します。
 
 ## `packages/`
 
@@ -230,6 +233,7 @@ Toitoi の設計、思想、protocol、operations、concepts、roadmap を整理
 | `AI_SYSTEM_OVERVIEW.md` | AI subsystem の役割 |
 | `DOCUMENTATION_VERSION_POLICY.md` | ドキュメント版管理ポリシー |
 | `DIRECTORY_BOUNDARIES.md` | ディレクトリ責務ルール |
+| `MULTI_PROTOCOL_INDEXER.md` | multi-protocol indexer の責務分離 |
 | `STANDARD_API_MVP.md` | Standard API の契約 |
 
 扱う内容:

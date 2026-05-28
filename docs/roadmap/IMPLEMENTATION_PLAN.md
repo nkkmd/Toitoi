@@ -531,6 +531,15 @@ protocol descriptor / registry を使って、どの protocol をどう起動す
 
 - ここから先は実装に応じて追記する
 
+### インデクサー方針
+
+Phase 10 以降の indexer は、protocol ごとに別実装を増やすのではなく、canonical event を共通入力とする multi-protocol core として扱います。
+
+- protocol 固有の検証・正規化・重複排除・順序付けは adapter 側に閉じる
+- indexer は lookup / list / search / relation / lineage の補助構造を共通で提供する
+- protocol ごとの差分は registry と metadata に寄せる
+- `infra/indexers/nostr/` は当面の Nostr 向け運用入口として残せるが、長期的には共通 indexer 入口に寄せる
+
 ---
 
 ## フェーズ 11: Standard API の multi-protocol 対応
@@ -545,12 +554,14 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 - provenance / trust の露出範囲を再確認する
 - list / detail / relation / tree / search の返却差分を吸収する
 - protocol ごとの差分を metadata に閉じる
+- indexer core が protocol 追加で分岐しないことを確認する
 
 ### 完了条件
 
 - どの protocol でも同じ API 形で参照できる
 - API 契約が protocol 追加で壊れない
 - provenance と trust の露出方針が維持されている
+- 共通 indexer core を前提に、protocol-specific な indexer 実装を増やさずに拡張できる
 
 ### 完了メモ
 
