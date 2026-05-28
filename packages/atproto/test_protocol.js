@@ -9,17 +9,18 @@ const {
 
 const tests = [
   {
-    name: 'atproto protocol descriptor exposes skeleton adapter and capabilities',
+    name: 'atproto protocol descriptor exposes ingest-capable wiring',
     run() {
       const descriptor = createAtProtoProtocolDescriptor();
 
       assert.strictEqual(descriptor.protocol, 'atproto');
       assert.strictEqual(descriptor.name, 'ATProto');
-      assert.strictEqual(descriptor.capabilities.rawAcquisition.support, 'unknown');
+      assert.strictEqual(descriptor.capabilities.rawAcquisition.support, 'partial');
       assert.strictEqual(descriptor.capabilities.provenanceFidelity.support, 'yes');
       assert.ok(Array.isArray(atprotoCapabilityRows));
       assert.strictEqual(atprotoProtocolDescriptor.protocol, 'atproto');
-      assert.strictEqual(typeof descriptor.adapter.describe, 'function');
+      assert.strictEqual(typeof descriptor.adapter.normalizeRawEvent, 'function');
+      assert.strictEqual(typeof descriptor.converter.toTransport, 'function');
     },
   },
 ];

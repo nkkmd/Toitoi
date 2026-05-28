@@ -11,7 +11,7 @@
 packages/
 ├─ protocol/  -> shared descriptor / registry
 ├─ nostr/     -> Nostr adapter / storage / converter
-├─ atproto/   -> ATProto descriptor
+├─ atproto/   -> ATProto adapter / storage / converter / live smoke
 └─ localfs/   -> LocalFS descriptor
 ```
 
@@ -26,7 +26,7 @@ packages/
 
 - `protocol/`: protocol descriptor と registry の共通基盤
 - `nostr/`: Nostr の adapter / converter / storage の共有実装
-- `atproto/`: ATProto の protocol descriptor
+- `atproto/`: ATProto の adapter / converter / storage
 - `localfs/`: LocalFS の protocol descriptor
 
 ## 依存の原則

@@ -260,6 +260,36 @@
           "minLength": 1,
           "description": "Protocol-specific source identifier."
         },
+        "uri": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional ATProto URI or equivalent transport locator."
+        },
+        "cid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional content identifier for ATProto payloads."
+        },
+        "did": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional decentralized identifier for ATProto records."
+        },
+        "collection": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional ATProto collection name."
+        },
+        "rkey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional ATProto record key."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional source timestamp when available."
+        },
         "relay": {
           "type": "string",
           "minLength": 1,
