@@ -433,6 +433,42 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 
 ATProto か LocalFS のどちらか 1 つを、descriptor だけでなく実データ ingest まで通して、multi-protocol の実装手順を確立する。
 
+### 前提
+
+1. MVP の範囲
+   - Phase 9 の MVP は `create record` のみとする
+   - `delete` / `update` は未対応として明示する
+   - 将来必要になった場合は、別の event と lineage で表現する
+   - Phase 9 では transport 側の mutation semantics を持ち込まない
+
+2. 対象 record の種類
+   - Phase 9 の最初の実装は custom record から始める
+   - 送信先 transport は `bsky.social` に限定する
+   - `app.bsky.feed.post` は後続の互換性確認用として残す
+
+3. 認証とアカウント運用
+   - `bsky.social` 上の専用 bot アカウントを 1 つ使う
+   - 認証は app password を使い、main password は使わない
+   - secret は環境変数か secret manager に閉じる
+   - CI では基本的に live 接続しない
+
+4. canonical への写像ルール
+   - semantic 側には Toitoi の意味だけを入れる
+   - `uri` / `cid` / `did` / `collection` / `rkey` / `createdAt` は provenance に分離する
+   - `at://` は DID ベースで扱い、handle ベースの参照は避ける
+
+5. `delete` / `replace` / `ordering` の扱い
+   - Phase 9 では `delete` / `update` / `replace` は扱わない
+   - ordering は transport 上の観測値としてのみ扱う
+   - canonical semantics に順序依存を持ち込まない
+   - 将来必要なら、別 event と lineage で表現する
+
+6. テスト方針
+   - 通常の unit / integration は mock 優先とする
+   - `bsky.social` への live 接続は gated smoke test のみとする
+   - smoke test は専用 bot アカウントで 1 件の最小 record だけ送る
+   - デフォルト CI では live write を走らせない
+
 ### 作業
 
 - 1 つの追加 protocol を選び、実データ ingest の入口を作る
