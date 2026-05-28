@@ -33,9 +33,9 @@ function loadSampleEvents(ids) {
 async function runTest() {
   const storageDir = makeTempDir('toitoi-operational-e2e-');
   const [rootEvent, childEvent, grandChildEvent] = loadSampleEvents([
-    '78062038e229c3d0266dd891db549ae05fabefe25aab4db344ba6394b38b47bc',
-    '1db712d4cce732ef81ba55a15bc0633f3b9d7d64de0c40e4b1ff24342daa8a4e',
-    'fbbcd594a019b1dea80267eca06aacf2f1b992f6f524012fe905dadeb89d9e86',
+    'ca4dd7a6c5ce507015673eda0b2435337cb02d447b9f9fd4663786cb0013b26b',
+    '84483a2b25397ec295960dc45f34a07c9f223bee461559a353a5bae44a7bd16c',
+    '1b60f3cfe8a7b1b19c8b560b378c3aa0a775c4fca0d4b0b2ed48bc74d435f605',
   ]);
 
   const ingestResult = ingestNostrEvents([rootEvent, childEvent, grandChildEvent], {
