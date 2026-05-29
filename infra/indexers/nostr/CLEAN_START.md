@@ -51,7 +51,7 @@ sudo docker compose up -d
 
 この手順では relay 側の永続データは削除しません。`nostream` / `nostream-db` は起動したままにして、`toitoi_db` だけを再作成します。
 
-DB の初期化が完了するまで少し待ってから、リレーのログを確認します。
+コンテナの起動が落ち着くまで少し待ってから、リレーのログを確認します。
 
 ```bash
 sudo docker compose logs nostream | tail -20
