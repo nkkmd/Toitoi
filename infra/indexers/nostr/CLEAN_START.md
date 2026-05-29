@@ -68,8 +68,10 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 ## 4. Prisma によるテーブル再作成
 
+作業場所: clone した Toitoi リポジトリの root  
+編集対象ファイル: Prisma schema
+
 ```bash
-cd ~/toitoi-indexer
 npx prisma db push
 npx prisma generate
 ```
@@ -107,19 +109,18 @@ SELECT * FROM "SyncState";
 設定変更がある場合は、以下のファイルを編集してください。
 
 ```bash
-nano ~/toitoi-indexer/relay_ingest_worker.js
+nano infra/transports/nostr/relay_ingest_worker.js
 ```
 
 ### 例) `ecosystem.config.cjs` の修正
 
-PM2 の起動設定を変更した場合は、リポジトリ root で設定を更新してください。
+PM2 の起動設定を変更した場合は、clone した Toitoi リポジトリの root で設定を更新してください。
 
 ---
 
 ## 6. 全プロセスの再起動
 
 ```bash
-cd ~/toitoi-indexer
 pm2 start ecosystem.config.cjs --env production
 pm2 save
 ```
