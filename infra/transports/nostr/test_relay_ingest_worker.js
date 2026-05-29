@@ -34,6 +34,22 @@ const tests = [
       assert.strictEqual(args.relayUrl, 'wss://relay.example.com');
       assert.strictEqual(args.format, 'report');
       assert.strictEqual(args.verify, false);
+      assert.strictEqual(args.protocol, 'nostr');
+    },
+  },
+  {
+    name: 'parseArgs accepts an explicit protocol',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--relay-url',
+        'wss://relay.example.com',
+        '--protocol',
+        'atproto',
+      ]);
+
+      assert.strictEqual(args.protocol, 'atproto');
     },
   },
   {

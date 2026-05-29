@@ -1,6 +1,6 @@
 # Standard API
 
-**Version: 0.3.0** | **Status: evolving** | **Last updated: 2026-05-22**
+**Version: 0.3.1** | **Status: evolving** | **Last updated: 2026-05-29**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
@@ -49,6 +49,7 @@ HTTP response
 ## pnpm 入口
 
 - 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
+- protocol 選択: `TOITOI_PROTOCOL=atproto TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - テスト: `pnpm --filter @toitoi/api test`
 - 参照実装: `@toitoi/nostr/storage/`
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
@@ -97,6 +98,8 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 | メソッド | パス | 概要 |
 |---|---|---|
 | `GET` | `/health` | サーバーの稼働確認 |
+| `GET` | `/api/v1/protocols` | registry に登録された protocol 一覧と capability を取得 |
+| `GET` | `/api/v1/protocols/:protocol` | 単一 protocol の metadata を取得 |
 | `GET` | `/api/v1/inquiries` | 最新の canonicalized event 一覧を取得 |
 | `GET` | `/api/v1/inquiries/query` | 全文検索・タグ絞り込み・DSL フィルタリングによる複合検索 |
 | `GET` | `/api/v1/inquiries/relation` | relationship 条件で絞り込んだ一覧を取得 |
@@ -138,6 +141,28 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
     {
       "event": { "... canonical view ..." },
       "provenance": { "... summary ..." }
+    }
+  ]
+}
+```
+
+## `GET /api/v1/protocols`
+
+registry に登録されている protocol の一覧と capability matrix を返します。  
+起動時の introspection や運用確認に使います。
+
+### レスポンス
+
+```json
+{
+  "selectedProtocol": "nostr",
+  "availableProtocols": ["atproto", "localfs", "nostr"],
+  "capabilityMatrix": "| Capability | atproto | localfs | nostr | ...",
+  "protocols": [
+    {
+      "protocol": "nostr",
+      "name": "Nostr",
+      "capabilities": { "...": "..." }
     }
   ]
 }

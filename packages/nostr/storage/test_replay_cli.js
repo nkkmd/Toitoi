@@ -8,6 +8,7 @@ const { ingestNostrEvents } = require('../adapter/ingest_pipeline');
 const { persistIngestResult } = require('./persistence');
 const { parseArgs, summarizeReplayResult } = require('./replay_cli');
 const { replayStorage } = require('./replay');
+const { createProtocolStorageRuntime } = require('@toitoi/protocol');
 
 function makeEvent(overrides = {}) {
   return {
@@ -40,6 +41,31 @@ const tests = [
       assert.strictEqual(args.storageDir, '/tmp/example');
       assert.strictEqual(args.noPersistIndex, true);
       assert.strictEqual(args.skipVerify, true);
+      assert.strictEqual(args.protocol, 'nostr');
+    },
+  },
+  {
+    name: 'parseArgs accepts a replay protocol',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--storage-dir',
+        '/tmp/example',
+        '--protocol',
+        'atproto',
+      ]);
+
+      assert.strictEqual(args.protocol, 'atproto');
+    },
+  },
+  {
+    name: 'protocol storage runtime resolves replay storage modules',
+    run() {
+      const runtime = createProtocolStorageRuntime({ protocol: 'atproto' });
+
+      assert.strictEqual(runtime.protocol, 'atproto');
+      assert.strictEqual(typeof runtime.resolveReplayStorage(), 'function');
     },
   },
   {

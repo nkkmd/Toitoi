@@ -4,7 +4,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { createStandardApiService, normalizeIndexSnapshot } = require('./standard_api_service');
-const { replayStorage } = require('@toitoi/nostr/storage/replay');
+const {
+  createProtocolRuntime,
+  createProtocolStorageRuntime,
+} = require('@toitoi/protocol');
 
 function loadIndexSnapshotFromOptions(options = {}) {
   if (typeof options.getIndexSnapshot === 'function') {
@@ -21,6 +24,11 @@ function loadIndexSnapshotFromOptions(options = {}) {
 
   if (typeof storageDir === 'string' && storageDir !== '') {
     const resolvedStorageDir = path.resolve(storageDir);
+    const protocolStorageRuntime = options.protocolStorageRuntime
+      || createProtocolStorageRuntime({
+        protocol: options.protocolRuntime?.selectedProtocol || options.protocol,
+      });
+    const replayStorage = protocolStorageRuntime.resolveReplayStorage();
     return () => {
       if (!fs.existsSync(resolvedStorageDir)) {
         return normalizeIndexSnapshot(null);
@@ -35,8 +43,14 @@ function loadIndexSnapshotFromOptions(options = {}) {
 }
 
 function createStandardApiServer(options = {}) {
+  const protocolRuntime = options.protocolRuntime || createProtocolRuntime({
+    protocol: options.protocol,
+    registry: options.protocolRegistry,
+    defaultProtocol: options.defaultProtocol,
+  });
   const service = createStandardApiService({
     getIndexSnapshot: loadIndexSnapshotFromOptions(options),
+    protocolRuntime,
   });
 
   return http.createServer((request, response) => {
@@ -58,10 +72,22 @@ function startServer(options = {}) {
   const port = Number.isInteger(options.port)
     ? options.port
     : Number.parseInt(process.env.PORT || '3000', 10);
-  const server = createStandardApiServer(options);
+  const protocolRuntime = options.protocolRuntime || createProtocolRuntime({
+    protocol: options.protocol || process.env.TOITOI_PROTOCOL,
+    registry: options.protocolRegistry,
+    defaultProtocol: options.defaultProtocol,
+  });
+  const server = createStandardApiServer({
+    ...options,
+    protocolRuntime,
+    protocolStorageRuntime: options.protocolStorageRuntime || createProtocolStorageRuntime({
+      protocol: protocolRuntime.selectedProtocol || options.protocol,
+    }),
+  });
 
   server.listen(port, () => {
-    console.log(`Toitoi Standard API listening on http://127.0.0.1:${port}`);
+    const selected = protocolRuntime.selectedProtocol || 'unselected';
+    console.log(`Toitoi Standard API listening on http://127.0.0.1:${port} (protocol: ${selected})`);
   });
 
   return server;

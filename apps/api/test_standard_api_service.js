@@ -68,6 +68,18 @@ const tests = [
       assert.strictEqual(health.statusCode, 200);
       assert.strictEqual(health.body.status, 'ok');
       assert.ok(typeof health.body.timestamp === 'string');
+      assert.strictEqual(health.body.protocol, 'nostr');
+      assert.ok(Array.isArray(health.body.availableProtocols));
+
+      const protocols = service.handleRequest({ method: 'GET', url: '/api/v1/protocols' });
+      assert.strictEqual(protocols.statusCode, 200);
+      assert.strictEqual(protocols.body.selectedProtocol, 'nostr');
+      assert.ok(Array.isArray(protocols.body.availableProtocols));
+      assert.ok(protocols.body.protocols.some(protocol => protocol.protocol === 'nostr'));
+
+      const protocolDetail = service.handleRequest({ method: 'GET', url: '/api/v1/protocols/atproto' });
+      assert.strictEqual(protocolDetail.statusCode, 200);
+      assert.strictEqual(protocolDetail.body.protocol, 'atproto');
 
       const lookup = service.handleRequest({ method: 'GET', url: `/api/v1/inquiries/${rootId}` });
       assert.strictEqual(lookup.statusCode, 200);

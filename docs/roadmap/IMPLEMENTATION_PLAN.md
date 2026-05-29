@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-05-28**
+**Status: evolving** | **Last updated: 2026-05-29**
 
 ## 目的
 
@@ -545,7 +545,10 @@ protocol descriptor / registry を使って、どの protocol をどう起動す
 
 ### 完了メモ
 
-- ここから先は実装に応じて追記する
+- `packages/protocol/protocol_runtime.js` を追加し、registry ベースの protocol 選択と introspection を共通化した
+- `apps/api/server.js` と `apps/api/standard_api_service.js` で `/health` と `/api/v1/protocols` に protocol metadata を反映した
+- `infra/transports/nostr/relay_ingest_worker.js` で `ingestFromRelayUrl` を descriptor 経由で選ぶようにし、`--protocol` を受けられるようにした
+- `packages/protocol/test_protocol_runtime.js` と関連 API / worker テストで回帰確認した
 
 ### インデクサー方針
 

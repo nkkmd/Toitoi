@@ -16,6 +16,12 @@ protocol_registry.js
 protocol_catalog.js
         |
         v
+protocol_runtime.js
+        |
+        v
+protocol_storage_runtime.js
+        |
+        v
 index.js
 ```
 
@@ -24,6 +30,8 @@ index.js
 - `protocol_descriptor.js`: descriptor の生成、正規化、検証
 - `protocol_registry.js`: descriptor の登録と一覧化
 - `protocol_catalog.js`: 標準 protocol の集約
+- `protocol_runtime.js`: 起動時の選択、introspection、help 出力
+- `protocol_storage_runtime.js`: protocol ごとの replay 入口選択
 - `index.js`: まとめて再公開する入口
 
 ## 呼び出し関係

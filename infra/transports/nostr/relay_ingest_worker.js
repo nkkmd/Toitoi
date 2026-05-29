@@ -2,8 +2,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ingestRelayUrl } = require('@toitoi/nostr/adapter/relay_ingest');
 const { persistIngestResult } = require('@toitoi/nostr/storage/persistence');
+const {
+  createProtocolRuntime,
+  renderProtocolHelp,
+} = require('@toitoi/protocol');
 
 function parseJson(value, fallback) {
   if (typeof value !== 'string' || value.trim() === '') {
@@ -25,6 +28,7 @@ function parseArgs(argv) {
     format: process.env.RELAY_INGEST_FORMAT || 'report',
     verify: process.env.RELAY_VERIFY === '1',
     storageDir: process.env.RELAY_STORAGE_DIR || '',
+    protocol: process.env.RELAY_PROTOCOL || process.env.TOITOI_PROTOCOL || 'nostr',
     retry: {
       retries: Number.parseInt(process.env.RELAY_RETRY_ATTEMPTS || '3', 10),
       initialDelayMs: Number.parseInt(process.env.RELAY_RETRY_INITIAL_DELAY_MS || '1000', 10),
@@ -44,6 +48,15 @@ function parseArgs(argv) {
 
     if (arg === '--verify') {
       args.verify = true;
+      continue;
+    }
+
+    if (arg.startsWith('--protocol=')) {
+      args.protocol = arg.slice('--protocol='.length);
+      continue;
+    }
+    if (arg === '--protocol') {
+      args.protocol = argv[++i];
       continue;
     }
 
@@ -156,14 +169,15 @@ function parseArgs(argv) {
   return args;
 }
 
-function printHelp() {
+function printHelp(runtime = createProtocolRuntime()) {
   console.log([
-    'Toitoi Nostr relay ingest worker',
+    'Toitoi protocol-aware relay ingest worker',
     '',
     'Usage:',
     '  pnpm --filter @toitoi/nostr-transport start -- --relay-url <wss://...> [options]',
     '',
     'Options:',
+    '  --protocol <name>    protocol to use for relay ingest (default: nostr)',
     '  --filter <json>      Nostr subscription filter JSON (default: {"kinds":[1042]})',
     '  --format report|accepted|canonical',
     '  --output <path>      optional output file path',
@@ -177,6 +191,7 @@ function printHelp() {
     '',
     'Environment variables:',
     '  RELAY_URL',
+    '  RELAY_PROTOCOL',
     '  RELAY_FILTER',
     '  RELAY_INGEST_OUTPUT',
     '  RELAY_INGEST_FORMAT',
@@ -185,6 +200,8 @@ function printHelp() {
     '  RELAY_RETRY_INITIAL_DELAY_MS',
     '  RELAY_RETRY_MAX_DELAY_MS',
     '  RELAY_RETRY_FACTOR',
+    '',
+    renderProtocolHelp(runtime),
   ].join('\n'));
 }
 
@@ -216,9 +233,22 @@ function writeResult(outputPath, format, result) {
 async function main() {
   const args = parseArgs(process.argv);
   if (args.help) {
-    printHelp();
+    printHelp(createProtocolRuntime({ protocol: args.protocol }));
     return;
   }
+
+  const protocolRuntime = createProtocolRuntime({ protocol: args.protocol });
+  const protocolDescriptor = protocolRuntime.selectedDescriptor
+    || protocolRuntime.resolveProtocol(args.protocol);
+  const ingestRelayUrl = protocolDescriptor?.adapter?.ingestFromRelayUrl;
+
+  if (typeof ingestRelayUrl !== 'function') {
+    throw new Error(`Protocol ${protocolDescriptor.protocol} does not support relay ingest`);
+  }
+
+  process.stderr.write(
+    `[START] protocol=${protocolDescriptor.protocol} name=${protocolDescriptor.name} available=${protocolRuntime.availableProtocols.join(',')}\n`
+  );
 
   const result = await ingestRelayUrl(args.relayUrl, args.filter, {
     skipVerify: !args.verify,
@@ -232,7 +262,7 @@ async function main() {
 
   if (args.storageDir) {
     persistIngestResult(args.storageDir, result, {
-      source: 'relay',
+      source: protocolDescriptor.protocol,
       sourceLabel: args.relayUrl,
     });
   }
@@ -240,7 +270,7 @@ async function main() {
   writeResult(args.output, args.format, result);
 
   process.stderr.write(
-    `[DONE] relay=${args.relayUrl} accepted=${result.accepted.length} invalid=${result.invalid.length} duplicates=${result.duplicates.length} unverified=${result.unverified.length}\n`
+    `[DONE] protocol=${protocolDescriptor.protocol} relay=${args.relayUrl} accepted=${result.accepted.length} invalid=${result.invalid.length} duplicates=${result.duplicates.length} unverified=${result.unverified.length}\n`
   );
 }
 

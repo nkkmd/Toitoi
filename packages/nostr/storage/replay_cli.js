@@ -1,13 +1,18 @@
 'use strict';
 
 const path = require('path');
-const { replayStorage } = require('./replay');
+const {
+  createProtocolRuntime,
+  createProtocolStorageRuntime,
+  renderProtocolHelp,
+} = require('@toitoi/protocol');
 
 function parseArgs(argv) {
   const args = {
     storageDir: '',
     skipVerify: true,
     noPersistIndex: false,
+    protocol: process.env.REPLAY_PROTOCOL || process.env.TOITOI_PROTOCOL || 'nostr',
     help: false,
   };
 
@@ -26,6 +31,15 @@ function parseArgs(argv) {
 
     if (arg === '--no-persist-index') {
       args.noPersistIndex = true;
+      continue;
+    }
+
+    if (arg.startsWith('--protocol=')) {
+      args.protocol = arg.slice('--protocol='.length);
+      continue;
+    }
+    if (arg === '--protocol') {
+      args.protocol = argv[++i];
       continue;
     }
 
@@ -56,6 +70,7 @@ function printHelp() {
     '  node packages/nostr/storage/replay_cli.js --storage-dir <dir> [options]',
     '',
     'Options:',
+    '  --protocol <name>    protocol to replay (default: nostr)',
     '  --verify              re-run verification when replaying raw events',
     '  --no-persist-index     do not rewrite index-snapshot.json',
     '  -h, --help            show this help',
@@ -67,6 +82,8 @@ function printHelp() {
     '',
     'Output:',
     '  index-snapshot.json',
+    '',
+    renderProtocolHelp(createProtocolRuntime({ protocol: 'nostr' })),
   ].join('\n'));
 }
 
@@ -91,12 +108,22 @@ async function main() {
     return;
   }
 
-  const result = replayStorage(path.resolve(args.storageDir), {
+  const protocolRuntime = createProtocolRuntime({ protocol: args.protocol });
+  const protocolStorageRuntime = createProtocolStorageRuntime({ protocol: args.protocol });
+  const replayFn = protocolStorageRuntime.resolveReplayStorage();
+  process.stderr.write(
+    `[START] protocol=${protocolRuntime.selectedProtocol} storageReplay=${protocolStorageRuntime.describe().supported ? 'available' : 'missing'}\n`
+  );
+
+  const result = replayFn(path.resolve(args.storageDir), {
     skipVerify: args.skipVerify,
     persistIndex: !args.noPersistIndex,
   });
 
   process.stdout.write(`${JSON.stringify(summarizeReplayResult(result), null, 2)}\n`);
+  process.stderr.write(
+    `[DONE] protocol=${protocolRuntime.selectedProtocol} accepted=${result.ingestResult.accepted.length} invalid=${result.ingestResult.invalid.length} duplicates=${result.ingestResult.duplicates.length} unverified=${result.ingestResult.unverified.length}\n`
+  );
 }
 
 if (require.main === module) {

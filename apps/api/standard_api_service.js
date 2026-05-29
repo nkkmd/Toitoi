@@ -16,6 +16,10 @@ const {
   projectLineageView,
   projectRelationView,
 } = require('@toitoi/nostr/storage/standard_api_views');
+const {
+  buildProtocolIntrospectionPayload,
+  createProtocolRuntime,
+} = require('@toitoi/protocol');
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
@@ -264,6 +268,12 @@ function createStandardApiService(options = {}) {
   const getIndexSnapshot = typeof options.getIndexSnapshot === 'function'
     ? options.getIndexSnapshot
     : () => normalizeIndexSnapshot(options.indexSnapshot);
+  const protocolRuntime = options.protocolRuntime
+    || createProtocolRuntime({
+      protocol: options.protocol,
+      registry: options.protocolRegistry,
+      defaultProtocol: options.defaultProtocol,
+    });
 
   function getCurrentIndexSnapshot() {
     return normalizeIndexSnapshot(getIndexSnapshot());
@@ -273,6 +283,32 @@ function createStandardApiService(options = {}) {
     return buildJsonResponse(200, {
       status: 'ok',
       timestamp: new Date().toISOString(),
+      protocol: protocolRuntime.selectedProtocol,
+      availableProtocols: protocolRuntime.availableProtocols,
+    });
+  }
+
+  function handleProtocols() {
+    return buildJsonResponse(200, buildProtocolIntrospectionPayload(protocolRuntime));
+  }
+
+  function handleProtocolDetail(protocolName) {
+    const descriptor = protocolRuntime.getProtocol(protocolName);
+    if (!descriptor) {
+      return buildJsonResponse(404, {
+        message: 'Protocol not found',
+        protocol: protocolName,
+      });
+    }
+
+    return buildJsonResponse(200, {
+      protocol: descriptor.protocol,
+      name: descriptor.name,
+      capabilities: descriptor.capabilities,
+      provenance: descriptor.provenance,
+      notes: Array.isArray(descriptor.notes) ? descriptor.notes : [],
+      adapter: typeof descriptor.adapter?.describe === 'function' ? descriptor.adapter.describe() : null,
+      converter: typeof descriptor.converter?.describe === 'function' ? descriptor.converter.describe() : null,
     });
   }
 
@@ -361,6 +397,15 @@ function createStandardApiService(options = {}) {
       return handleHealth();
     }
 
+    if (pathname === '/api/v1/protocols') {
+      return handleProtocols();
+    }
+
+    const protocolDetailMatch = pathname.match(/^\/api\/v1\/protocols\/([^/]+)$/);
+    if (protocolDetailMatch) {
+      return handleProtocolDetail(decodeURIComponent(protocolDetailMatch[1]));
+    }
+
     if (pathname === '/api/v1/inquiries') {
       return handleInquiryList(parsedUrl.searchParams);
     }
@@ -402,6 +447,8 @@ function createStandardApiService(options = {}) {
     handleInquiryQuery,
     handleInquiryRelation,
     handleInquiryTree,
+    handleProtocols,
+    handleProtocolDetail,
     handleRequest,
   };
 }
