@@ -8,27 +8,12 @@ function normalizeProtocolName(value) {
   return isNonEmptyString(value) ? value.trim().toLowerCase() : '';
 }
 
-function loadStorageReplayModule(protocol) {
-  const normalized = normalizeProtocolName(protocol) || 'nostr';
-
-  if (normalized === 'nostr') {
-    return require('@toitoi/nostr/storage/replay');
-  }
-
-  if (normalized === 'atproto') {
-    return require('@toitoi/atproto/storage/replay');
-  }
-
-  if (normalized === 'localfs') {
-    return null;
-  }
-
-  return null;
-}
-
 function createProtocolStorageRuntime(options = {}) {
   const protocol = normalizeProtocolName(options.protocol) || 'nostr';
-  const replayModule = loadStorageReplayModule(protocol);
+  const loadReplayModule = typeof options.loadReplayModule === 'function'
+    ? options.loadReplayModule
+    : null;
+  const replayModule = loadReplayModule ? loadReplayModule(protocol) : null;
 
   return {
     protocol,
@@ -52,5 +37,5 @@ function createProtocolStorageRuntime(options = {}) {
 
 module.exports = {
   createProtocolStorageRuntime,
-  loadStorageReplayModule,
+  normalizeProtocolName,
 };

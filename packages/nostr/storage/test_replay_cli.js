@@ -62,9 +62,17 @@ const tests = [
   {
     name: 'protocol storage runtime resolves replay storage modules',
     run() {
-      const runtime = createProtocolStorageRuntime({ protocol: 'atproto' });
+      const runtime = createProtocolStorageRuntime({
+        protocol: 'nostr',
+        loadReplayModule(protocol) {
+          if (protocol === 'nostr') {
+            return { replayStorage };
+          }
+          return null;
+        },
+      });
 
-      assert.strictEqual(runtime.protocol, 'atproto');
+      assert.strictEqual(runtime.protocol, 'nostr');
       assert.strictEqual(typeof runtime.resolveReplayStorage(), 'function');
     },
   },

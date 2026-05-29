@@ -1,6 +1,7 @@
 'use strict';
 
 const path = require('path');
+const { replayStorage } = require('./replay');
 const {
   createProtocolRuntime,
   createProtocolStorageRuntime,
@@ -109,7 +110,15 @@ async function main() {
   }
 
   const protocolRuntime = createProtocolRuntime({ protocol: args.protocol });
-  const protocolStorageRuntime = createProtocolStorageRuntime({ protocol: args.protocol });
+  const protocolStorageRuntime = createProtocolStorageRuntime({
+    protocol: args.protocol,
+    loadReplayModule(protocol) {
+      if (protocol === 'nostr') {
+        return { replayStorage };
+      }
+      return null;
+    },
+  });
   const replayFn = protocolStorageRuntime.resolveReplayStorage();
   process.stderr.write(
     `[START] protocol=${protocolRuntime.selectedProtocol} storageReplay=${protocolStorageRuntime.describe().supported ? 'available' : 'missing'}\n`

@@ -3,27 +3,46 @@
 const assert = require('assert');
 const {
   createProtocolStorageRuntime,
-  loadStorageReplayModule,
 } = require('./protocol_storage_runtime');
 
 const tests = [
   {
-    name: 'loadStorageReplayModule resolves supported protocol replay modules',
+    name: 'createProtocolStorageRuntime resolves replay modules through injection',
     run() {
-      assert.strictEqual(typeof loadStorageReplayModule('nostr').replayStorage, 'function');
-      assert.strictEqual(typeof loadStorageReplayModule('atproto').replayStorage, 'function');
-      assert.strictEqual(loadStorageReplayModule('localfs'), null);
+      const runtime = createProtocolStorageRuntime({
+        protocol: 'nostr',
+        loadReplayModule(protocol) {
+          if (protocol === 'nostr') {
+            return {
+              replayStorage: () => 'nostr replay',
+            };
+          }
+          if (protocol === 'atproto') {
+            return {
+              replayStorage: () => 'atproto replay',
+            };
+          }
+          return null;
+        },
+      });
+
+      assert.strictEqual(typeof runtime.resolveReplayStorage(), 'function');
+      assert.strictEqual(runtime.describe().supported, true);
     },
   },
   {
-    name: 'createProtocolStorageRuntime exposes replay selection helpers',
+    name: 'createProtocolStorageRuntime exposes unsupported protocols clearly',
     run() {
-      const runtime = createProtocolStorageRuntime({ protocol: 'atproto' });
+      const runtime = createProtocolStorageRuntime({
+        protocol: 'localfs',
+        loadReplayModule() {
+          return null;
+        },
+      });
 
-      assert.strictEqual(runtime.protocol, 'atproto');
-      assert.strictEqual(runtime.isSupported, true);
-      assert.strictEqual(typeof runtime.resolveReplayStorage(), 'function');
-      assert.strictEqual(runtime.describe().protocol, 'atproto');
+      assert.strictEqual(runtime.protocol, 'localfs');
+      assert.strictEqual(runtime.isSupported, false);
+      assert.throws(() => runtime.resolveReplayStorage(), /does not expose a replayStorage implementation/);
     },
   },
 ];

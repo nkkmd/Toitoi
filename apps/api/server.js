@@ -8,6 +8,7 @@ const {
   createProtocolRuntime,
   createProtocolStorageRuntime,
 } = require('@toitoi/protocol');
+const { replayStorage } = require('@toitoi/nostr/storage/replay');
 
 function loadIndexSnapshotFromOptions(options = {}) {
   if (typeof options.getIndexSnapshot === 'function') {
@@ -27,6 +28,12 @@ function loadIndexSnapshotFromOptions(options = {}) {
     const protocolStorageRuntime = options.protocolStorageRuntime
       || createProtocolStorageRuntime({
         protocol: options.protocolRuntime?.selectedProtocol || options.protocol,
+        loadReplayModule(protocol) {
+          if (protocol === 'nostr') {
+            return { replayStorage };
+          }
+          return null;
+        },
       });
     const replayStorage = protocolStorageRuntime.resolveReplayStorage();
     return () => {
@@ -82,6 +89,12 @@ function startServer(options = {}) {
     protocolRuntime,
     protocolStorageRuntime: options.protocolStorageRuntime || createProtocolStorageRuntime({
       protocol: protocolRuntime.selectedProtocol || options.protocol,
+      loadReplayModule(protocol) {
+        if (protocol === 'nostr') {
+          return { replayStorage };
+        }
+        return null;
+      },
     }),
   });
 
