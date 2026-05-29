@@ -31,6 +31,9 @@ importers:
       '@toitoi/nostr':
         specifier: workspace:*
         version: link:../../../packages/nostr
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../../../packages/protocol
 
   packages/atproto:
     dependencies:

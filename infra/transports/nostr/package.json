@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@toitoi/api": "workspace:*",
-    "@toitoi/nostr": "workspace:*"
+    "@toitoi/nostr": "workspace:*",
+    "@toitoi/protocol": "workspace:*"
   }
 }
