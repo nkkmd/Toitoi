@@ -516,7 +516,7 @@ sudo systemctl disable toitoi-monitor
 
 **注意：** `nostream-db`（PostgreSQL）はリレーの raw event と canonicalized event、そして Toitoi のインデクサーデータ（`toitoi_db`）を同一コンテナで共有しています。このコンテナが停止した場合、Nostreamリレーと `toitoi-api` / `toitoi-worker` の両方が機能不全になります。`provenance` と `rawRef` を含む再構築可能性を守るため、停止時間は最小化します。
 
-スクリプトはDBコンテナの再起動後に10秒待機してからPM2プロセスも再起動します。これはPrismaの接続プールが古い接続情報を保持したままにならないようにするためです。
+スクリプトはDBコンテナの再起動後に10秒待機してからPM2プロセスも再起動します。これはDBドライバの接続プールが古い接続情報を保持したままにならないようにするためです。
 
 ### toitoi-worker の高負荷について
 
