@@ -45,6 +45,12 @@
 - `ingest-log.jsonl`
 - `index-snapshot.json`
 
+補足: これらは `storageDir` の直下に作られるファイルです。
+
+- `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` は ingest 保存時に追記されます
+- `index-snapshot.json` は replay で再生成されます
+- インデクサーや API を起動しただけでは、空ディレクトリから自動では埋まりません
+
 運用上は、storage ディレクトリを丸ごとアーカイブするのが最も安全です。これにより、raw event と canonicalized event の両方をまとめて保持できます。
 
 ---

@@ -66,6 +66,8 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 ```
 
 `TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。
+この起動だけで `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` が自動生成されるわけではありません。
+これらは ingest 保存か `pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify` によって作られます。
 
 ### 2.4 ingest worker を起動する
 

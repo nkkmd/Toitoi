@@ -15,6 +15,12 @@ Toitoi の Nostr ingest を append-only に保存し、raw event から再 canon
 - `ingest-log.jsonl`
 - `index-snapshot.json`
 
+この4つは `storageDir` の中に置かれる運用ファイルです。
+
+- `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` は ingest の保存処理で追記されます
+- `index-snapshot.json` は replay の結果として再生成されます
+- API を起動しただけでは作成されません
+
 ## 使い方
 
 - JSONL ingest では `--storage-dir <dir>` を付ける
