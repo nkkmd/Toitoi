@@ -168,6 +168,7 @@ Distributed event indexing layer の運用資産を置きます。
 
 含まれる主なファイル:
 
+- `CLEAN_START.md`
 - `INDEXER_API_SETUP.md`
 
 今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提にこの配下の運用入口を整理します。

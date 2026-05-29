@@ -18,6 +18,7 @@
 - ingest worker: `infra/transports/nostr/relay_ingest_worker.js`
 - Nostr 変換・保存: `@toitoi/nostr/adapter/` と `@toitoi/nostr/storage/`
 - 運用入口: `infra/transports/nostr/README.md`
+- クリーンスタート: `infra/indexers/nostr/CLEAN_START.md`
 - バックアップと復旧: `infra/transports/nostr/BACKUP_AND_RESTORE.md`
 
 ---
@@ -400,4 +401,5 @@ curl "http://127.0.0.1:3000/api/v1/inquiries?limit=1"
 
 - [apps/api/README.md](../../../apps/api/README.md)
 - [infra/transports/nostr/README.md](../../transports/nostr/README.md)
+- [infra/indexers/nostr/CLEAN_START.md](./CLEAN_START.md)
 - [infra/transports/nostr/BACKUP_AND_RESTORE.md](../../transports/nostr/BACKUP_AND_RESTORE.md)
