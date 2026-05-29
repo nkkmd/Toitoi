@@ -72,10 +72,10 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 ### 2.4 ingest worker を起動する
 
 ```bash
-pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com
+pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --storage-dir /path/to/storage
 ```
 
-Reference mode では `--relay-url` を明示して起動します。  
+Reference mode では `--relay-url` を明示し、保存したい場合は `--storage-dir` も指定して起動します。  
 Production mode では `ecosystem.config.cjs` に書いた `RELAY_URL` を PM2 が使うため、`--relay-url` を手で足しません。
 
 ### 2.5 replay と疎通確認

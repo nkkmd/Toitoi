@@ -196,6 +196,7 @@ function printHelp(runtime = createProtocolRuntime()) {
     '  RELAY_INGEST_OUTPUT',
     '  RELAY_INGEST_FORMAT',
     '  RELAY_VERIFY=1',
+    '  RELAY_STORAGE_DIR',
     '  RELAY_RETRY_ATTEMPTS',
     '  RELAY_RETRY_INITIAL_DELAY_MS',
     '  RELAY_RETRY_MAX_DELAY_MS',
@@ -265,6 +266,10 @@ async function main() {
       source: protocolDescriptor.protocol,
       sourceLabel: args.relayUrl,
     });
+  } else {
+    process.stderr.write(
+      `[WARN] storage-dir not set; relay ingest will not be persisted to append-only storage\n`
+    );
   }
 
   writeResult(args.output, args.format, result);
