@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-05-29**
+**Status: evolving** | **Last updated: 2026-05-30**
 
 ## 目的
 
@@ -585,6 +585,9 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 ### 完了メモ
 
 - ここから先は実装に応じて追記する
+- `apps/api/server.js` で protocol-aware な replay / storage module 解決を導入し、`nostr` と `atproto` の実データ replay を切り替えられるようにした
+- `apps/api/test_standard_api_server.js` で `atproto` の実データ replay と `localfs` の明示エラーを固定した
+- `apps/api/README.md` で protocol ごとの replay module と `provenancePolicy` / `storage` の出し分けを明記した
 
 ---
 

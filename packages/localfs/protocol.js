@@ -57,6 +57,7 @@ function createLocalFsProtocolDescriptor() {
     },
     notes: [
       'LocalFS is a target protocol for the multi-protocol expansion, represented here as a skeleton descriptor.',
+      'Current API exposure is metadata-only; no replay module is wired for runtime storage access.',
     ],
   });
 }

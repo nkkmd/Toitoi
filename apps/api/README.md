@@ -1,6 +1,6 @@
 # Standard API
 
-**Version: 0.3.1** | **Status: evolving** | **Last updated: 2026-05-29**
+**Version: 0.3.2** | **Status: evolving** | **Last updated: 2026-05-30**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
@@ -30,13 +30,13 @@ HTTP response
 - HTTP エントリポイント: [server.js](./server.js)
 - ルーティングと view 投影: [standard_api_service.js](./standard_api_service.js)
 - テスト: [test_standard_api_service.js](./test_standard_api_service.js)
-- データの元: `@toitoi/nostr/storage/`
+- データの元: protocol ごとの `storage/` replay module
 
 ## 呼び出し関係
 
 - `server.js` が `standard_api_service.js` を呼びます
-- `server.js` が `@toitoi/nostr/storage/replay.js` を使って storage snapshot を読みます
-- `standard_api_service.js` が `@toitoi/nostr/storage/indexer.js` と `@toitoi/nostr/storage/standard_api_views.js` を使います
+- `server.js` が protocol に応じた `storage/replay.js` を使って storage snapshot を読みます
+- `standard_api_service.js` が protocol に応じた `storage/indexer.js` と `storage/standard_api_views.js` を使います
 - `test_standard_api_service.js` が service layer の契約を確認します
 - `infra/transports/nostr/test_operational_e2e.js` が API 層との通し確認で参照します
 
@@ -60,17 +60,22 @@ HTTP response
 TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 ```
 
-`TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。
+`TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。  
+`TOITOI_STORAGE_DIR` が設定されている場合は、選択した protocol に replay module が必要です。replay module が無い protocol は起動時に明示エラーになります。
+
+`/health` には、選択中 protocol の replay 可否を示す `storage` が含まれます。  
+`/api/v1/protocols/:protocol` には、`provenance` に加えて `provenancePolicy` と `storage` が含まれ、protocol ごとの差分を見分けやすくしています。
 
 ## どこで使うか
 
 - 対象: API 利用者、フロントエンド開発者、連携先実装者
 - 使用場面: エンドポイント確認、検索条件確認、レスポンス構造確認
-- 関連実装: `apps/api/server.js`、`apps/api/standard_api_service.js`、`@toitoi/nostr/storage/indexer.js`
+- 関連実装: `apps/api/server.js`、`apps/api/standard_api_service.js`、protocol ごとの `storage/indexer.js`
 
 ## 実装状態
 
-現在の API は、`@toitoi/nostr/storage/indexer.js` と `@toitoi/nostr/storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。
+現在の API は、protocol ごとの `storage/indexer.js` と `storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。  
+デフォルトの参照実装は Nostr ですが、`TOITOI_PROTOCOL` に応じて `atproto` へ切り替えられます。
 
 現在の主要関数は次の通りです。
 
@@ -129,6 +134,7 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 
 `provenance` は要約情報で、`sourceCount` / `sourceProtocols` / `sourceIds` / `rawRef` を含みます。  
 `rawRef` は raw event または raw payload を再取得・再 canonicalize するための参照です。
+`/api/v1/protocols/:protocol` の `provenancePolicy` は、`provenance` を API 上でどう扱うかを示すメタデータです。
 
 `list` / `query` / `relation` 系のレスポンスは、基本的に次の形です。
 
@@ -167,6 +173,8 @@ registry に登録されている protocol の一覧と capability matrix を返
   ]
 }
 ```
+
+`protocols[]` の各要素には、`provenancePolicy` と `storage` も含まれます。`localfs` のような metadata-only protocol は、`storage.supported` が `false` になります。
 
 ## `GET /health`
 

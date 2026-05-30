@@ -10,6 +10,39 @@ const {
 } = require('@toitoi/protocol');
 const { replayStorage } = require('@toitoi/nostr/storage/replay');
 
+function loadReplayModule(protocol) {
+  if (protocol === 'nostr') {
+    return { replayStorage };
+  }
+
+  if (protocol === 'atproto') {
+    return require('@toitoi/atproto/storage/replay');
+  }
+
+  return null;
+}
+
+function loadStorageModule(protocol) {
+  if (protocol === 'nostr') {
+    return require('@toitoi/nostr/storage');
+  }
+
+  if (protocol === 'atproto') {
+    return require('@toitoi/atproto/storage');
+  }
+
+  return null;
+}
+
+function describeProtocolStorage(protocol) {
+  const protocolStorageRuntime = createProtocolStorageRuntime({
+    protocol,
+    loadReplayModule,
+  });
+
+  return protocolStorageRuntime.describe();
+}
+
 function loadIndexSnapshotFromOptions(options = {}) {
   if (typeof options.getIndexSnapshot === 'function') {
     return options.getIndexSnapshot;
@@ -28,12 +61,7 @@ function loadIndexSnapshotFromOptions(options = {}) {
     const protocolStorageRuntime = options.protocolStorageRuntime
       || createProtocolStorageRuntime({
         protocol: options.protocolRuntime?.selectedProtocol || options.protocol,
-        loadReplayModule(protocol) {
-          if (protocol === 'nostr') {
-            return { replayStorage };
-          }
-          return null;
-        },
+        loadReplayModule,
       });
     const replayStorage = protocolStorageRuntime.resolveReplayStorage();
     return () => {
@@ -55,9 +83,17 @@ function createStandardApiServer(options = {}) {
     registry: options.protocolRegistry,
     defaultProtocol: options.defaultProtocol,
   });
+  const protocolStorageRuntime = options.protocolStorageRuntime || createProtocolStorageRuntime({
+    protocol: protocolRuntime.selectedProtocol || options.protocol,
+    loadReplayModule,
+  });
+  const storageModule = options.storageModule || loadStorageModule(protocolRuntime.selectedProtocol || options.protocol) || loadStorageModule('nostr');
   const service = createStandardApiService({
     getIndexSnapshot: loadIndexSnapshotFromOptions(options),
     protocolRuntime,
+    protocolStorageRuntime,
+    describeProtocolStorage,
+    storageModule,
   });
 
   return http.createServer((request, response) => {
@@ -84,23 +120,21 @@ function startServer(options = {}) {
     registry: options.protocolRegistry,
     defaultProtocol: options.defaultProtocol,
   });
+  const protocolStorageRuntime = options.protocolStorageRuntime || createProtocolStorageRuntime({
+    protocol: protocolRuntime.selectedProtocol || options.protocol,
+    loadReplayModule,
+  });
   const server = createStandardApiServer({
     ...options,
     protocolRuntime,
-    protocolStorageRuntime: options.protocolStorageRuntime || createProtocolStorageRuntime({
-      protocol: protocolRuntime.selectedProtocol || options.protocol,
-      loadReplayModule(protocol) {
-        if (protocol === 'nostr') {
-          return { replayStorage };
-        }
-        return null;
-      },
-    }),
+    protocolStorageRuntime,
   });
 
   server.listen(port, () => {
     const selected = protocolRuntime.selectedProtocol || 'unselected';
-    console.log(`Toitoi Standard API listening on http://127.0.0.1:${port} (protocol: ${selected})`);
+    const storage = protocolStorageRuntime.describe();
+    const storageStatus = storage.supported ? 'replay:enabled' : 'replay:missing';
+    console.log(`Toitoi Standard API listening on http://127.0.0.1:${port} (protocol: ${selected}, ${storageStatus})`);
   });
 
   return server;
@@ -112,6 +146,8 @@ if (require.main === module) {
 
 module.exports = {
   createStandardApiServer,
+  describeProtocolStorage,
   loadIndexSnapshotFromOptions,
+  loadStorageModule,
   startServer,
 };

@@ -2,24 +2,21 @@
 
 const { URL } = require('url');
 const {
-  findEventsByRelationTerm,
-  listEvents,
-  searchEvents,
-} = require('@toitoi/nostr/storage/indexer');
-const {
-  buildDerivedIndex,
-} = require('@toitoi/nostr/storage/replay');
-const {
-  projectCanonicalEvent,
-  projectEventDetailView,
-  projectEventLookupView,
-  projectLineageView,
-  projectRelationView,
-} = require('@toitoi/nostr/storage/standard_api_views');
-const {
   buildProtocolIntrospectionPayload,
   createProtocolRuntime,
 } = require('@toitoi/protocol');
+
+function loadDefaultStorageModule() {
+  return require('@toitoi/nostr/storage');
+}
+
+function resolveStorageModule(options = {}) {
+  if (options.storageModule && typeof options.storageModule === 'object') {
+    return options.storageModule;
+  }
+
+  return loadDefaultStorageModule();
+}
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
@@ -34,7 +31,7 @@ function normalizeIndexSnapshot(indexSnapshot) {
     return indexSnapshot;
   }
 
-  return buildDerivedIndex([]);
+  return loadDefaultStorageModule().buildDerivedIndex([]);
 }
 
 function buildJsonResponse(statusCode, body, headers = {}) {
@@ -268,12 +265,99 @@ function createStandardApiService(options = {}) {
   const getIndexSnapshot = typeof options.getIndexSnapshot === 'function'
     ? options.getIndexSnapshot
     : () => normalizeIndexSnapshot(options.indexSnapshot);
+  const storageModule = resolveStorageModule(options);
+  const {
+    findEventsByRelationTerm,
+    listEvents,
+    searchEvents,
+    projectCanonicalEvent,
+    projectEventDetailView,
+    projectEventLookupView,
+    projectLineageView,
+    projectRelationView,
+  } = storageModule;
   const protocolRuntime = options.protocolRuntime
     || createProtocolRuntime({
       protocol: options.protocol,
       registry: options.protocolRegistry,
       defaultProtocol: options.defaultProtocol,
     });
+  const describeProtocolStorage = typeof options.describeProtocolStorage === 'function'
+    ? options.describeProtocolStorage
+    : null;
+  const protocolStorageRuntime = options.protocolStorageRuntime || null;
+
+  function describeSelectedStorage() {
+    if (protocolStorageRuntime && typeof protocolStorageRuntime.describe === 'function') {
+      return protocolStorageRuntime.describe();
+    }
+
+    if (describeProtocolStorage && protocolRuntime.selectedProtocol) {
+      return describeProtocolStorage(protocolRuntime.selectedProtocol);
+    }
+
+    return null;
+  }
+
+  function applyCanonicalFilters(indexSnapshot, filters) {
+    const ordered = listEvents(indexSnapshot, {
+      limit: Number.MAX_SAFE_INTEGER,
+      offset: 0,
+      order: filters.order,
+    }).results;
+
+    const filtered = ordered.filter(event => matchesCanonicalFilters(event, filters));
+    return {
+      total: filtered.length,
+      limit: filters.limit,
+      offset: filters.offset,
+      results: filtered,
+    };
+  }
+
+  function projectRelationListView(indexSnapshot, searchParams) {
+    const term = parseStringParam(searchParams, 'relationship');
+    const filters = readCommonWindowOptions(searchParams);
+    return projectRelationView(indexSnapshot, term, filters);
+  }
+
+  function projectQueryListView(indexSnapshot, searchParams) {
+    const filters = readListFilters(searchParams);
+    const query = parseStringParam(searchParams, 'q');
+    const relationTerm = parseStringParam(searchParams, 'relationship');
+    const filtered = applyCanonicalFilters(indexSnapshot, filters);
+    let candidateEvents = filtered.results;
+
+    if (query) {
+      const searchResults = searchEvents(indexSnapshot, query, {
+        limit: Number.MAX_SAFE_INTEGER,
+        offset: 0,
+      }).results;
+      const searchIds = collectIdSet(searchResults);
+      candidateEvents = candidateEvents.filter(event => searchIds.has(event.id));
+    }
+
+    if (relationTerm) {
+      const relationResults = findEventsByRelationTerm(indexSnapshot, relationTerm, {
+        limit: Number.MAX_SAFE_INTEGER,
+        offset: 0,
+      }).results;
+      const relationIds = collectIdSet(relationResults);
+      candidateEvents = candidateEvents.filter(event => relationIds.has(event.id));
+    }
+
+    const total = candidateEvents.length;
+    const windowed = candidateEvents.slice(filters.offset, filters.offset + filters.limit);
+    return {
+      total,
+      limit: filters.limit,
+      offset: filters.offset,
+      results: windowed.map(event => ({
+        event: projectCanonicalEvent(event),
+        provenance: projectCanonicalEvent(event).provenance,
+      })),
+    };
+  }
 
   function getCurrentIndexSnapshot() {
     return normalizeIndexSnapshot(getIndexSnapshot());
@@ -285,6 +369,7 @@ function createStandardApiService(options = {}) {
       timestamp: new Date().toISOString(),
       protocol: protocolRuntime.selectedProtocol,
       availableProtocols: protocolRuntime.availableProtocols,
+      storage: describeSelectedStorage(),
     });
   }
 
@@ -306,6 +391,8 @@ function createStandardApiService(options = {}) {
       name: descriptor.name,
       capabilities: descriptor.capabilities,
       provenance: descriptor.provenance,
+      provenancePolicy: descriptor.provenancePolicy || null,
+      storage: describeProtocolStorage ? describeProtocolStorage(protocolName) : null,
       notes: Array.isArray(descriptor.notes) ? descriptor.notes : [],
       adapter: typeof descriptor.adapter?.describe === 'function' ? descriptor.adapter.describe() : null,
       converter: typeof descriptor.converter?.describe === 'function' ? descriptor.converter.describe() : null,

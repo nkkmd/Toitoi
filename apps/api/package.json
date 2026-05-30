@@ -8,6 +8,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@toitoi/atproto": "workspace:*",
     "@toitoi/protocol": "workspace:*",
     "@toitoi/nostr": "workspace:*"
   }

@@ -33,6 +33,18 @@ function describeProtocolDescriptor(descriptor) {
     name: descriptor.name,
     capabilities: descriptor.capabilities,
     provenance: descriptor.provenance,
+    provenancePolicy: {
+      rawRef: Boolean(descriptor.provenance && descriptor.provenance.rawRef),
+      replayable: Boolean(descriptor.provenance && descriptor.provenance.replayable),
+      semanticSource: isNonEmptyString(descriptor.provenance && descriptor.provenance.semanticSource)
+        ? descriptor.provenance.semanticSource
+        : 'canonical',
+      exposedFields: [
+        'rawRef',
+        'sourceId',
+        'sourceProtocol',
+      ],
+    },
     notes: Array.isArray(descriptor.notes) ? descriptor.notes.slice() : [],
     adapter: adapterDescription,
     converter: converterDescription,
