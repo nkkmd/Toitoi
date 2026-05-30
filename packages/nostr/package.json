@@ -3,6 +3,16 @@
   "private": true,
   "type": "commonjs",
   "main": "protocol.js",
+  "exports": {
+    ".": "./protocol.js",
+    "./protocol": "./protocol.js",
+    "./adapter/*": "./adapter/*.js",
+    "./converter/*": "./converter/*.js",
+    "./storage": "./storage/index.js",
+    "./storage/*": "./storage/*.js",
+    "./test_fixtures": "./storage/test_fixtures.js",
+    "./test_protocol": "./test_protocol.js"
+  },
   "scripts": {
     "test": "node ../../scripts/run-tests.js",
     "replay": "node storage/replay_cli.js"
