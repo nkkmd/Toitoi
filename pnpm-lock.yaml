@@ -10,6 +10,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@toitoi/atproto':
+        specifier: workspace:*
+        version: link:../../packages/atproto
       '@toitoi/nostr':
         specifier: workspace:*
         version: link:../../packages/nostr
