@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の Nostr リレー立ち上げ方
 
-**Version: 0.4.1** | **Status: evolving** | **Last updated: 2026-05-24**
+**Version: 0.4.2** | **Status: evolving** | **Last updated: 2026-05-30**
 
 本ドキュメントは、Toitoi の Canonical Event を Nostr transport projection として受け取る専用リレーサーバーを構築するための公式ガイドです。
 
@@ -55,7 +55,8 @@
 サーバーを構築する前に、以下の準備をお願いします。
 
 *   **Linuxサーバー（VPSなど）:**
-    *   OS: Ubuntu 22.04 LTS または Debian 12 (推奨)
+    *   OS: Ubuntu 24.04 LTS または Debian 12 (推奨)
+    *   Ubuntu 26.04 LTS も Docker 公式対応範囲ですが、導入前に本ガイドの手順で動作確認することを推奨します
     *   スペック: 最小 1vCPU / 1GB RAM / 20GB SSD（月額500円〜1000円程度のVPSで十分稼働します）
 *   **ドメインの取得:**
     *   例: `relay.your-domain.com`（取得したドメインのAレコードを、VPSのIPアドレスに向けておいてください）

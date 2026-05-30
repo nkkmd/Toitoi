@@ -2,7 +2,7 @@
 
 このドキュメントは、Nostrリレー構築に必須なソフトウェアの詳細なインストール手順を説明します。
 
-対象OS: **Ubuntu 22.04 LTS / Debian 12**
+対象OS: **Ubuntu 24.04 LTS / Debian 12 / Ubuntu 26.04 LTS**
 
 ## どこで使うか
 
@@ -25,7 +25,8 @@
 
 ## 前提条件
 
-- **OS**: Ubuntu 22.04 LTS または Debian 12
+- **OS**: Ubuntu 24.04 LTS または Debian 12
+- **補足**: Ubuntu 26.04 LTS でも利用可能ですが、導入時は Docker と各手順の動作確認を行ってください
 - **ユーザー権限**: 管理者権限（`sudo`）を使用できること
 - **インターネット接続**: パッケージダウンロード用に必須
 - **ターミナル**: SSH接続またはローカルターミナルで Bash シェルを使用
@@ -113,7 +114,7 @@ sudo apt remove -y docker docker.io containerd runc
 
 OSによってリポジトリURLが異なります。以下のどちらかを実行してください。
 
-#### Ubuntu 22.04 LTS の場合
+#### Ubuntu 24.04 LTS / 26.04 LTS の場合
 
 ```bash
 # 必須パッケージをインストール
