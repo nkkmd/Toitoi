@@ -8,6 +8,8 @@ Toitoi の Nostr ingest を append-only に保存し、raw event から再 canon
 
 `nak req -k 1042` で作る transport archive とは別に、こちらは `packages/nostr/storage` が保持する storageDir の運用メモです。
 
+この文書は、protocol ごとの運用テンプレート [PROTOCOL_OPERATION_TEMPLATE.md](./PROTOCOL_OPERATION_TEMPLATE.md) の Nostr 版です。
+
 ## 保存レイアウト
 
 - `raw-events.jsonl`

@@ -26,6 +26,8 @@ packages/atproto/
 - `live/`: `bsky.social` への gated live write helper
 - `storage/`: 保存、replay、index、API 向け view
 - `test_protocol.js`: descriptor の契約確認
+- `運用ガイド`: [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](/home/oruorane/github/Toitoi/docs/operations/ATPROTO_STORAGE_AND_REPLAY.md)
+- API 接続: `/health` と `/api/v1/protocols/atproto` を見るときは上記運用ガイドを併読する
 
 ## 依存関係
 

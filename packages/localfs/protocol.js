@@ -45,7 +45,7 @@ function createLocalFsProtocolDescriptor() {
       ordering: createCapability('partial', 'file and mtime ordering need normalization'),
       deleteSemantics: createCapability('partial', 'delete semantics depend on archive policy'),
       replaceSemantics: createCapability('partial', 'replace semantics depend on snapshot policy'),
-      replayability: createCapability('yes', 'append-only or archived files can be replayed'),
+      replayability: createCapability('no', 'runtime replay is not wired yet'),
       provenanceFidelity: createCapability('partial', 'path and file metadata can be preserved'),
       storageSnapshot: createCapability('yes', 'filesystem snapshots are straightforward'),
       sourceTrust: createCapability('partial', 'trust depends on filesystem ownership and policy'),
@@ -57,7 +57,7 @@ function createLocalFsProtocolDescriptor() {
     },
     notes: [
       'LocalFS is a target protocol for the multi-protocol expansion, represented here as a skeleton descriptor.',
-      'Current API exposure is metadata-only; no replay module is wired for runtime storage access.',
+      'Current API exposure is metadata-only; runtime replay is unsupported today, but file/archive-backed replay can be added later.',
     ],
   });
 }

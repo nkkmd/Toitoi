@@ -115,6 +115,7 @@ corepack pnpm test
 - `pnpm` が見つからない場合は、`corepack enable` で有効化できることがあります
 - この repo では `pnpm` を直接打つより、`corepack pnpm ...` の形を使うと版ずれを避けやすいです
 - `corepack pnpm --filter ...` で対象 package をまず絞ると、原因を追いやすくなります
+- `pnpm` の store DB が開けない場合は、`/tmp/toitoi-pnpm-store-v11` のような書き込み可能な場所に store をコピーして、`corepack pnpm install --trust-lockfile --store-dir /tmp/toitoi-pnpm-store-v11` を試すと切り分けしやすいです
 - 入口が分からなければ、各 README の `pnpm 入口` を見てください
 
 ## 関連

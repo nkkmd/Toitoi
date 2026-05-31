@@ -12,12 +12,15 @@ const tests = [
     name: 'default protocol registry includes Nostr, ATProto, and LocalFS',
     run() {
       const registry = createDefaultProtocolRegistry();
+      const localfsDescriptor = loadDefaultProtocolDescriptors().find(descriptor => descriptor.protocol === 'localfs');
 
       assert.strictEqual(registry.has('nostr'), true);
       assert.strictEqual(registry.has('atproto'), true);
       assert.strictEqual(registry.has('localfs'), true);
       assert.strictEqual(registry.list().length, 3);
       assert.strictEqual(loadDefaultProtocolDescriptors().length, 3);
+      assert.ok(localfsDescriptor);
+      assert.strictEqual(localfsDescriptor.capabilities.replayability.support, 'no');
     },
   },
   {

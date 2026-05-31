@@ -6,6 +6,8 @@
 
 ここでの前提は、Nostr の raw event を保持し、それを canonicalized event に再変換できることです。したがって、バックアップの目的は単なるファイル保全ではなく、raw event / canonicalized event / provenance / rawRef を含む再構築可能性の維持です。
 
+この手順は、共通テンプレート [PROTOCOL_OPERATION_TEMPLATE.md](../../../docs/operations/PROTOCOL_OPERATION_TEMPLATE.md) の Nostr 具体版として読むと整理しやすいです。
+
 これは `nak req -k 1042` で作る transport archive とは別の層です。transport archive はリレーから直接回収した raw transport event の長期保全、こちらの storage backup は `packages/nostr/storage` が保持する append-only storage の保全です。
 
 このガイドは、運用整備で必要な

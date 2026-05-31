@@ -27,7 +27,7 @@ packages/
 - `protocol/`: protocol descriptor と registry の共通基盤
 - `nostr/`: Nostr の adapter / converter / storage の共有実装
 - `atproto/`: ATProto の adapter / converter / storage
-- `localfs/`: LocalFS の protocol descriptor
+- `localfs/`: LocalFS の protocol descriptor（runtime replay は unsupported）
 
 ## 依存の原則
 

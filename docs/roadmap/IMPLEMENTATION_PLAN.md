@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-05-30**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 ## 目的
 
@@ -611,7 +611,19 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ### 完了メモ
 
-- ここから先は実装に応じて追記する
+- 2026-05-31 時点で Phase 12 を完了扱いとする
+- `docs/operations/PROTOCOL_OPERATION_TEMPLATE.md` で protocol 横断の運用テンプレートを追加
+- `docs/operations/ATPROTO_STORAGE_AND_REPLAY.md` で ATProto の backup / restore / replay / smoke gate を具体化
+- `docs/operations/LOCALFS_MIGRATION_AND_FIXTURE_TEMPLATE.md` で LocalFS の migration / fixture 入口を最小化
+- `packages/localfs/fixtures/sample-localfs-entry.json` / `sample-localfs-manifest.json` / `sample-localfs-archive.jsonl` で LocalFS の fixture / manifest / archive 実例を追加
+- `scripts/localfs/normalize_localfs_manifest.js` で LocalFS の最小 migration script を追加
+- `packages/localfs/protocol.js` と関連 README / boundaries で runtime replay unsupported を明記
+- `docs/operations/PNPM_WORKSPACE_GUIDE.md` に pnpm store DB の回避手順を追記
+- `scripts/protocol/validate_operational_template.js` と `scripts/protocol/test_operational_template.js` で共通テンプレートの欠落検知を追加
+- `scripts/protocol/validate_atproto_storage_and_replay.js` / `scripts/protocol/test_atproto_storage_and_replay.js` で ATProto 運用文書を固定
+- `scripts/protocol/validate_localfs_migration_fixture_template.js` / `scripts/protocol/test_localfs_migration_fixture_template.js` で LocalFS テンプレートを固定
+- `scripts/localfs/test_normalize_localfs_manifest.js` で LocalFS migration 入口を固定
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` と `infra/transports/nostr/BACKUP_AND_RESTORE.md` を共通テンプレートへ接続
 
 ---
 
