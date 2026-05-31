@@ -1,12 +1,13 @@
 # 運用ガイド：Nostr Storage のバックアップと復旧
 
-**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-22**
+**Version: 0.1.1** | **Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Toitoi の Nostr ingest / replay / API 運用で使う append-only storage を安全にバックアップし、障害時に復旧するための手順です。
 
 ここでの前提は、Nostr の raw event を保持し、それを canonicalized event に再変換できることです。したがって、バックアップの目的は単なるファイル保全ではなく、raw event / canonicalized event / provenance / rawRef を含む再構築可能性の維持です。
 
 この手順は、共通テンプレート [PROTOCOL_OPERATION_TEMPLATE.md](../../../docs/operations/PROTOCOL_OPERATION_TEMPLATE.md) の Nostr 具体版として読むと整理しやすいです。
+インデクサーの共通起動・クリーンスタートは [../../indexers/INDEXER_API_SETUP.md](../../indexers/INDEXER_API_SETUP.md) と [../../indexers/CLEAN_START.md](../../indexers/CLEAN_START.md) を参照してください。
 
 これは `nak req -k 1042` で作る transport archive とは別の層です。transport archive はリレーから直接回収した raw transport event の長期保全、こちらの storage backup は `packages/nostr/storage` が保持する append-only storage の保全です。
 
@@ -104,7 +105,7 @@ tar -xzf toitoi-storage-backup-YYYYMMDD-HHMMSS.tgz -C /path/to/storage
 ### 4.3 replay で再構築
 
 ```bash
-pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify
+pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir /path/to/storage --verify
 ```
 
 `--verify` は、raw event から再 canonicalize する際に検証を再実行したい場合に使います。通常運用では、まず既存 storage を優先して復旧し、その後に必要な検証を追加してください。`provenance` や `rawRef` の欠損がないかも合わせて確認してください。

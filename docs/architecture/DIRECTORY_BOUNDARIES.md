@@ -1,6 +1,6 @@
 # ディレクトリ責務ルール
 
-**Status: stable** | **Last updated: 2026-05-22**
+**Status: stable** | **Last updated: 2026-05-31**
 
 ## 目的
 
@@ -39,6 +39,9 @@ Toitoi/
 │   ├── transports/
 │   │   └── nostr/
 │   └── indexers/
+│       ├── README.md
+│       ├── INDEXER_API_SETUP.md
+│       ├── CLEAN_START.md
 │       └── nostr/
 ├── packages/
 │   ├── atproto/
@@ -161,17 +164,26 @@ Nostr relay layer の運用資産を置きます。
 
 ### `infra/indexers/nostr/`
 
-Distributed event indexing layer の運用資産を置きます。
+Nostr 固有の補助資料と移行用 wrapper を置きます。
 
-現時点ではセットアップ / 参照用ドキュメント中心です。
-長期的には multi-protocol indexer の共通運用入口に寄せますが、移行期間中は Nostr 専用の wrapper として残してよいです。
+共通の multi-protocol indexer 運用入口は `infra/indexers/` 直下に置き、Nostr 側は transport ingest や legacy wrapper に閉じます。
 
 含まれる主なファイル:
 
 - `CLEAN_START.md`
 - `INDEXER_API_SETUP.md`
 
-今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提にこの配下の運用入口を整理します。
+### `infra/indexers/`
+
+Canonical Event 中心の multi-protocol indexer 運用資産を置きます。
+
+含まれる主なファイル:
+
+- `README.md`
+- `INDEXER_API_SETUP.md`
+- `CLEAN_START.md`
+
+今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提に `infra/indexers/` 直下の運用入口を整理します。
 
 ## `packages/`
 

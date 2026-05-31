@@ -11,7 +11,8 @@ infra/
 ├─ transports/
 │  └─ nostr/   -> relay ingest / ops
 └─ indexers/
-   └─ nostr/   -> indexer ops / migration wrapper
+   ├─ README.md / INDEXER_API_SETUP.md / CLEAN_START.md
+   └─ nostr/   -> Nostr 固有の wrapper / migration notes
 ```
 
 ## 役割
@@ -21,9 +22,8 @@ infra/
 
 ## このリポジトリでの現状
 
-現在、JavaScript の実装があるのは主に Nostr transport です。
+現在、JavaScript の実装が厚いのは Nostr transport ですが、indexer 側は protocol-aware な共通入口を先に揃えています。
 
-- `infra/transports/nostr/`
-
-そのため、まずは transport 単位で README を読むのがわかりやすいです。
-indexer 側は、現時点では Nostr 向けの運用入口が中心ですが、設計上は multi-protocol 共通化を前提にしています。
+- transport の入口: `infra/transports/nostr/`
+- indexer の共通入口: `infra/indexers/`
+- protocol 切り替えの基盤: `packages/protocol/`

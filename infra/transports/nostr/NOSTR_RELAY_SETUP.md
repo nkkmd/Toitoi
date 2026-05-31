@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の Nostr リレー立ち上げ方
 
-**Version: 0.4.2** | **Status: evolving** | **Last updated: 2026-05-30**
+**Version: 0.4.3** | **Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Toitoi の Canonical Event を Nostr transport projection として受け取る専用リレーサーバーを構築するための公式ガイドです。
 
@@ -604,7 +604,7 @@ cat ~/nostr-archive/agroecology-commons/inquiry_*.jsonl | nak event wss://new-re
 
 ```bash
 tar -czf toitoi-storage-backup-$(date +%Y%m%d-%H%M%S).tgz -C /path/to/storage .
-pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify
+pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir /path/to/storage --verify
 ```
 
 transport archive は「再投入できる raw transport event の履歴」、storage backup は「canonicalized event / provenance / rawRef / index snapshot の復旧」に使います。役割を混ぜないのが大事です。

@@ -1,12 +1,12 @@
 # 運用ガイド: Nostr リレーのクリーンスタート
 
-**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-29**
+**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Nostream リレー側の PostgreSQL データを破棄して、リレーをクリーンな状態から再構築するための手順です。
 
 **既存イベントとの互換性が失われる設定変更を行う際**に実施してください。本手順を実行すると、`nostream-db` に保持されたリレー用データが完全に削除されます。**必ず内容を十分に理解した上で実行してください。**
 
-インデクサー側のクリーンスタートは別手順に分離しました。必要な場合は [infra/indexers/nostr/CLEAN_START.md](../../indexers/nostr/CLEAN_START.md) を参照してください。
+インデクサー側のクリーンスタートは別手順に分離しました。必要な場合は [infra/indexers/CLEAN_START.md](../../indexers/CLEAN_START.md) を参照してください。
 
 クリーンスタートの前に、必要なら [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を参照して `packages/nostr/storage` の storage を退避してください。`~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive を残すかどうかは、運用方針に応じて別途決めてください。
 

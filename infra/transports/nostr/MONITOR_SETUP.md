@@ -1,6 +1,6 @@
 # 運用ガイド：サーバー負荷監視・自動回復システムの導入
 
-**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-22**
+**Version: 0.1.1** | **Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Toitoi の Canonical Event 中心の運用基盤に、**負荷監視と自動回復の仕組み**を導入するための手順書です。
 
@@ -59,7 +59,8 @@
 ## 2. 前提条件
 
 - [NOSTR_RELAY_SETUP.md](./NOSTR_RELAY_SETUP.md) に従い、Nostreamリレーの構築が完了していること。
-- [INDEXER_API_SETUP.md](../../indexers/nostr/INDEXER_API_SETUP.md) に従い、ToitoiインデクサーAPIのPM2起動が完了していること。
+- [INDEXER_API_SETUP.md](../../indexers/INDEXER_API_SETUP.md) に従い、ToitoiインデクサーAPIのPM2起動が完了していること。
+- インデクサーのクリーンスタートや再構築は [../../indexers/CLEAN_START.md](../../indexers/CLEAN_START.md) を参照すること。
 - `python3` がインストールされていること（PM2プロセス状態の取得に使用）。
 
 ---

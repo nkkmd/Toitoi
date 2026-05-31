@@ -4,6 +4,7 @@
 
 ここは library 層ではなく、実運用や統合確認のための薄い入口です。  
 本体ロジックは `@toitoi/nostr/adapter/` と `@toitoi/nostr/storage/` にあります。
+インデクサーの共通構築・復旧は `infra/indexers/INDEXER_API_SETUP.md` と `infra/indexers/CLEAN_START.md` を参照してください。
 
 このリポジトリをまだ clone していない場合は、先に取得してから読むと流れが追いやすいです。
 
@@ -49,7 +50,7 @@ relay_ingest_worker.js
 - 起動: `pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --storage-dir /path/to/storage`
 - protocol 選択: `pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --protocol nostr --storage-dir /path/to/storage`
 - テスト: `pnpm --filter @toitoi/nostr-transport test`
-- replay: `pnpm --filter @toitoi/nostr replay -- --storage-dir /path/to/storage --verify`
+- replay: `pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir /path/to/storage --verify`
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 依存先

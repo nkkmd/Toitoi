@@ -1,6 +1,6 @@
 # Multi-Protocol Indexer Architecture
 
-**Status: evolving** | **Last updated: 2026-05-28**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 ## 目的
 
@@ -44,24 +44,26 @@ protocol ごとの差分は、既存の protocol package に残します。
 
 `infra/indexers/` は、実装本体ではなく運用入口として扱います。
 
-- 現時点では Nostr の運用入口がある
-- 将来は multi-protocol indexer の共通入口に寄せる
-- ただし移行期間中は protocol-specific な wrapper を残してよい
+- 現時点では共通の multi-protocol 入口と、Nostr 固有の wrapper を分けて置いている
+- protocol-aware な起動、復旧、再構築は `infra/indexers/` 直下に寄せる
+- Nostr 固有の作業は `infra/indexers/nostr/` に閉じる
 
 ## 現在の扱い
 
-現時点の `infra/indexers/nostr/` は、Nostr 専用の indexer 実装置き場ではなく、Nostr ベースの reference / operator entrypoint です。
+現時点の `infra/indexers/` は、protocol-aware な reference / operator entrypoint です。  
+`infra/indexers/nostr/` は、Nostr 専用の実装置き場ではなく、Nostr 固有の補助資料と legacy wrapper です。
 
 したがって、今後 protocol が増えても次の方針を守ります。
 
 - protocol ごとに indexer core を増やさない
 - 共通 indexer core を拡張する
 - ops ドキュメントは必要に応じて protocol 別に残す
-- deployment topology が共通化できた時点で `infra/indexers/` の構成を再編する
+- deployment topology が共通化できた時点で `infra/indexers/nostr/` の legacy wrapper をさらに縮小する
 
 ## 将来の整理案
 
-今は名前を急いで変えず、移行しやすい形を保つのが安全です。
+今は名前を急いで変えず、移行しやすい形を保つのが安全です。  
+共通入口はすでに置いているので、以後は wrapper の縮小と protocol 追加の wiring だけを進めます。
 
 将来的に共通 indexer core が安定したら、次のような整理が候補になります。
 
@@ -82,7 +84,7 @@ protocol ごとの差分は、既存の protocol package に残します。
 - 追加 protocol の運用差分が wrapper に閉じる
 - README と setup guide が protocol 横断で参照しやすい
 
-逆に、Nostr だけが特別扱いになるなら、今の `infra/indexers/nostr/` 形式を保って問題ありません。
+Nostr 固有の作業が必要でも、共通入口から逸れずに wrapper に閉じるのが基本です。
 
 ## 判断基準
 

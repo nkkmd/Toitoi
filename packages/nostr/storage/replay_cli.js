@@ -64,8 +64,9 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
+  const helpProtocol = process.env.REPLAY_PROTOCOL || process.env.TOITOI_PROTOCOL || 'nostr';
   console.log([
-    'Toitoi Nostr replay CLI',
+    'Toitoi protocol-aware replay CLI',
     '',
     'Usage:',
     '  node packages/nostr/storage/replay_cli.js --storage-dir <dir> [options]',
@@ -84,7 +85,7 @@ function printHelp() {
     'Output:',
     '  index-snapshot.json',
     '',
-    renderProtocolHelp(createProtocolRuntime({ protocol: 'nostr' })),
+    renderProtocolHelp(createProtocolRuntime({ protocol: helpProtocol })),
   ].join('\n'));
 }
 
@@ -115,6 +116,9 @@ async function main() {
     loadReplayModule(protocol) {
       if (protocol === 'nostr') {
         return { replayStorage };
+      }
+      if (protocol === 'atproto') {
+        return require('@toitoi/atproto/storage/replay');
       }
       return null;
     },

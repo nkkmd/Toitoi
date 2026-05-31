@@ -32,6 +32,7 @@
 - [ ] `caddy` が active である
 - [ ] `/health` が 200 を返す
 - [ ] relay からの ingest が継続して canonicalized event に変換されている
+- [ ] indexer の共通構築手順が `infra/indexers/INDEXER_API_SETUP.md` にまとまっていることを確認する
 
 ---
 
@@ -43,6 +44,7 @@
 - [ ] `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を確認する
 - [ ] `provenance` と `rawRef` を含む canonicalized snapshot が揃っているか確認する
 - [ ] `~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive も必要に応じて確認する
+- [ ] replay が必要なら `pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir <dir> --verify` を使う
 - [ ] バックアップを別場所に保管する
 
 ---
@@ -50,7 +52,7 @@
 ## 4. 復旧
 
 - [ ] storage バックアップを展開する
-- [ ] `replay_cli.js --storage-dir <dir>` を実行する
+- [ ] `replay_cli.js --protocol nostr --storage-dir <dir> --verify` を実行する
 - [ ] `index-snapshot.json` が再生成されることを確認する
 - [ ] `TOITOI_STORAGE_DIR=<dir> pnpm --filter @toitoi/api start` を起動できることを確認する
 - [ ] `/health` と `lookup` / `list` / `query` / `relation` / `tree` を確認する
