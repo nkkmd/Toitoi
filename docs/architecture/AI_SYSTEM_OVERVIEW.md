@@ -1,6 +1,6 @@
 # Toitoi AI System Overview
 
-**Status: evolving** | **Last updated: 2026-05-19**
+**Status: evolving** | **Last updated: 2026-06-01**
 
 ## 概要
 
@@ -14,6 +14,8 @@ AI は、
 - 反省と再 inquiry を促す
 
 ための inquiry-support infrastructure として位置づけます。
+
+低リソース端末での実装方針は、[`EDGE_AI_LOW_RESOURCE_PROFILE.md`](./EDGE_AI_LOW_RESOURCE_PROFILE.md) に分離しています。
 
 ---
 
