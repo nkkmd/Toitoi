@@ -1,10 +1,11 @@
 # Toitoi Edge AI Low-Resource Profile
 
-**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-06-01**
+**Version: 0.1.1** | **Status: evolving** | **Last updated: 2026-06-01**
 
-この文書は、`RAM 4GB / Ubuntu 24.04 LTS` のエッジ端末で Toitoi の AI 要約・タグ付けを安定運用するための最小構成を定義します。
+この文書は、`RAM 4GB / Ubuntu 24.04 LTS` のエッジ端末で Toitoi の AI 要約・タグ付けを安定運用するための**参考用の最小構成例**です。
 
-目的は、イベントを先に保存し、AI は後段の非同期処理として扱うことです。
+目的は、イベントを先に保存し、AI は後段の非同期処理として扱う設計を示すことです。  
+この構成は**推奨例**であり、Toitoi の Edge AI は各実装者が別の構成で設計しても構いません。
 
 ---
 

@@ -15,7 +15,8 @@ AI は、
 
 ための inquiry-support infrastructure として位置づけます。
 
-低リソース端末での実装方針は、[`EDGE_AI_LOW_RESOURCE_PROFILE.md`](./EDGE_AI_LOW_RESOURCE_PROFILE.md) に分離しています。
+低リソース端末での実装方針は、[`EDGE_AI_LOW_RESOURCE_PROFILE.md`](./EDGE_AI_LOW_RESOURCE_PROFILE.md) に参考例として分離しています。  
+これは正本の仕様ではなく、Edge AI の設計自由度を示すための一例です。
 
 ---
 

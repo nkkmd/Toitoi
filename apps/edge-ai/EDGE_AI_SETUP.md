@@ -4,7 +4,8 @@
 
 この文書は、`apps/edge-ai/` に置くエッジ AI 関連文書の案内ハブです。
 
-実装手順そのものは、低リソース向けの最小構成を含めて分離しています。
+実装手順そのものは、低リソース向けの最小構成を含めて分離しています。  
+特に [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](../../docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) は参考用の構成例です。
 
 ---
 

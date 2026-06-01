@@ -73,7 +73,7 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 
 * 🌐 **Commons Relay Layer**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
 * 🤖 **Local AI Edge Layer Hub**: **[`apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
-* 🪶 **Local AI Low-Resource Profile v0.1.0**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
+* 🪶 **Local AI Low-Resource Profile v0.1.1**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
 * 🧭 **Standard API Layer**: **[`apps/api/README.md`](./apps/api/README.md)**
 * 🧠 **AI System Overview**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **Indexer Architecture**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
@@ -220,7 +220,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 * 🌐 **コモンズ・リレー層**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
 * 🤖 **ローカルAI・エッジ層ハブ**: **[`apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
-* 🪶 **ローカルAI最小構成 v0.1.0**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
+* 🪶 **ローカルAI最小構成 v0.1.1**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
 * 🧠 **AIシステム概要**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **インデクサー・API層**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
 * 🧩 **現行インデクサーMVP**: `packages/protocol/`、`packages/nostr/`、および protocol ごとの `storage/` 実装
