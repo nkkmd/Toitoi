@@ -72,8 +72,8 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 ### Module Setup & Design
 
 * 🌐 **Commons Relay Layer**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
-* 🤖 **Local AI Edge Layer Hub**: **[`apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
-* 🪶 **Local AI Low-Resource Profile v0.1.1**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
+* 🤖 **Local AI Edge Layer Hub**: **[`apps/edge-ai/README.md`](./apps/edge-ai/README.md)**
+* 🪶 **Local AI Low-Resource Profile**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
 * 🧭 **Standard API Layer**: **[`apps/api/README.md`](./apps/api/README.md)**
 * 🧠 **AI System Overview**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **Indexer Architecture**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
@@ -90,7 +90,7 @@ If you're not sure where to start, begin here.
 |---|---|---|
 | Relay operators | [`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md) | Entry point for initial setup, rebuilds, and configuration review. Use it together with `PREREQUISITE_INSTALLATION.md`, `MONITOR_SETUP.md`, and `BACKUP_AND_RESTORE.md`. |
 | Indexer operators | [`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md) / [`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md) | Entry point for architecture policy and the protocol-aware indexer setup. [`apps/api/README.md`](./apps/api/README.md), `packages/protocol/`, and `packages/<protocol>/storage/` are the core implementation references. |
-| Edge AI operators | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | Use this for the 4GB / Ubuntu 24.04 LTS minimal stack, queueing, retry, and local model runtime decisions. `apps/edge-ai/EDGE_AI_SETUP.md` is the navigation hub. |
+| Edge AI operators | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | Use this for the 4GB / Ubuntu 24.04 LTS minimal stack, queueing, retry, and local model runtime decisions. `apps/edge-ai/README.md` is the entry hub. |
 | API consumers | [`apps/api/README.md`](./apps/api/README.md) | Use this for HTTP API verification, local startup, and client implementation. `server.js` and `standard_api_service.js` are the main implementation files. |
 | Conversion and ingestion implementers | `packages/<protocol>/adapter/` | Handles relay ingest, JSONL ingest, and validation logic. For Nostr, start with `relay_ingest.js`, `ingest_pipeline.js`, and `nostr_adapter.js`. |
 | Persistence, replay, and search implementers | `packages/<protocol>/storage/` | Used for raw/canonical storage, replay, index rebuilds, and search verification. For Nostr, the main files are `replay.js`, `indexer.js`, and `replay_cli.js`. |
@@ -219,8 +219,8 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 ### モジュール別セットアップ・設計書 (Modules)
 
 * 🌐 **コモンズ・リレー層**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
-* 🤖 **ローカルAI・エッジ層ハブ**: **[`apps/edge-ai/EDGE_AI_SETUP.md`](./apps/edge-ai/EDGE_AI_SETUP.md)**
-* 🪶 **ローカルAI最小構成 v0.1.1**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
+* 🤖 **ローカルAI・エッジ層ハブ**: **[`apps/edge-ai/README.md`](./apps/edge-ai/README.md)**
+* 🪶 **ローカルAI最小構成**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
 * 🧠 **AIシステム概要**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **インデクサー・API層**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
 * 🧩 **現行インデクサーMVP**: `packages/protocol/`、`packages/nostr/`、および protocol ごとの `storage/` 実装
@@ -234,7 +234,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 |---|---|---|
 | リレー運用者 | [`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md) | 初回構築、再構築、設定見直しの入口です。`PREREQUISITE_INSTALLATION.md`、`MONITOR_SETUP.md`、`BACKUP_AND_RESTORE.md` を併用します。 |
 | インデクサー運用者 | [`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md) / [`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md) | アーキテクチャ方針と protocol-aware な初回構築・再構築・構成見直しの入口です。[`apps/api/README.md`](./apps/api/README.md)、`packages/protocol/`、`packages/<protocol>/storage/` が実装の中心です。 |
-| エッジAI運用者 | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | 4GB / Ubuntu 24.04 LTS の最小構成、キュー、リトライ、ローカルモデルの運用判断に使います。導線は `apps/edge-ai/EDGE_AI_SETUP.md` です。 |
+| エッジAI運用者 | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | 4GB / Ubuntu 24.04 LTS の最小構成、キュー、リトライ、ローカルモデルの運用判断に使います。入口は `apps/edge-ai/README.md` です。 |
 | API 利用者 | [`apps/api/README.md`](./apps/api/README.md) | HTTP API の利用確認、ローカル起動、クライアント実装の入口です。`server.js` と `standard_api_service.js` が実装本体です。 |
 | 変換・取り込みの実装担当 | `packages/<protocol>/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。Nostr では `relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js` を見ます。 |
 | 永続化・再生・検索の実装担当 | `packages/<protocol>/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。Nostr では `replay.js`、`indexer.js`、`replay_cli.js` が中心です。 |

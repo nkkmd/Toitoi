@@ -1,6 +1,6 @@
-# Toitoi Edge AI Setup
+# Toitoi Edge AI Hub
 
-**Version: 0.6.0** | **Status: evolving** | **Last updated: 2026-06-01**
+**Version: 0.6.1** | **Status: evolving** | **Last updated: 2026-06-02**
 
 この文書は、`apps/edge-ai/` に置くエッジ AI 関連文書の案内ハブです。
 
@@ -11,7 +11,7 @@
 
 ## 役割
 
-`EDGE_AI_SETUP.md` は、エッジ AI に関する入口をまとめるだけの文書にします。
+`README.md` は、エッジ AI に関する入口をまとめる文書です。
 
 このファイルに詳細な手順や重い設計判断を重ねず、必要な内容は次の文書へ誘導します。
 
@@ -49,7 +49,7 @@
 
 ## 補助メモ
 
-`EDGE_AI_SETUP.md` は、仕様の正本ではありません。
+`README.md` は、仕様の正本ではありません。
 
 正本を置くべき場所は以下です。
 

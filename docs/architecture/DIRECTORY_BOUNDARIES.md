@@ -117,7 +117,7 @@ local-first AI inference layer を置きます。
 
 含まれる主なファイル:
 
-- `EDGE_AI_SETUP.md`
+- `README.md`
 
 ### `apps/api/`
 

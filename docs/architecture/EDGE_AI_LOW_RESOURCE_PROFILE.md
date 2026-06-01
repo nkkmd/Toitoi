@@ -243,7 +243,7 @@ Phase 4:
 ## 10. 参照
 
 - [AI System Overview](./AI_SYSTEM_OVERVIEW.md)
-- [`apps/edge-ai/EDGE_AI_SETUP.md`](../../apps/edge-ai/EDGE_AI_SETUP.md)
+- [`apps/edge-ai/README.md`](../../apps/edge-ai/README.md)
 
 ---
 
