@@ -87,6 +87,5 @@ pnpm --filter @toitoi/nostr-transport start -- \
 ## 6. 関連
 
 - [MONITOR_SETUP.md](./MONITOR_SETUP.md)
-- [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
 - [OPERATION_CHECKLIST.md](./OPERATION_CHECKLIST.md)
 - [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)

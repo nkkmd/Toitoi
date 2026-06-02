@@ -18,11 +18,11 @@ packages/localfs/
 - `protocol.js`: LocalFS の protocol descriptor
 - `test_protocol.js`: descriptor の契約確認
 - `runtime replay`: 現状は unsupported
-- `運用テンプレート`: [docs/operations/LOCALFS_MIGRATION_AND_FIXTURE_TEMPLATE.md](/home/oruorane/github/Toitoi/docs/operations/LOCALFS_MIGRATION_AND_FIXTURE_TEMPLATE.md)
-- fixture example: [packages/localfs/fixtures/sample-localfs-entry.json](/home/oruorane/github/Toitoi/packages/localfs/fixtures/sample-localfs-entry.json)
-- manifest example: [packages/localfs/fixtures/sample-localfs-manifest.json](/home/oruorane/github/Toitoi/packages/localfs/fixtures/sample-localfs-manifest.json)
-- archive example: [packages/localfs/fixtures/sample-localfs-archive.jsonl](/home/oruorane/github/Toitoi/packages/localfs/fixtures/sample-localfs-archive.jsonl)
-- migration script: [scripts/localfs/normalize_localfs_manifest.js](/home/oruorane/github/Toitoi/scripts/localfs/normalize_localfs_manifest.js)
+- `運用テンプレート`: [docs/operations/LOCALFS_MIGRATION_AND_FIXTURE_TEMPLATE.md](../../docs/operations/LOCALFS_MIGRATION_AND_FIXTURE_TEMPLATE.md)
+- fixture example: [packages/localfs/fixtures/sample-localfs-entry.json](./fixtures/sample-localfs-entry.json)
+- manifest example: [packages/localfs/fixtures/sample-localfs-manifest.json](./fixtures/sample-localfs-manifest.json)
+- archive example: [packages/localfs/fixtures/sample-localfs-archive.jsonl](./fixtures/sample-localfs-archive.jsonl)
+- migration script: [scripts/localfs/normalize_localfs_manifest.js](../../scripts/localfs/normalize_localfs_manifest.js)
 
 ## 依存関係
 

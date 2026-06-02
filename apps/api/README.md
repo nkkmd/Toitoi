@@ -45,13 +45,15 @@ HTTP response
 - HTTP API を外に公開するとき
 - replay 由来の snapshot を API に載せたいとき
 - canonical view の契約を確認したいとき
+- Nostr の storage / replay から入る場合は [docs/operations/NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
+- ATProto の storage / replay から入る場合は [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](../../docs/operations/ATPROTO_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
 
 ## pnpm 入口
 
 - 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - protocol 選択: `TOITOI_PROTOCOL=atproto TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - テスト: `pnpm --filter @toitoi/api test`
-- 参照実装: `@toitoi/nostr/storage/`
+- 参照実装: `@toitoi/nostr/storage/` と `@toitoi/atproto/storage/`
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 起動

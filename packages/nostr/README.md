@@ -32,6 +32,7 @@ protocol.js
 - `adapter/`: ingest と canonical 化の中心
 - `converter/`: canonical から Nostr draft への変換
 - `storage/`: 保存、replay、index、API 向け view
+- 運用ガイド: [docs/operations/NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
 
 ## 呼び出し関係
 
@@ -41,6 +42,7 @@ protocol.js
 - `apps/api/standard_api_service.js` は `storage/` が提供する index と view を使います
 - `packages/nostr/adapter/` は raw event の受け口です
 - `packages/nostr/storage/` は replay と index の受け口です
+- まず運用手順を確認したい場合は [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) を見ます
 
 ## 依存関係
 

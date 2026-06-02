@@ -163,7 +163,7 @@ AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP
 - `packages/nostr/storage/replay.js` で raw event からの replay と derived index 再構築を追加
 - `packages/nostr/storage/replay_cli.js` で replay の実行入口を追加
 - `packages/nostr/adapter/ingest_jsonl.js` と `infra/transports/nostr/relay_ingest_worker.js` に `--storage-dir` を追加
-- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` で復旧手順を追加
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` を正本として復旧手順を追加
 - `packages/nostr/storage/test_*` で保存・replay・CLI の回帰確認を追加
 
 ---
@@ -282,12 +282,12 @@ MVP を継続運用できる形にする。
 
 ### 完了メモ
 
-- `infra/transports/nostr/BACKUP_AND_RESTORE.md` で storage バックアップと復旧の標準手順を追加
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` を storage バックアップと復旧の正本として整備
 - `infra/transports/nostr/MONITOR_SETUP.md` で監視と復旧の役割分担を明確化
 - `infra/transports/nostr/INGEST_RETRY_POLICY.md` で ingest failure の再試行方針を明文化
 - `infra/transports/nostr/OPERATION_CHECKLIST.md` で日常運用向けの短いチェックリストを追加
 - `infra/transports/nostr/CLEAN_START.md` からバックアップ手順へ参照を追加
-- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` から復旧ランブックへ参照を追加
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` から復旧ランブックへ参照を追加して導線を正本へ統一
 - `infra/transports/nostr/test_operational_e2e.js` で sample archive 由来の storage -> replay -> API service のスモークテストを追加
 - `packages/nostr/adapter/relay_ingest.js` と `infra/transports/nostr/relay_ingest_worker.js` に transient failure の retry を追加
 - `packages/nostr/adapter/test_relay_ingest.js` で retry / early close / retryable error の回帰確認を追加
@@ -625,7 +625,7 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 - `scripts/protocol/validate_atproto_storage_and_replay.js` / `scripts/protocol/test_atproto_storage_and_replay.js` で ATProto 運用文書を固定
 - `scripts/protocol/validate_localfs_migration_fixture_template.js` / `scripts/protocol/test_localfs_migration_fixture_template.js` で LocalFS テンプレートを固定
 - `scripts/localfs/test_normalize_localfs_manifest.js` で LocalFS migration 入口を固定
-- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` と `infra/transports/nostr/BACKUP_AND_RESTORE.md` を共通テンプレートへ接続
+- `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` を共通テンプレートの正本として接続
 
 ---
 

@@ -8,7 +8,7 @@
 
 インデクサー側のクリーンスタートは別手順に分離しました。必要な場合は [infra/indexers/CLEAN_START.md](../../indexers/CLEAN_START.md) を参照してください。
 
-クリーンスタートの前に、必要なら [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を参照して `packages/nostr/storage` の storage を退避してください。`~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive を残すかどうかは、運用方針に応じて別途決めてください。
+クリーンスタートの前に、必要なら [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) を参照して `packages/nostr/storage` の storage を退避してください。`~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive を残すかどうかは、運用方針に応じて別途決めてください。
 
 ## どこで使うか
 

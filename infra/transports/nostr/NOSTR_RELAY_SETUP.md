@@ -12,7 +12,7 @@
 - 立ち上げ手順の本体: このファイル
 - 初期準備: [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md)
 - 運用監視: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
-- バックアップ: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
+- バックアップ: [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
 - 異常時の初期化手順: [CLEAN_START.md](./CLEAN_START.md)
 - 取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)（adapter / normalizer を通して canonicalized event 化する入口）
 
@@ -44,7 +44,7 @@
 このガイドでは、次の 2 系統を分けて扱います。
 
 - `~/nostr-archive/agroecology-commons/`: `nak req -k 1042` で取る transport archive。リレーから直接回収した raw transport event の履歴です。
-- `packages/nostr/storage` 相当の storageDir: `@toitoi/nostr/storage/` が保持する append-only storage。`raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を含み、`BACKUP_AND_RESTORE.md` の対象です。
+- `packages/nostr/storage` 相当の storageDir: `@toitoi/nostr/storage/` が保持する append-only storage。`raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を含み、`NOSTR_STORAGE_AND_REPLAY.md` の対象です。
 
 つまり、transport archive は「リレーの外側に残す長期保全」、storage は「canonicalized event を再構築するための運用バックアップ」です。両方を併用すると、リレーの再取得と内部モデルの復旧を別々に扱えます。
 
@@ -598,7 +598,7 @@ cat ~/nostr-archive/agroecology-commons/inquiry_*.jsonl | nak event wss://new-re
 
 ## 7. storage backup / restore
 
-`packages/nostr/storage` の storage backup は、transport archive とは独立した canonicalized event 復旧用の層です。こちらは [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md) を正規手順として使います。
+`packages/nostr/storage` の storage backup は、transport archive とは独立した canonicalized event 復旧用の層です。こちらは [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) を正規手順として使います。
 
 最小限の流れだけ書くと、次のとおりです。
 
@@ -617,6 +617,6 @@ transport archive は「再投入できる raw transport event の履歴」、st
 - ディレクトリ責務: [DIRECTORY_BOUNDARIES.md](../../../docs/architecture/DIRECTORY_BOUNDARIES.md)
 - 事前準備の詳細: [PREREQUISITE_INSTALLATION.md](./PREREQUISITE_INSTALLATION.md)
 - 監視設定: [MONITOR_SETUP.md](./MONITOR_SETUP.md)
-- バックアップと復元: [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
+- バックアップと復元: [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
 - 初回立ち上げのやり直し: [CLEAN_START.md](./CLEAN_START.md)
 - リレー取り込みワーカー: [relay_ingest_worker.js](./relay_ingest_worker.js)（adapter / normalizer を通して canonicalized event 化する入口）

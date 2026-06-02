@@ -115,6 +115,5 @@
 ## 6. 関連
 
 - [NOSTR_STORAGE_AND_REPLAY.md](./NOSTR_STORAGE_AND_REPLAY.md)
-- [BACKUP_AND_RESTORE.md](../../infra/transports/nostr/BACKUP_AND_RESTORE.md)
 - [MONITOR_SETUP.md](../../infra/transports/nostr/MONITOR_SETUP.md)
 - [OPERATION_CHECKLIST.md](../../infra/transports/nostr/OPERATION_CHECKLIST.md)

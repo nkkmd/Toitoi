@@ -150,5 +150,5 @@ raw-events.jsonl が失われている場合は、canonical-events.jsonl と ind
 ## 7. 関連
 
 - [PROTOCOL_OPERATION_TEMPLATE.md](./PROTOCOL_OPERATION_TEMPLATE.md)
-- [packages/atproto/README.md](/home/oruorane/github/Toitoi/packages/atproto/README.md)
-- [packages/atproto/test_smoke.js](/home/oruorane/github/Toitoi/packages/atproto/test_smoke.js)
+- [packages/atproto/README.md](../../packages/atproto/README.md)
+- [packages/atproto/test_smoke.js](../../packages/atproto/test_smoke.js)

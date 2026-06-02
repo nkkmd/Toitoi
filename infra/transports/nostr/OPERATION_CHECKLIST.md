@@ -6,7 +6,7 @@
 
 - 対象: 日常運用の担当者、オンコール担当
 - 使用場面: ingest 失敗時の確認、監視確認、バックアップ前後のチェック
-- 関連実装: `infra/transports/nostr/MONITOR_SETUP.md`、`infra/transports/nostr/BACKUP_AND_RESTORE.md`
+- 関連実装: `infra/transports/nostr/MONITOR_SETUP.md`、`docs/operations/NOSTR_STORAGE_AND_REPLAY.md`
 - 前提モデル: canonicalized event を内部中心にし、Nostr は transport projection として扱う
 
 ---
@@ -74,7 +74,7 @@
 
 ## 6. 関連
 
-- [BACKUP_AND_RESTORE.md](./BACKUP_AND_RESTORE.md)
+- [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
 - [INGEST_RETRY_POLICY.md](./INGEST_RETRY_POLICY.md)
 - [MONITOR_SETUP.md](./MONITOR_SETUP.md)
 - [CLEAN_START.md](./CLEAN_START.md)
