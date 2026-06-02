@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-06-02**
 
 ## 目的
 
@@ -629,14 +629,93 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ---
 
+## フェーズ 13: multi-transport fan-out / fan-in
+
+### 目的
+
+ひとつの canonical event を複数 transport に送信する fan-out と、複数 relay / PDS から event を取り込んで canonical 化する fan-in の両方を、同じ semantic layer の方針で扱えるようにする。
+
+### 作業
+
+- outbound transport の fan-out 方針を決める
+- source ごとの送信先差分は transport 層の責務として扱う
+- source ごとの ingest は分離して扱う
+- source fan-in は canonical event の identity resolution として扱う
+- raw duplicate と cross-source semantic duplicate を別の段階で判定する
+- canonical identity の判定基準を文書化する
+- 同一と判断された event の provenance 集約方針を決める
+- 同一性が曖昧な event の扱いを relation / lineage に逃がせるようにする
+
+### 完了条件
+
+- 1 つの canonical event を複数 transport へ送れる
+- outbound fan-out と inbound fan-in の責務分離が文書化されている
+- 同一 transport source 内の duplicate と source 跨ぎの duplicate を区別できる
+- canonical identity を基準に event を 1 つに畳み込める
+- 判定不能な event を無理に merge せずに保持できる
+- API で transport ごとの重複を露出しすぎない
+
+### 完了メモ
+
+- ここに完了した作業を追記する
+
+---
+
+## フェーズ 14: multi-transport 実装
+
+### 目的
+
+フェーズ13 で固めた fan-out / fan-in と identity resolution の方針を、実装と運用に落とし込む。
+
+### 作業
+
+#### Adapter / outbound fan-out
+
+- outbound fan-out の実装入口を作る
+- transport ごとの送信先解決を実装する
+- transport ごとの配送失敗と retry / skip / quarantine の扱いを決める
+- outbound でも canonical identity を維持できるようにする
+
+#### Replay / fan-in
+
+- source ごとの ingest をまとめる dispatcher を実装する
+- canonical identity の判定ロジックを indexer / replay の経路に接続する
+- provenance 集約と rawRef の保持を実データで検証する
+- transport を跨いだ duplicate suppression を replay 時にも再現できるようにする
+
+#### API / canonical view
+
+- API の canonical view で重複が露出しないことを確認する
+- source 跨ぎで provenance が集約された event を 1 件として返す
+- 同一性が曖昧な event を API でどう見せるかを整理する
+
+#### Tests / ops
+
+- transport を跨いだ duplicate suppression の contract test を追加する
+- fan-out / fan-in それぞれの smoke test を追加する
+- 失敗時にどの transport まで影響するかを運用手順に反映する
+
+### 完了条件
+
+- 1 つの canonical event を複数 transport へ送信できる
+- 複数 source からの ingest を同じ index / API に流せる
+- source 跨ぎの duplicate が canonical view に二重表示されない
+- canonical identity の判定と provenance 集約が replay 可能である
+- transport ごとの失敗が他の source の ingest を壊しすぎない
+
+### 完了メモ
+
+---
+
 ## 当面の優先順位
 
 Phase 8 を完了として扱ったうえで、次の順序で進めます。
 
 1. 追加 protocol 1 つを実データ ingest まで通す
 2. registry 駆動で起動と選択をまとめる
-3. Standard API の multi-protocol 対応を確認する
-4. 運用・移行・拡張の標準化を固める
+3. multi-transport fan-out / fan-in と identity resolution を indexer に入れる
+4. Standard API の multi-protocol 対応を確認する
+5. 運用・移行・拡張の標準化を固める
 
 この順序により、単なる skeleton の追加で止めずに、実装・起動・公開・運用までを一連でつなげられます。
 
