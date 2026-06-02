@@ -27,7 +27,7 @@ packages/atproto/
 - `storage/`: 保存、replay、index、API 向け view
 - `test_protocol.js`: descriptor の契約確認
 - `test_smoke.js`: `ATPROTO_LIVE_SMOKE_TEST=1 node packages/atproto/test_smoke.js` で送信後に `com.atproto.repo.getRecord` まで確認する gated smoke test
-- `運用ガイド`: [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](/home/oruorane/github/Toitoi/docs/operations/ATPROTO_STORAGE_AND_REPLAY.md)
+- `運用ガイド`: [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](../../docs/operations/ATPROTO_STORAGE_AND_REPLAY.md)
 - API 接続: `/health` と `/api/v1/protocols/atproto` を見るときは上記運用ガイドを併読する
 
 ## 依存関係
