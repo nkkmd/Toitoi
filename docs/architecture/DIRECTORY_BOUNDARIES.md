@@ -162,17 +162,6 @@ Nostr relay layer の運用資産を置きます。
 - `test_relay_ingest_worker.js`
 - `test_operational_e2e.js`
 
-### `infra/indexers/nostr/`
-
-Nostr 固有の補助資料と移行用 wrapper を置きます。
-
-共通の multi-protocol indexer 運用入口は `infra/indexers/` 直下に置き、Nostr 側は transport ingest や legacy wrapper に閉じます。
-
-含まれる主なファイル:
-
-- `CLEAN_START.md`
-- `INDEXER_API_SETUP.md`
-
 ### `infra/indexers/`
 
 Canonical Event 中心の multi-protocol indexer 運用資産を置きます。

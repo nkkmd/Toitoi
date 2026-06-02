@@ -24,8 +24,6 @@ importers:
 
   apps/frontend: {}
 
-  infra/indexers/nostr: {}
-
   infra/transports/nostr:
     dependencies:
       '@toitoi/api':

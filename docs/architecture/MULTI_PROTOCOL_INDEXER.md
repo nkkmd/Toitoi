@@ -46,19 +46,19 @@ protocol ごとの差分は、既存の protocol package に残します。
 
 - 現時点では共通の multi-protocol 入口と、Nostr 固有の wrapper を分けて置いている
 - protocol-aware な起動、復旧、再構築は `infra/indexers/` 直下に寄せる
-- Nostr 固有の作業は `infra/indexers/nostr/` に閉じる
+- Nostr 固有の作業は `infra/transports/nostr/` に閉じる
 
 ## 現在の扱い
 
 現時点の `infra/indexers/` は、protocol-aware な reference / operator entrypoint です。  
-`infra/indexers/nostr/` は、Nostr 専用の実装置き場ではなく、Nostr 固有の補助資料と legacy wrapper です。
+Nostr 固有の運用手順は `infra/transports/nostr/` に置きます。
 
 したがって、今後 protocol が増えても次の方針を守ります。
 
 - protocol ごとに indexer core を増やさない
 - 共通 indexer core を拡張する
 - ops ドキュメントは必要に応じて protocol 別に残す
-- deployment topology が共通化できた時点で `infra/indexers/nostr/` の legacy wrapper をさらに縮小する
+- deployment topology が共通化できた時点で Nostr 固有の運用資料をさらに縮小する
 
 ## 将来の整理案
 
@@ -70,9 +70,9 @@ protocol ごとの差分は、既存の protocol package に残します。
 - `infra/indexers/core/`
   - 共通 indexer の運用入口
   - protocol 非依存の起動、復旧、監視、再構築手順
-- `infra/indexers/nostr/`
+- `infra/transports/nostr/`
   - Nostr 固有の補助手順
-  - 既存の移行用 wrapper
+  - transport ingest / relay 運用の入口
 - `infra/indexers/atproto/`
   - ATProto 固有の補助手順
 - `infra/indexers/localfs/`
