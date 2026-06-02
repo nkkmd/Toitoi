@@ -709,11 +709,11 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ## 当面の優先順位
 
-Phase 8 を完了として扱ったうえで、次の順序で進めます。
+Phase 12 を完了として扱ったうえで、次の順序で進めます。
 
 1. 追加 protocol 1 つを実データ ingest まで通す
 2. registry 駆動で起動と選択をまとめる
-3. multi-transport fan-out / fan-in と identity resolution を indexer に入れる
+3. multi-transport fan-out / fan-in と identity resolution を設計して実装に入れる
 4. Standard API の multi-protocol 対応を確認する
 5. 運用・移行・拡張の標準化を固める
 
@@ -732,7 +732,7 @@ Phase 8 を完了として扱ったうえで、次の順序で進めます。
 - 特定の検索エンジン最適化
 - protocol 横断の高度な federation ルール
 
-なお、Phase 9 で選ばなかった追加 protocol は、ここでいう「後回し」に残します。
+なお、Phase 13/14 で扱う multi-transport の実装が安定するまでは、追加 protocol の細かな federation ルールや transport 横断の高度な自動統合は、ここでいう「後回し」に残します。
 
 これらは MVP の ingest, canonicalize, replay, API が安定した後に進めます。
 
@@ -744,6 +744,7 @@ Phase 8 を完了として扱ったうえで、次の順序で進めます。
 
 - semantic interoperability を前進させるか
 - protocol 依存を増やしすぎないか
+- transport を跨いだ同一性と重複抑止を壊さないか
 - replayability を損なわないか
 - AI / UI から見たアクセス面を単純にできるか
 - 将来の multi-protocol 対応を難しくしないか
