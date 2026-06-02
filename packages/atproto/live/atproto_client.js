@@ -26,6 +26,20 @@ function resolvePdsHost(options = {}) {
   return host.replace(/\/+$/, '');
 }
 
+function extractRecordRkey(uri) {
+  if (!isNonEmptyString(uri)) {
+    throw new Error('record uri is required');
+  }
+
+  const parts = uri.trim().split('/');
+  const rkey = parts[parts.length - 1];
+  if (!isNonEmptyString(rkey)) {
+    throw new Error(`unable to extract rkey from uri: ${uri}`);
+  }
+
+  return rkey.trim();
+}
+
 async function requestJson(url, options = {}) {
   const fetchImpl = getFetch();
   const response = await fetchImpl(url, {
@@ -115,8 +129,38 @@ async function createRecord(options = {}) {
   });
 }
 
+async function getRecord(options = {}) {
+  const pdsHost = resolvePdsHost(options);
+  const repo = isNonEmptyString(options.repo) ? options.repo.trim() : '';
+  const collection = isNonEmptyString(options.collection) ? options.collection.trim() : '';
+  const recordKey = isNonEmptyString(options.rkey)
+    ? options.rkey.trim()
+    : isNonEmptyString(options.uri)
+      ? extractRecordRkey(options.uri)
+      : '';
+
+  if (!isNonEmptyString(repo)) {
+    throw new Error('repo is required');
+  }
+  if (!isNonEmptyString(collection)) {
+    throw new Error('collection is required');
+  }
+  if (!isNonEmptyString(recordKey)) {
+    throw new Error('rkey is required');
+  }
+
+  return requestJson(`${pdsHost}/xrpc/com.atproto.repo.getRecord?repo=${encodeURIComponent(repo)}&collection=${encodeURIComponent(collection)}&rkey=${encodeURIComponent(recordKey)}`, {
+    method: 'GET',
+    headers: {
+      ...(options.accessJwt ? { authorization: `Bearer ${options.accessJwt}` } : {}),
+    },
+  });
+}
+
 module.exports = {
   createRecord,
   createSession,
+  extractRecordRkey,
+  getRecord,
   resolvePdsHost,
 };

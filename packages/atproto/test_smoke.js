@@ -5,7 +5,7 @@ const {
   convertCanonicalToAtProtoDraft,
   convertCanonicalToBskyFeedPostDraft,
 } = require('./converter/canonical_to_atproto_converter');
-const { createRecord, createSession } = require('./live/atproto_client');
+const { createRecord, createSession, extractRecordRkey, getRecord } = require('./live/atproto_client');
 
 function isEnabled() {
   return process.env.ATPROTO_LIVE_SMOKE_TEST === '1';
@@ -57,6 +57,22 @@ const tests = [
 
       assert.ok(created && typeof created.uri === 'string');
       assert.ok(created && typeof created.cid === 'string');
+
+      const fetched = await getRecord({
+        repo: session.did,
+        collection: draft.collection,
+        uri: created.uri,
+      });
+
+      assert.ok(fetched && typeof fetched.value === 'object');
+      assert.strictEqual(fetched.uri, created.uri);
+      assert.strictEqual(fetched.cid, created.cid);
+      assert.strictEqual(extractRecordRkey(fetched.uri), created.uri.split('/').pop());
+      assert.deepStrictEqual(Object.keys(fetched.value).sort(), Object.keys(draft.record).sort());
+      assert.strictEqual(fetched.value.text, draft.record.text);
+      assert.strictEqual(fetched.value.type, draft.record.type);
+      assert.strictEqual(fetched.value.language, draft.record.language);
+      assert.strictEqual(fetched.value.createdAt, draft.record.createdAt);
       console.log(`PASS live smoke write ${created.uri}`);
     },
   },
