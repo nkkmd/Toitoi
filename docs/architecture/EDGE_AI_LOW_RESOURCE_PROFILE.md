@@ -102,6 +102,8 @@ ai_annotations 保存
 
 ### `events`
 
+受信したイベントの原本を保存するテーブルです。AI 処理より先に、まず事実を残すことを優先します。
+
 ```sql
 CREATE TABLE events (
   id INTEGER PRIMARY KEY,
@@ -111,6 +113,8 @@ CREATE TABLE events (
 ```
 
 ### `ai_queue`
+
+AI に回す前の待ち行列です。ここで非同期化し、失敗時の再試行も管理します。
 
 ```sql
 CREATE TABLE ai_queue (
@@ -125,6 +129,8 @@ CREATE TABLE ai_queue (
 ```
 
 ### `ai_annotations`
+
+AI が生成した要約やタグを保存するテーブルです。1 件のイベントに対する注釈結果を保持します。
 
 ```sql
 CREATE TABLE ai_annotations (
@@ -232,20 +238,28 @@ WantedBy=multi-user.target
 
 Phase 1:
 
+まずはイベントを AI で扱える最小単位にします。要約とタグ付け、そして失敗時の再試行ができるようになります。
+
 - summary
 - tags
 - queue/retry
 
 Phase 2:
 
+保存済みの要約やタグを検索しやすくします。SQLite FTS5 によって、キーワード検索の応答性が上がります。
+
 - SQLite FTS5
 
 Phase 3:
+
+イベント同士の意味的な近さを扱えるようにします。embedding を使って、類似イベントを見つけやすくなります。
 
 - embedding
 - similarity search
 
 Phase 4:
+
+検索結果をもとに、文脈を含めた回答や再利用を可能にします。RAG によって、単なる検索から知識活用へ広げます。
 
 - RAG
 
