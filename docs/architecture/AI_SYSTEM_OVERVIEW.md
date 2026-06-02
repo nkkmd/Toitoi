@@ -18,6 +18,8 @@ AI は、
 低リソース端末での実装方針は、[`EDGE_AI_LOW_RESOURCE_PROFILE.md`](./EDGE_AI_LOW_RESOURCE_PROFILE.md) に参考例として分離しています。  
 これは正本の仕様ではなく、Edge AI の設計自由度を示すための一例です。
 
+段階的な導入順や問い生成の最低仕様は、[`AI_ADOPTION_ROADMAP.md`](../roadmap/AI_ADOPTION_ROADMAP.md) にまとめています。
+
 ---
 
 ## AI の基本姿勢

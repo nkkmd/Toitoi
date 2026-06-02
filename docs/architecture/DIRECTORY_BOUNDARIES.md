@@ -246,6 +246,7 @@ Toitoi の設計、思想、protocol、operations、concepts、roadmap を整理
 |---|---|
 | `AI_SYSTEM_OVERVIEW.md` | AI subsystem の役割 |
 | `EDGE_AI_LOW_RESOURCE_PROFILE.md` | 4GB クラス向け edge AI 最小構成 |
+| `AI_ADOPTION_ROADMAP.md` | AI 導入段階と問い生成の最低仕様 |
 | `DOCUMENTATION_VERSION_POLICY.md` | ドキュメント版管理ポリシー |
 | `DIRECTORY_BOUNDARIES.md` | ディレクトリ責務ルール |
 | `MULTI_PROTOCOL_INDEXER.md` | multi-protocol indexer の責務分離 |

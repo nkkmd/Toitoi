@@ -14,6 +14,8 @@
 
 を、段階的に実現することです。
 
+AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP.md](./AI_ADOPTION_ROADMAP.md) に分離してあります。
+
 ---
 
 ## 採用する前提
