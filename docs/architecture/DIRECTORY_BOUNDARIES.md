@@ -306,7 +306,7 @@ Toitoi が扱う概念・意味論を整理する文書群です。
 
 | File | 内容 |
 |---|---|
-| `QUESTION_MODEL.md` | 問いの定義 |
+| `INQUIRY_MODEL.md` | 問いの定義 |
 | `BOUNDARY_OBJECT.md` | 境界対象 |
 | `PROVENANCE.md` | 来歴 |
 | `TOITOI_VOCABULARY.md` | 標準語彙 |

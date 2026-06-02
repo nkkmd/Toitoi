@@ -1,4 +1,4 @@
-# Question Model
+# Inquiry Model
 
 **Status: stable** | **Last updated: 2026-05-19**
 

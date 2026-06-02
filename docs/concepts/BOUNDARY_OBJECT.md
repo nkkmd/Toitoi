@@ -69,6 +69,6 @@ Boundary Object により：
 
 ## 関連概念
 
-- Question Model
+- Inquiry Model
 - Provenance
 - Canonical Event
