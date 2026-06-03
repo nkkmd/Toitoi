@@ -1,11 +1,14 @@
 # Standard API
 
-**Version: 0.3.2** | **Status: evolving** | **Last updated: 2026-05-30**
+**Version: 0.3.3** | **Status: evolving** | **Last updated: 2026-06-03**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
 Canonical Event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。  
 この README は、API 利用者向けの単一の入口として、従来の詳細仕様を吸収しています。
+
+Phase 13 以降の前提として、API は Nostr と ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
+同一性は「明示的に同一といえる場合」にだけ merge し、曖昧な case は別 event のまま返します。
 
 このリポジトリをまだ取っていない場合は、先に `git clone` してから読んでもらうのがいちばん自然です。
 
@@ -137,6 +140,9 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 `provenance` は要約情報で、`sourceCount` / `sourceProtocols` / `sourceIds` / `rawRef` を含みます。  
 `rawRef` は raw event または raw payload を再取得・再 canonicalize するための参照です。
 `/api/v1/protocols/:protocol` の `provenancePolicy` は、`provenance` を API 上でどう扱うかを示すメタデータです。
+
+API の identity 解決は保守的です。`body` の類似、`labels` の一致、時刻の近さだけでは merge しません。  
+同一と判断できない event は、必要に応じて `relation` / `lineage` で関連を表現します。
 
 `list` / `query` / `relation` 系のレスポンスは、基本的に次の形です。
 

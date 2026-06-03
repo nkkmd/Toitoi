@@ -623,6 +623,8 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ひとつの canonical event を複数 transport に送信する fan-out と、複数 relay / PDS から event を取り込んで canonical 化する fan-in の両方を、同じ semantic layer の方針で扱えるようにする。
 
+現時点の対象 transport は Nostr と ATProto に限定します。ただし、判定基準と責務分離は将来の追加 protocol でも再利用できる形を保ちます。
+
 ### 作業
 
 - outbound transport の fan-out 方針を決める
@@ -633,6 +635,14 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 - canonical identity の判定基準を文書化する
 - 同一と判断された event の provenance 集約方針を決める
 - 同一性が曖昧な event の扱いを relation / lineage に逃がせるようにする
+
+### 方針メモ
+
+- merge は「明示的に同一といえるもの」に限定する
+- body / labels / timestamps / similarity だけでは canonical identity の根拠にしない
+- raw duplicate は transport source 内で処理し、cross-source の同一性とは切り分ける
+- 曖昧な case は event を無理に畳まず、relation / lineage でつなぐ
+- provenance は統合してよいが、統合の根拠を説明できる場合に限る
 
 ### 完了条件
 
@@ -645,7 +655,14 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ### 完了メモ
 
-- ここに完了した作業を追記する
+- 2026-06-03 時点で Phase 13 を完了扱いとする
+- 対象 transport は当面 Nostr と ATProto に限定し、将来の追加 protocol にも流用できる責務分離を維持する
+- canonical identity の merge は、明示的に同一といえる場合にだけ許可する
+- raw duplicate は transport source 内で抑制し、cross-source の semantic duplicate は別段階で扱う
+- provenance は merge が明示可能な場合にのみ集約し、曖昧な case は relation / lineage に逃がす
+- 仕様の要点は `docs/architecture/MULTI_TRANSPORT_IDENTITY_POLICY.md` に集約し、API / 運用説明へも反映した
+- contract test の観点は Phase 14 の実装に接続する
+- 実装 skeleton は Phase 14 で扱う
 
 ---
 

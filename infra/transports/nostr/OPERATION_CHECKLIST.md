@@ -1,5 +1,7 @@
 # 運用チェックリスト
 
+**Last updated: 2026-06-03**
+
 **目的**: 日常運用でそのまま使える短いチェックリストに落とし込む。
 
 ## どこで使うか
@@ -8,6 +10,8 @@
 - 使用場面: ingest 失敗時の確認、監視確認、バックアップ前後のチェック
 - 関連実装: `infra/transports/nostr/MONITOR_SETUP.md`、`docs/operations/NOSTR_STORAGE_AND_REPLAY.md`
 - 前提モデル: canonicalized event を内部中心にし、Nostr は transport projection として扱う
+- このチェックリストが扱う duplicate は、Nostr の source 内重複と ingest 時の transport 側判定に限定する
+- cross-source の semantic duplicate 判定は Phase 13/14 の multi-transport policy に従う
 
 ---
 
