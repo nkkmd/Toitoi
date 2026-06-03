@@ -47,7 +47,7 @@ AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP
 
 ---
 
-## フェーズ 1-12 の見取り図
+## フェーズ の見取り図
 
 初見の人は、まずここだけ見れば全体の流れをつかめます。
 
@@ -65,6 +65,8 @@ AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP
 | 10 | 起動と選択を registry 化する | どの protocol を使うかを実行時に選べる |
 | 11 | API を多プロトコル対応にする | UI / AI が protocol を意識せず扱える |
 | 12 | 運用と移行を標準化する | 新しい protocol 追加手順を再現できる |
+| 13 | transport 間の fan-out / fan-in を定義する | 複数 transport で同じ canonical event を扱える |
+| 14 | transport 横断の実装を固める | transport を跨いだ重複抑止と provenance 集約を運用できる |
 
 ---
 
