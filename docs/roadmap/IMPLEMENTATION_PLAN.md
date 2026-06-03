@@ -298,9 +298,9 @@ MVP を継続運用できる形に整える。
 
 ---
 
-## 多プロトコル前提
+## フェーズ 8-12 の共通前提
 
-Nostr 以外の protocol を追加する際は、次の共通前提で進めます。
+Phase 8 以降で Nostr 以外の protocol を追加・選択・運用する際は、次の共通前提で進めます。
 
 ### 共通化したい interface
 
@@ -365,33 +365,31 @@ API では必要最小限の trust 情報だけを露出し、それ以外は pr
 - `no`: 現行の設計では扱わない
 - `unknown`: 調査対象であり、まだ固定しない
 
+この共通前提を踏まえて、Phase 8 で多プロトコル化の実装に入ります。
+
 ---
 
 ## フェーズ 8: 多プロトコル化
 
 ### 着手前整理
 
-多プロトコル化に入る前に、Nostr の既存契約と共通化対象の前提を固定する。
+Phase 8 で多プロトコル化の実装に入る前に、必要な参照先と契約だけを確認する。
 
 #### 確認事項
 
-- adapter / converter の共通 interface 方針を文書化する
-- source capability の比較軸を固定する
-- capability matrix を文書化する
-- protocol registry を用意する
-- trust model の整理方法を決める
-- API に露出する provenance の範囲を固定する
 - Phase 7 の retry / backup / restore 文書が参照可能であることを確認する
 - Standard API の契約を Phase 8 着手前に変えない
+- 現行の Nostr テストが通っていることを確認する
+- Phase 8 の作業対象が `packages/protocol/` の共通 descriptor / registry / catalog と `packages/*/protocol.js` の追加であることを確認する
 
 #### 着手条件
 
-- 現行の Nostr テストが通っている
+- Phase 8 の前提が `## フェーズ 8-12 の共通前提` に集約されている
 
 #### 整理メモ
 
-- この節の「多プロトコル前提」に adapter / converter / capability / trust の整理軸を集約した
-- この節の「多プロトコル前提」に capability matrix を文書化した
+- adapter / converter / capability / trust の整理軸を共通前提に集約した
+- capability matrix を共通前提として文書化した
 
 ### 目的
 
@@ -412,15 +410,10 @@ Nostr 実装を壊さずに、ATProto や LocalFS を追加できる状態にす
 
 ### 完了メモ
 
-- `packages/protocol/protocol_descriptor.js` で共通 descriptor / capability helper を追加
-- `packages/protocol/protocol_registry.js` で protocol registry と capability matrix 生成を追加
-- `packages/nostr/protocol.js` で Nostr の adapter / converter / capability を 1 つの descriptor にまとめた
-- `packages/atproto/protocol.js` と `packages/localfs/protocol.js` で protocol skeleton を追加
-- `packages/protocol/protocol_catalog.js` で Nostr / ATProto / LocalFS の default registry を追加
-- `packages/protocol/` に共通 descriptor / registry / catalog を追加し、`packages/nostr/` / `packages/atproto/` / `packages/localfs/` を registry 対応にした
-- この節で三 protocol の capability 差分を文書化した
-- この節の前提整理に source capability の比較表を追加
-- `packages/protocol/test_protocol_*` と `packages/*/test_protocol.js` で registry / descriptor / skeleton の回帰確認を追加
+- `packages/protocol/` に共通 descriptor / registry / catalog を追加した
+- `packages/nostr/` / `packages/atproto/` / `packages/localfs/` を registry 対応にした
+- 三 protocol の capability 差分と source capability の比較表を文書化した
+- `packages/protocol/test_protocol_*` と `packages/*/test_protocol.js` で回帰確認を追加した
 
 ---
 
