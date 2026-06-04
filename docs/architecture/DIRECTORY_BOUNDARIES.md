@@ -1,6 +1,6 @@
 # ディレクトリ責務ルール
 
-**Status: stable** | **Last updated: 2026-06-01**
+**Status: stable** | **Last updated: 2026-06-04**
 
 ## 目的
 
@@ -171,6 +171,7 @@ Canonical Event 中心の multi-protocol indexer 運用資産を置きます。
 - `INDEXER_API_SETUP.md`
 - `CLEAN_START.md`
 
+Phase 14 以降は、multi-transport replay と outbound fan-out を含む共通運用入口として扱います。  
 今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提に `infra/indexers/` 直下の運用入口を整理します。
 
 ## `packages/`
@@ -207,6 +208,7 @@ runtime replay は現状 unsupported ですが、将来的に file/archive-backe
 ### `packages/nostr/`
 
 Nostr を Toitoi の first operational transport layer として扱うための共通入口です。
+Phase 14 以降は、Nostr 実装を multi-transport の一対象として扱い、ATProto などと並べて canonical view に流せる前提です。
 
 ### `packages/nostr/converter/`
 

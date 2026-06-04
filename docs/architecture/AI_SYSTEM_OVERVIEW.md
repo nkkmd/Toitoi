@@ -72,7 +72,7 @@ Optional DSL projection
   ↓
 Converter
   ↓
-Nostr Inquiry Event
+Target transport event
 ```
 
 つまり AI の主責務は、
@@ -189,7 +189,7 @@ Optional DSL projection
   ↓
 Converter
   ↓
-Nostr transport event
+Target transport event
 ```
 
 ---
