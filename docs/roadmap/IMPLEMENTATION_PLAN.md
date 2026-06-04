@@ -67,6 +67,8 @@ AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP
 | 12 | 運用と移行を標準化する | 新しい protocol 追加手順を再現できる |
 | 13 | transport 間の fan-out / fan-in を定義する | 複数 transport で同じ canonical event を扱える |
 | 14 | transport 横断の実装を固める | transport を跨いだ重複抑止と provenance 集約を運用できる |
+| 15 | 追加 protocol を実データで通す | skeleton ではなく実データ ingest まで通せる |
+| 16 | registry 駆動の起動と選択をさらに整理する | protocol 選択を単純にできる |
 
 ---
 
@@ -722,12 +724,69 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ---
 
+## フェーズ 15: 追加 protocol 実データ ingest
+
+### 目的
+
+Phase 14 で整えた multi-transport の枠組みを使って、追加 protocol を 1 つ実データ ingest まで通し、skeleton ではない運用可能な状態にする。
+
+### 作業
+
+- 追加する protocol を 1 つ選ぶ
+- raw event / record の fixture と sample archive を用意する
+- adapter / converter / storage を実データで通す
+- replay から API までの一連を確認する
+- 運用文書と test を揃える
+
+### 完了条件
+
+- 追加 protocol が実データで ingest できる
+- replay で derived index を再構築できる
+- Standard API から canonical view として参照できる
+- 既存 protocol の挙動を壊さない
+- 運用ガイドが protocol ごとに読める
+
+### 完了メモ
+
+- まだ着手前
+- 対象 protocol の選定後に詳細を追記する
+
+---
+
+## フェーズ 16: registry 駆動の起動と選択整理
+
+### 目的
+
+protocol registry を起点に、起動時の protocol 選択、storage 選択、API/introspection の見え方をさらに整理して、将来の追加 protocol に対して入口を単純化する。
+
+### 作業
+
+- 起動引数と環境変数の優先順位を整理する
+- registry から選択可能な protocol を一貫して表示する
+- selected protocol と storage runtime の関係を明確にする
+- 未対応 protocol の扱いを起動時にわかりやすくする
+- API / README / ops doc の記述を揃える
+
+### 完了条件
+
+- registry 駆動で protocol 選択を説明できる
+- 起動時の protocol / storage の選択基準が一貫している
+- 未対応 protocol のエラーが明確である
+- API の introspection と README の説明が一致している
+
+### 完了メモ
+
+- まだ着手前
+- Phase 15 の追加 protocol を踏まえて詳細を詰める
+
+---
+
 ## 当面の優先順位
 
 Phase 14 を完了として扱ったうえで、次の順序で進めます。
 
 1. 追加 protocol 1 つを実データ ingest まで通す
-2. registry 駆動で起動と選択をまとめる
+2. registry 駆動の起動と選択をさらに整理する
 3. Standard API の multi-protocol 対応を確認する
 4. 運用・移行・拡張の標準化を固める
 
