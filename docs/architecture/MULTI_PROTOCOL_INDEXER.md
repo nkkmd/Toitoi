@@ -1,10 +1,13 @@
 # Multi-Protocol Indexer Architecture
 
-**Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-06-04**
 
 ## 目的
 
 Toitoi の indexer を、特定 protocol 専用の実装の寄せ集めではなく、canonical event を共通入力とする multi-protocol 対応の層として整理します。
+
+Phase 14 以降は、Nostr / ATProto をまたいだ multi-transport replay と provenance 集約もこの indexer layer の前提に含めます。  
+source 跨ぎの identity mapping は、API / replay / ops が協調して扱い、indexer は canonical view を壊さないことを優先します。
 
 この文書は、次の判断基準を固定するためのものです。
 
@@ -19,6 +22,7 @@ Toitoi の indexer を、特定 protocol 専用の実装の寄せ集めではな
 3. Indexer は lookup / list / search / relation / lineage などの参照補助構造を作る
 4. API は protocol schema ではなく canonical view を返す
 5. protocol ごとの差分は metadata と capability に寄せる
+6. `TOITOI_TRANSPORT_SOURCES` を使う場合は、複数 transport の replay を 1 つの canonical view にまとめる
 
 ## 推奨構成
 
@@ -39,12 +43,16 @@ protocol ごとの差分は、既存の protocol package に残します。
 - `packages/<protocol>/storage/`
 - `packages/<protocol>/converter/`
 - `packages/<protocol>/protocol.js`
+- `packages/protocol/multi_transport_replay.js`
+- `packages/protocol/multi_transport_outbound.js`
+- `packages/protocol/multi_transport.js`
 
 ### infra 層
 
 `infra/indexers/` は、実装本体ではなく運用入口として扱います。
 
 - 現時点では共通の multi-protocol 入口と、Nostr 固有の wrapper を分けて置いている
+- Phase 14 以降は、multi-transport replay と outbound fan-out の最小入口が追加済みである
 - protocol-aware な起動、復旧、再構築は `infra/indexers/` 直下に寄せる
 - Nostr 固有の作業は `infra/transports/nostr/` に閉じる
 

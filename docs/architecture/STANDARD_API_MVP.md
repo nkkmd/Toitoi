@@ -1,6 +1,6 @@
 # Standard API MVP
 
-**Status: stable** | **Last updated: 2026-06-03**
+**Status: stable** | **Last updated: 2026-06-04**
 
 ## 目的
 
@@ -28,10 +28,13 @@ API 実装は、`packages/nostr/storage/indexer.js` と `packages/nostr/storage/
 - view 変換と HTTP ルーティングを分離できる
 - replay fixture を contract test に流用しやすい
 - `apps/api/server.js` から HTTP サーバーへ載せやすい
+- Phase 14 以降は `TOITOI_TRANSPORT_SOURCES` で複数 transport の replay をまとめても、この service layer を変えずに扱いやすい
 
 ### 2. response は protocol schema ではなく canonical view を返す
 
 UI / AI は Nostr の raw schema を直接扱わず、意味論に基づく view を受け取ります。
+
+Phase 14 以降は、必要に応じて Nostr / ATProto をまたいだ multi-transport の canonical view も同じ契約で返します。
 
 ### 3. highlight と embeddings は契約に入れない
 
@@ -98,6 +101,8 @@ relation term で引いた event の view です。
 ## Provenance の扱い
 
 API では provenance を追えるようにしますが、raw transport event を丸ごと返しません。
+
+Phase 14 以降は、source 跨ぎの provenance 集約がある場合でも、API は canonical view を優先して返します。
 
 優先して返すもの:
 

@@ -1,9 +1,10 @@
 # クリーンスタートについて
 
-**Version: 0.6.1** | **Status: current** | **Last updated: 2026-05-31**
+**Version: 0.6.2** | **Status: current** | **Last updated: 2026-06-04**
 
 `infra/indexers/` のクリーンスタート手順です。  
 ここでいうクリーンスタートは、**`/path/to/storage` を削除して空にする**ことを意味します。
+multi-transport を使っている場合は、各 transport source の storage を個別に空にしてから API を再起動します。
 
 ## 手順
 
@@ -33,6 +34,7 @@ node packages/nostr/storage/replay_cli.js --protocol nostr --storage-dir /path/t
 ```
 
 `--protocol` は対象に合わせて切り替えます。
+`TOITOI_TRANSPORT_SOURCES` で起動していた場合は、再開時も同じ source 配列を指定します。
 
 ## 参照
 

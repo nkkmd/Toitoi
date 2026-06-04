@@ -1,11 +1,14 @@
 # Toitoi Edge AI Hub
 
-**Version: 0.6.2** | **Status: evolving** | **Last updated: 2026-06-02**
+**Version: 0.6.3** | **Status: evolving** | **Last updated: 2026-06-04**
 
 この文書は、`apps/edge-ai/` に置くエッジ AI 関連文書の案内ハブです。
 
 実装手順そのものは、低リソース向けの最小構成を含めて分離しています。  
 特に [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](../../docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) は参考用の構成例です。
+
+Phase 14 以降は、AI 側は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を参照する前提です。  
+transport ごとの差分や identity mapping は、API / infra / ops 側に閉じます。
 
 > まずここから読む
 > 1. `RAM 4GB / Ubuntu 24.04 LTS` で導入するなら [Edge AI Low-Resource Profile](../../docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)
@@ -20,6 +23,7 @@
 1. [AI System Overview](../../docs/architecture/AI_SYSTEM_OVERVIEW.md)
 1. [Canonical Event](../../docs/protocols/CANONICAL_EVENT.md)
 1. [Nostr Inquiry Schema](../../docs/protocols/NOSTR_INQUIRY_SCHEMA.md)
+1. 必要に応じて [Standard API README](../api/README.md) を参照し、canonical view の返り方を確認する
 
 `RAM 4GB / Ubuntu 24.04 LTS` の端末に導入する場合は、最初に [Edge AI Low-Resource Profile](../../docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) を読んでください。
 
@@ -31,6 +35,8 @@
 - `RAM 4GB / Ubuntu 24.04 LTS` の導入手順と最小構成: `docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`
 - Canonical Event の契約: `docs/protocols/CANONICAL_EVENT.md`
 - Nostr 側のタグ・投影仕様: `docs/protocols/NOSTR_INQUIRY_SCHEMA.md`
+- canonical view と provenance の API 契約: `apps/api/README.md`
+- multi-transport の詳細: `docs/roadmap/IMPLEMENTATION_PLAN.md` と `docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md`
 
 ---
 

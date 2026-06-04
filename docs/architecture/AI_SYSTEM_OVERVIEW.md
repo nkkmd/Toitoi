@@ -1,6 +1,6 @@
 # Toitoi AI System Overview
 
-**Status: evolving** | **Last updated: 2026-06-01**
+**Status: evolving** | **Last updated: 2026-06-04**
 
 ## 概要
 
@@ -19,6 +19,9 @@ AI は、
 これは正本の仕様ではなく、Edge AI の設計自由度を示すための一例です。
 
 段階的な導入順や問い生成の最低仕様は、[`AI_ADOPTION_ROADMAP.md`](../roadmap/AI_ADOPTION_ROADMAP.md) にまとめています。
+
+Phase 14 以降の Toitoi 本体と組み合わせる場合、AI は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を主な入力として使います。  
+transport ごとの差分や identity mapping は、API / infra / ops 側に閉じます。
 
 ---
 
@@ -198,6 +201,8 @@ Nostr transport event
 AI が扱うべき入力は、原則として
 
 - canonicalized event
+- canonical view
+- provenance summary
 - standardized API response
 - indexer が作った補助構造
 

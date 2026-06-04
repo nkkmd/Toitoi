@@ -1,14 +1,16 @@
 # Standard API
 
-**Version: 0.3.3** | **Status: evolving** | **Last updated: 2026-06-04**
+**Version: 0.3.4** | **Status: evolving** | **Last updated: 2026-06-04**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
 Canonical Event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。  
 この README は、API 利用者向けの単一の入口として、従来の詳細仕様を吸収しています。
 
-Phase 13 以降の前提として、API は Nostr と ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
+Phase 14 以降の前提として、API は Nostr と ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
 同一性は「明示的に同一といえる場合」にだけ merge し、曖昧な case は別 event のまま返します。
+
+`TOITOI_TRANSPORT_SOURCES` が設定されている場合は、複数 transport の replay をまとめて canonical view に反映します。
 
 このリポジトリをまだ取っていない場合は、先に `git clone` してから読んでもらうのがいちばん自然です。
 
@@ -56,6 +58,7 @@ HTTP response
 - 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - protocol 選択: `TOITOI_PROTOCOL=atproto TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - multi-transport fan-in: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/a"},{"protocol":"atproto","storageDir":"/path/b"}]' pnpm --filter @toitoi/api start`
+- multi-transport fan-out / fan-in の参照: `docs/roadmap/IMPLEMENTATION_PLAN.md` と `docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md`
 - テスト: `pnpm --filter @toitoi/api test`
 - 参照実装: `@toitoi/nostr/storage/` と `@toitoi/atproto/storage/`
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
@@ -83,6 +86,8 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 
 現在の API は、protocol ごとの `storage/indexer.js` と `storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。  
 デフォルトの参照実装は Nostr ですが、`TOITOI_PROTOCOL` に応じて `atproto` へ切り替えられます。
+
+Phase 14 以降は、必要に応じて `TOITOI_TRANSPORT_SOURCES` から複数 transport を合成した canonical view を返します。
 
 現在の主要関数は次の通りです。
 

@@ -8,7 +8,7 @@
 ```text
 infra/indexers/
 ├─ INDEXER_API_SETUP.md   -> multi-protocol indexer の構築手順
-├─ CLEAN_START.md         -> storage / snapshot の初期化手順
+├─ CLEAN_START.md         -> storage / snapshot / multi-transport の初期化手順
 ```
 
 ## 使い分け
@@ -21,5 +21,7 @@ infra/indexers/
 ## 実行の入口
 
 - API 起動: `TOITOI_PROTOCOL=<name> TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
+- multi-transport API 起動: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]' pnpm --filter @toitoi/api start`
 - replay: `node packages/nostr/storage/replay_cli.js --protocol <name> --storage-dir /path/to/storage --verify`
+- multi-transport replay の統合: `apps/api/server.js` と `packages/protocol/multi_transport_replay.js`
 - protocol 選択の基盤: `packages/protocol/protocol_runtime.js` と `packages/protocol/protocol_storage_runtime.js`
