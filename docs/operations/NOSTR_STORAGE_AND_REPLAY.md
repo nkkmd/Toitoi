@@ -80,7 +80,7 @@ curl "http://127.0.0.1:3000/api/v1/inquiries/query?q=soil_microbe"
 
 ```bash
 sudo systemctl stop toitoi-monitor
-pm2 stop toitoi-worker toitoi-api
+pm2 stop toitoi-nostr-worker toitoi-api
 ```
 
 ### 3.2 storage の退避
@@ -107,7 +107,7 @@ tar -czf toitoi-storage-backup-$(date +%Y%m%d-%H%M%S).tgz -C /path/to/storage .
 
 ```bash
 sudo systemctl stop toitoi-monitor
-pm2 stop toitoi-worker toitoi-api
+pm2 stop toitoi-nostr-worker toitoi-api
 ```
 
 ### 4.2 バックアップの展開

@@ -85,7 +85,7 @@ ATProto は現状 replay ベースで運用しつつ、JSONL batch ingest と Je
 
 ### 2.4 Nostr ingest worker を起動する
 
-`toitoi-worker` は Nostr relay から transport event を収集し、canonicalized event を保存する運用 worker です。  
+`toitoi-nostr-worker` は Nostr relay から transport event を収集し、canonicalized event を保存する運用 worker です。  
 `infra/transports/nostr/relay_ingest_worker.js` を直接起動して使います。
 
 #### 2.4.1 Nostr worker を起動する
@@ -150,12 +150,12 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 参照: この節の `ecosystem.config.cjs` サンプルまたは PM2 の個別起動コマンド
 
 この節は、PM2 の定義をどう組むかの説明です。  
-`MONITOR_SETUP.md` は、`toitoi-worker` と `toitoi-api` が常駐している前提で監視と自動回復を行います。  
+`MONITOR_SETUP.md` は、`toitoi-nostr-worker` と `toitoi-api` が常駐している前提で監視と自動回復を行います。  
 そのため、Nostr を live ingest まで含めて運用する場合は、API だけでなく worker もあわせて常駐化します。  
 ATProto の live ingest もここで常駐化できます。
 
 `toitoi-api` と各 transport worker は別アプリとして定義します。  
-以下の `ecosystem.config.cjs` 例では `toitoi-worker` と `toitoi-atproto-worker` を分けて起動できます。  
+以下の `ecosystem.config.cjs` 例では `toitoi-nostr-worker` と `toitoi-atproto-worker` を分けて起動できます。  
 この例は説明用で、リポジトリにファイルとして追加する必要はありません。
 
 ```javascript
@@ -191,7 +191,7 @@ module.exports = {
       },
     },
     {
-      name: 'toitoi-worker',
+      name: 'toitoi-nostr-worker',
       cwd: repoRoot,
       script: './infra/transports/nostr/relay_ingest_worker.js',
       instances: 1,
@@ -241,7 +241,7 @@ module.exports = {
 
 ```bash
 # Nostr だけ
-pm2 start ecosystem.config.cjs --only toitoi-worker --env nostr
+pm2 start ecosystem.config.cjs --only toitoi-nostr-worker --env nostr
 pm2 start ecosystem.config.cjs --only toitoi-api --env nostr
 
 # ATProto だけ
@@ -256,12 +256,12 @@ pm2 start ecosystem.config.cjs --only toitoi-api --env multi
 
 ### Nostr 運用の再起動例
 
-ATProto だけ、または Nostr と ATProto をまとめて読む構成では、`toitoi-worker` は起動しません。  
+ATProto だけ、または Nostr と ATProto をまとめて読む構成では、`toitoi-nostr-worker` は起動しません。  
 その場合は `toitoi-api` をそれぞれ `--env atproto` か `--env multi` で起動します。
 
 ```bash
-pm2 delete toitoi-worker toitoi-api
-pm2 start ecosystem.config.cjs --only toitoi-worker --env nostr
+pm2 delete toitoi-nostr-worker toitoi-api
+pm2 start ecosystem.config.cjs --only toitoi-nostr-worker --env nostr
 pm2 start ecosystem.config.cjs --only toitoi-api --env nostr
 pm2 save
 pm2 startup

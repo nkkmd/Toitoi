@@ -31,7 +31,7 @@
 ## 2. 監視確認
 
 - [ ] `toitoi-monitor` が稼働している
-- [ ] `toitoi-worker` と `toitoi-api` が online である
+- [ ] `toitoi-nostr-worker` と `toitoi-api` が online である
 - [ ] `nostream` / `nostream-db` / `nostream-cache` が running である
 - [ ] `caddy` が active である
 - [ ] `/health` が 200 を返す
@@ -43,7 +43,7 @@
 ## 3. バックアップ
 
 - [ ] `toitoi-monitor` を停止する
-- [ ] `toitoi-worker` と `toitoi-api` を停止する
+- [ ] `toitoi-nostr-worker` と `toitoi-api` を停止する
 - [ ] `packages/nostr/storage` の storage ディレクトリを退避する
 - [ ] `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` を確認する
 - [ ] `provenance` と `rawRef` を含む canonicalized snapshot が揃っているか確認する

@@ -20,7 +20,7 @@
 
 | サービス | 種別 | 役割 |
 |---|---|---|
-| `toitoi-worker` | PM2 | リレーから transport event を収集し canonicalized event を保存 |
+| `toitoi-nostr-worker` | PM2 | リレーから transport event を収集し canonicalized event を保存 |
 | `toitoi-api` | PM2 | REST APIサーバー（ポート3000） |
 | `nostream` | Docker | Nostrリレーエンジン（ポート8008） |
 | `nostream-db` | Docker | PostgreSQL（リレーDB・ToitoiDB共有） |
@@ -31,7 +31,7 @@
 
 > **なぜDBには高負荷だけでは触れないのか？**
 >
-> `toitoi-worker` はプロセス起動直後に全件同期を実行するため、初回起動時やアーカイブ復元時にCPU・メモリが閾値を一時的に超えることがあります。この「正常な高負荷」に対してDockerコンテナを再起動すると、PostgreSQLのトランザクションが中断され、データが破損するリスクがあります。そのため、**高負荷への対処はPM2プロセスのreloadのみ**に限定し、Dockerコンテナは「停止を検知した場合のみ」再起動します。
+> `toitoi-nostr-worker` はプロセス起動直後に全件同期を実行するため、初回起動時やアーカイブ復元時にCPU・メモリが閾値を一時的に超えることがあります。この「正常な高負荷」に対してDockerコンテナを再起動すると、PostgreSQLのトランザクションが中断され、データが破損するリスクがあります。そのため、**高負荷への対処はPM2プロセスのreloadのみ**に限定し、Dockerコンテナは「停止を検知した場合のみ」再起動します。
 
 ```text
 【監視サイクル（60秒ごと）】
@@ -49,7 +49,7 @@
   ② 高負荷チェック（vmstat 3回平均）
        │
        ├─ CPU > 85% または MEM > 90%
-       │    └─ toitoi-worker を pm2 reload → toitoi-api を pm2 reload
+       │    └─ toitoi-nostr-worker を pm2 reload → toitoi-api を pm2 reload
        │
        └─ 正常 → 60秒待機して①へ
 ```
@@ -87,7 +87,7 @@ sudo nano /usr/local/bin/toitoi-monitor.sh
 #   - nostream-db    (Docker:  nostream-db)        ← PostgreSQL共有DB
 #   - nostream-cache (Docker:  nostream-cache)     ← Redis
 #   - toitoi-api     (PM2)
-#   - toitoi-worker  (PM2)
+#   - toitoi-nostr-worker  (PM2)
 # =====================================================
 
 # ── 設定値 ──────────────────────────────────────────
@@ -213,7 +213,7 @@ handle_high_load() {
     log "WARN" "=== 高負荷対処を開始します ==="
 
     # workerを先にreload（最も負荷の原因になりやすい）
-    recover_pm2 "toitoi-worker"
+    recover_pm2 "toitoi-nostr-worker"
     sleep 5
 
     # apiも念のためreload
@@ -226,12 +226,12 @@ handle_high_load() {
 check_and_recover_services() {
     local recovered=false
 
-    # 1. toitoi-worker の状態確認
+    # 1. toitoi-nostr-worker の状態確認
     local worker_status
-    worker_status=$(pm2_status "toitoi-worker")
+    worker_status=$(pm2_status "toitoi-nostr-worker")
     if [ "$worker_status" != "online" ]; then
-        log "ERROR" "[PM2] toitoi-worker が異常 (status: ${worker_status})。回復を試みます"
-        recover_pm2 "toitoi-worker"
+        log "ERROR" "[PM2] toitoi-nostr-worker が異常 (status: ${worker_status})。回復を試みます"
+        recover_pm2 "toitoi-nostr-worker"
         recovered=true
     fi
 
@@ -265,7 +265,7 @@ check_and_recover_services() {
         recover_docker_container "nostream-db"
         # DBが戻ったらworker/apiも再起動して接続をリセット
         sleep 10
-        recover_pm2 "toitoi-worker"
+        recover_pm2 "toitoi-nostr-worker"
         recover_pm2 "toitoi-api"
         recovered=true
     fi
@@ -480,7 +480,7 @@ sudo journalctl -u toitoi-monitor | grep -E "\[WARN\]|\[ERROR\]"
 
 ```
 2026-05-03 03:14:00 [WARN]  高負荷を検知 — CPU: 87%（閾値: 85%）/ MEM: 62%（閾値: 90%）
-2026-05-03 03:14:01 [WARN]  [PM2] toitoi-worker を reload します
+2026-05-03 03:14:01 [WARN]  [PM2] toitoi-nostr-worker を reload します
 2026-05-03 03:14:06 [WARN]  [PM2] toitoi-api を reload します
 2026-05-03 03:14:07 [INFO]  高負荷対処完了。300秒クールダウン
 ```
@@ -515,13 +515,13 @@ sudo systemctl disable toitoi-monitor
 
 ### nostream-db が停止した場合
 
-**注意：** `nostream-db`（PostgreSQL）はリレーの raw event と canonicalized event、そして Toitoi のインデクサーデータ（`toitoi_db`）を同一コンテナで共有しています。このコンテナが停止した場合、Nostreamリレーと `toitoi-api` / `toitoi-worker` の両方が機能不全になります。`provenance` と `rawRef` を含む再構築可能性を守るため、停止時間は最小化します。
+**注意：** `nostream-db`（PostgreSQL）はリレーの raw event と canonicalized event、そして Toitoi のインデクサーデータ（`toitoi_db`）を同一コンテナで共有しています。このコンテナが停止した場合、Nostreamリレーと `toitoi-api` / `toitoi-nostr-worker` の両方が機能不全になります。`provenance` と `rawRef` を含む再構築可能性を守るため、停止時間は最小化します。
 
 スクリプトはDBコンテナの再起動後に10秒待機してからPM2プロセスも再起動します。これはDBドライバの接続プールが古い接続情報を保持したままにならないようにするためです。
 
-### toitoi-worker の高負荷について
+### toitoi-nostr-worker の高負荷について
 
-`toitoi-worker` は起動直後にリレーの全件同期を実行するため、初回起動時やアーカイブ復元後はCPUが閾値を一時的に超えることがあります。この場合、スクリプトは `pm2 reload` で対処しますが、worker は `SyncState` テーブルに保存された最終同期タイムスタンプを参照して差分から処理を再開するため、raw event から canonicalized event への再生成は継続できます。
+`toitoi-nostr-worker` は起動直後にリレーの全件同期を実行するため、初回起動時やアーカイブ復元後はCPUが閾値を一時的に超えることがあります。この場合、スクリプトは `pm2 reload` で対処しますが、worker は `SyncState` テーブルに保存された最終同期タイムスタンプを参照して差分から処理を再開するため、raw event から canonicalized event への再生成は継続できます。
 
 バックアップと復旧の手順自体は [NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) にまとめています。監視では「異常を止める」、復旧では「storage を安全に戻す」という役割分担で読むと把握しやすいです。
 
