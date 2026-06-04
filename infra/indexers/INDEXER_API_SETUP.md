@@ -281,8 +281,23 @@ module.exports = {
 # Nostr API だけ
 pm2 start ecosystem.config.cjs --only toitoi-api --env nostr
 
+# multi-transport API
+pm2 start ecosystem.config.cjs --only toitoi-api --env multi
+
 # ATProto live ingest だけ
 pm2 start ecosystem.config.cjs --only toitoi-atproto-worker --env atproto_live
+```
+
+`pm2 save` は、今の PM2 プロセス一覧を保存して、再起動後に `pm2 resurrect` できるようにするコマンドです。  
+`pm2 startup` は、OS 起動時に PM2 デーモンを立ち上げるための初期設定を作るコマンドです。  
+つまり、`start` で起動したあとに `save` で状態を保存し、`startup` でサーバー再起動時の自動復帰を有効にします。
+
+実行順の例は次の通りです。
+
+```bash
+pm2 start ecosystem.config.cjs --only toitoi-api --env multi
+pm2 save
+pm2 startup
 ```
 
 要するに、**PM2 で常駐管理するのは API と ATProto live ingest で、Nostr worker は systemd timer で定期実行する**です。  
