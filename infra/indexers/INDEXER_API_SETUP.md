@@ -81,7 +81,7 @@ TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-stor
 `TOITOI_STORAGE_DIR` が未設定なら、API は空の index snapshot でも起動できます。  
 `localfs` は現時点で runtime replay が未対応なので、storage 付き起動はしません。
 `TOITOI_TRANSPORT_SOURCES` が入っている場合、API は `multi-transport` の storage runtime として起動し、source 跨ぎの provenance 集約を反映します。
-ATProto は現状 replay ベースで運用し、Nostr のような常時 ingest worker は未実装です。
+ATProto は現状 replay ベースで運用しつつ、JSONL batch ingest と Jetstream live ingest の両方を `infra/transports/atproto/atproto_ingest_worker.js` で扱えます。
 
 ### 2.4 Nostr ingest worker を起動する
 
@@ -100,7 +100,23 @@ pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.c
 
 worker は API とは別プロセスで動かし、relay の ingest と storage 書き込みを担当します。  
 API 単体では live ingest は進まないので、Nostr を運用する場合は worker の起動が必要です。
-ATProto は現時点でこの worker に相当する常駐 ingest 入口を持たず、storage replay を中心に扱います。
+ATProto は Nostr と同じ relay worker ではありませんが、`infra/transports/atproto/atproto_ingest_worker.js` で JSONL batch ingest と Jetstream live ingest を扱えます。
+
+#### 2.4.3 ATProto worker を起動する
+
+batch ingest:
+
+```bash
+pnpm --filter @toitoi/atproto-transport start -- --in /path/to/atproto-archive.jsonl --out /path/to/atproto-report.json --storage-dir /path/to/storage
+```
+
+live ingest:
+
+```bash
+pnpm --filter @toitoi/atproto-transport start -- --stream-url wss://jetstream.example/subscribe --storage-dir /path/to/storage
+```
+
+live mode では `ATPROTO_STREAM_URL` / `ATPROTO_STORAGE_DIR` / `ATPROTO_WANTED_COLLECTIONS` を PM2 の env で渡せます。
 
 ### 2.5 replay を実行する
 
@@ -131,26 +147,30 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 ## 3. PM2 で常駐化する
 
 作業場所: Toitoi リポジトリ root  
-編集対象ファイル: `ecosystem.config.cjs` または PM2 の個別起動コマンド
+参照: この節の `ecosystem.config.cjs` サンプルまたは PM2 の個別起動コマンド
 
-この節は、`ecosystem.config.cjs` を実際に作る前提の説明です。  
+この節は、PM2 の定義をどう組むかの説明です。  
 `MONITOR_SETUP.md` は、`toitoi-worker` と `toitoi-api` が常駐している前提で監視と自動回復を行います。  
 そのため、Nostr を live ingest まで含めて運用する場合は、API だけでなく worker もあわせて常駐化します。  
-ATProto はこの節の対象外で、現状は replay ベースの運用です。
+ATProto の live ingest もここで常駐化できます。
 
-`toitoi-api` と `toitoi-worker` は別アプリとして定義し、`toitoi-api` だけが `--env nostr` / `--env atproto` / `--env multi` の切り替え対象です。  
-`toitoi-worker` は Nostr 専用なので、ATProto の常駐 worker はここには含めません。
+`toitoi-api` と各 transport worker は別アプリとして定義します。  
+以下の `ecosystem.config.cjs` 例では `toitoi-worker` と `toitoi-atproto-worker` を分けて起動できます。  
+この例は説明用で、リポジトリにファイルとして追加する必要はありません。
 
 ```javascript
+'use strict';
+
 const path = require('path');
 
+const repoRoot = __dirname;
 const homeDir = process.env.HOME || process.env.USERPROFILE || '';
 
 module.exports = {
   apps: [
     {
       name: 'toitoi-api',
-      cwd: __dirname,
+      cwd: repoRoot,
       script: './apps/api/server.js',
       instances: 1,
       exec_mode: 'fork',
@@ -172,7 +192,7 @@ module.exports = {
     },
     {
       name: 'toitoi-worker',
-      cwd: __dirname,
+      cwd: repoRoot,
       script: './infra/transports/nostr/relay_ingest_worker.js',
       instances: 1,
       exec_mode: 'fork',
@@ -184,6 +204,28 @@ module.exports = {
         RELAY_URL: 'wss://relay.example.com',
       },
     },
+    {
+      name: 'toitoi-atproto-worker',
+      cwd: repoRoot,
+      script: './infra/transports/atproto/atproto_ingest_worker.js',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      env_atproto_batch: {
+        NODE_ENV: 'production',
+        ATPROTO_INGEST_INPUT: '/path/to/atproto-archive.jsonl',
+        ATPROTO_INGEST_OUTPUT: '/path/to/atproto-worker-report.json',
+        ATPROTO_STORAGE_DIR: path.join(homeDir, 'path/to/atproto-storage'),
+        ATPROTO_INGEST_SOURCE_LABEL: '/path/to/atproto-archive.jsonl',
+      },
+      env_atproto_live: {
+        NODE_ENV: 'production',
+        ATPROTO_STREAM_URL: 'wss://jetstream.example/subscribe',
+        ATPROTO_STORAGE_DIR: path.join(homeDir, 'path/to/atproto-storage'),
+        ATPROTO_INGEST_SOURCE_LABEL: 'jetstream',
+        ATPROTO_WANTED_COLLECTIONS: 'app.toitoi.inquiry',
+      },
+    },
   ],
 };
 ```
@@ -191,7 +233,8 @@ module.exports = {
 使い分けは次の通りです。
 
 - Nostr だけで動かすなら `--env nostr`
-- ATProto だけで動かすなら `--env atproto`
+- ATProto batch ingest だけで動かすなら `--env atproto_batch`
+- ATProto live ingest だけで動かすなら `--env atproto_live`
 - 両方まとめて読むなら `--env multi`
 
 起動例:
@@ -202,7 +245,7 @@ pm2 start ecosystem.config.cjs --only toitoi-worker --env nostr
 pm2 start ecosystem.config.cjs --only toitoi-api --env nostr
 
 # ATProto だけ
-pm2 start ecosystem.config.cjs --only toitoi-api --env atproto
+pm2 start ecosystem.config.cjs --only toitoi-atproto-worker --env atproto_live
 
 # Nostr + ATProto をまとめて読む
 pm2 start ecosystem.config.cjs --only toitoi-api --env multi

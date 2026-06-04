@@ -1,0 +1,14 @@
+{
+  "name": "@toitoi/atproto-transport",
+  "private": true,
+  "type": "commonjs",
+  "main": "atproto_ingest_worker.js",
+  "scripts": {
+    "test": "node ../../../scripts/run-tests.js",
+    "start": "node atproto_ingest_worker.js"
+  },
+  "dependencies": {
+    "@toitoi/atproto": "workspace:*",
+    "ws": "^8.18.3"
+  }
+}

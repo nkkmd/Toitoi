@@ -25,6 +25,7 @@ packages/atproto/
 - `converter/`: canonical と ATProto write draft の相互変換
 - `live/`: PDS への gated live write helper
 - `storage/`: 保存、replay、index、API 向け view
+- `infra/transports/atproto/atproto_ingest_worker.js`: JSONL batch ingest の運用入口
 - `test_protocol.js`: descriptor の契約確認
 - `test_smoke.js`: `ATPROTO_LIVE_SMOKE_TEST=1 node packages/atproto/test_smoke.js` で送信後に `com.atproto.repo.getRecord` まで確認する gated smoke test
 - `運用ガイド`: [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](../../docs/operations/ATPROTO_STORAGE_AND_REPLAY.md)
