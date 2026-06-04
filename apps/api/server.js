@@ -7,6 +7,7 @@ const { createStandardApiService, normalizeIndexSnapshot } = require('./standard
 const {
   createProtocolRuntime,
   createProtocolStorageRuntime,
+  replayMultiTransportStorage,
 } = require('@toitoi/protocol');
 const { replayStorage } = require('@toitoi/nostr/storage/replay');
 
@@ -34,6 +35,78 @@ function loadStorageModule(protocol) {
   return null;
 }
 
+function isPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function parseTransportSources(value) {
+  if (Array.isArray(value)) {
+    return value.filter(isPlainObject);
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.filter(isPlainObject) : [];
+    } catch (error) {
+      throw new Error(`Invalid TOITOI_TRANSPORT_SOURCES value: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  return [];
+}
+
+function normalizeTransportSource(source) {
+  const protocol = typeof source.protocol === 'string' ? source.protocol.trim().toLowerCase() : '';
+  const storageDir = typeof source.storageDir === 'string' ? source.storageDir.trim() : '';
+  const replayOptions = isPlainObject(source.replayOptions) ? source.replayOptions : {};
+
+  if (protocol === '' || storageDir === '') {
+    throw new Error('Each transport source must include protocol and storageDir');
+  }
+
+  const replayModule = loadReplayModule(protocol);
+  if (!replayModule || typeof replayModule.replayStorage !== 'function') {
+    throw new Error(`Protocol ${protocol} does not expose a replayStorage implementation`);
+  }
+
+  return {
+    protocol,
+    storageDir,
+    replayStorage: replayModule.replayStorage,
+    replayOptions,
+  };
+}
+
+function loadTransportSourcesFromOptions(options = {}) {
+  const providedSources = options.transportSources !== undefined
+    ? options.transportSources
+    : process.env.TOITOI_TRANSPORT_SOURCES;
+
+  return parseTransportSources(providedSources).map(normalizeTransportSource);
+}
+
+function createMultiTransportStorageRuntime(transportSources = []) {
+  const sources = Array.isArray(transportSources) ? transportSources.slice() : [];
+  return {
+    protocol: 'multi-transport',
+    replayModule: null,
+    isSupported: true,
+    resolveReplayStorage() {
+      throw new Error('Multi-transport storage runtime does not expose a single replayStorage implementation');
+    },
+    describe() {
+      return {
+        protocol: 'multi-transport',
+        supported: true,
+        moduleName: 'multi-replay',
+        sourceCount: sources.length,
+        sourceProtocols: sources.map(source => source.protocol),
+      };
+    },
+  };
+}
+
 function describeProtocolStorage(protocol) {
   const protocolStorageRuntime = createProtocolStorageRuntime({
     protocol,
@@ -44,6 +117,17 @@ function describeProtocolStorage(protocol) {
 }
 
 function loadIndexSnapshotFromOptions(options = {}) {
+  const transportSources = loadTransportSourcesFromOptions(options);
+
+  if (transportSources.length > 0) {
+    return () => {
+      const replayed = replayMultiTransportStorage(transportSources, {
+        identityMapping: options.identityMapping,
+      });
+      return normalizeIndexSnapshot(replayed.indexSnapshot);
+    };
+  }
+
   if (typeof options.getIndexSnapshot === 'function') {
     return options.getIndexSnapshot;
   }
@@ -83,10 +167,13 @@ function createStandardApiServer(options = {}) {
     registry: options.protocolRegistry,
     defaultProtocol: options.defaultProtocol,
   });
-  const protocolStorageRuntime = options.protocolStorageRuntime || createProtocolStorageRuntime({
-    protocol: protocolRuntime.selectedProtocol || options.protocol,
-    loadReplayModule,
-  });
+  const transportSources = loadTransportSourcesFromOptions(options);
+  const protocolStorageRuntime = options.protocolStorageRuntime || (transportSources.length > 0
+    ? createMultiTransportStorageRuntime(transportSources)
+    : createProtocolStorageRuntime({
+      protocol: protocolRuntime.selectedProtocol || options.protocol,
+      loadReplayModule,
+    }));
   const storageModule = options.storageModule || loadStorageModule(protocolRuntime.selectedProtocol || options.protocol) || loadStorageModule('nostr');
   const service = createStandardApiService({
     getIndexSnapshot: loadIndexSnapshotFromOptions(options),
@@ -120,10 +207,13 @@ function startServer(options = {}) {
     registry: options.protocolRegistry,
     defaultProtocol: options.defaultProtocol,
   });
-  const protocolStorageRuntime = options.protocolStorageRuntime || createProtocolStorageRuntime({
-    protocol: protocolRuntime.selectedProtocol || options.protocol,
-    loadReplayModule,
-  });
+  const transportSources = loadTransportSourcesFromOptions(options);
+  const protocolStorageRuntime = options.protocolStorageRuntime || (transportSources.length > 0
+    ? createMultiTransportStorageRuntime(transportSources)
+    : createProtocolStorageRuntime({
+      protocol: protocolRuntime.selectedProtocol || options.protocol,
+      loadReplayModule,
+    }));
   const server = createStandardApiServer({
     ...options,
     protocolRuntime,
@@ -148,6 +238,8 @@ module.exports = {
   createStandardApiServer,
   describeProtocolStorage,
   loadIndexSnapshotFromOptions,
+  loadTransportSourcesFromOptions,
   loadStorageModule,
+  createMultiTransportStorageRuntime,
   startServer,
 };

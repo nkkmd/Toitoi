@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ingestAtProtoEvents } = require('../adapter/ingest_pipeline');
+const { composeMultiTransportIndexSnapshot } = require('@toitoi/protocol');
 const {
   loadPersistedCanonicalRecords,
   loadPersistedRawRecords,
@@ -296,7 +297,10 @@ function replayStorage(storageDir, options = {}) {
   const canonicalEvents = ingestResult.accepted
     .map(item => item.canonicalEvent)
     .filter(Boolean);
-  const indexSnapshot = buildDerivedIndex(canonicalEvents);
+  const merged = composeMultiTransportIndexSnapshot(canonicalEvents, {
+    identityMapping: options.identityMapping,
+  });
+  const indexSnapshot = merged.indexSnapshot;
 
   if (options.persistIndex !== false) {
     writeIndexSnapshot(storageDir, indexSnapshot);
@@ -307,6 +311,8 @@ function replayStorage(storageDir, options = {}) {
     rawRecords,
     canonicalRecords,
     ingestResult,
+    canonicalEvents: merged.canonicalEvents,
+    identityIndex: merged.identityIndex,
     indexSnapshot,
   };
 }

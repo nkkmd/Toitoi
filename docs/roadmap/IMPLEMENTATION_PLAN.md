@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-06-03**
+**Status: evolving** | **Last updated: 2026-06-04**
 
 ## 目的
 
@@ -712,19 +712,26 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 
 ### 完了メモ
 
+- 2026-06-04 時点で、multi-transport replay dispatcher と outbound fan-out plan の最小入口を追加した
+- `packages/protocol/multi_transport.js` / `packages/protocol/multi_transport_replay.js` / `packages/protocol/multi_transport_outbound.js` を共通基盤として追加した
+- `packages/nostr/storage/replay.js` と `packages/atproto/storage/replay.js` で identity mapping を受け取れるようにし、replay 時の canonical 集約に接続した
+- `packages/protocol/multi_transport_delivery.js` と `packages/nostr/live/outbound.js` / `packages/atproto/live/outbound.js` で outbound 実配送の入口を追加した
+- `apps/api/server.js` で `TOITOI_TRANSPORT_SOURCES` を受け取り、multi-transport replay を canonical view に反映できるようにした
+- `packages/protocol/test_phase14_contracts.js` と `packages/protocol/test_multi_transport.js` で source 内 duplicate suppression、cross-source non-merge、explicit identity mapping、fan-out plan の contract test を追加した
+- 2026-06-04 時点で Phase 14 を完了扱いとする
+
 ---
 
 ## 当面の優先順位
 
-Phase 12 を完了として扱ったうえで、次の順序で進めます。
+Phase 14 を完了として扱ったうえで、次の順序で進めます。
 
 1. 追加 protocol 1 つを実データ ingest まで通す
 2. registry 駆動で起動と選択をまとめる
-3. multi-transport fan-out / fan-in と identity resolution を設計して実装に入れる
-4. Standard API の multi-protocol 対応を確認する
-5. 運用・移行・拡張の標準化を固める
+3. Standard API の multi-protocol 対応を確認する
+4. 運用・移行・拡張の標準化を固める
 
-この順序により、単なる skeleton の追加で止めずに、実装・起動・公開・運用までを一連でつなげられます。
+この順序により、単なる skeleton の追加で止めずに、実装・起動・公開・運用までを一連でつなげられます。Phase 13/14 で扱った multi-transport fan-out / fan-in と identity resolution は、ここで完了した前提として扱います。
 
 ---
 

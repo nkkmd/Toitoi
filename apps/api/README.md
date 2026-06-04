@@ -1,6 +1,6 @@
 # Standard API
 
-**Version: 0.3.3** | **Status: evolving** | **Last updated: 2026-06-03**
+**Version: 0.3.3** | **Status: evolving** | **Last updated: 2026-06-04**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
@@ -55,6 +55,7 @@ HTTP response
 
 - 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - protocol 選択: `TOITOI_PROTOCOL=atproto TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
+- multi-transport fan-in: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/a"},{"protocol":"atproto","storageDir":"/path/b"}]' pnpm --filter @toitoi/api start`
 - テスト: `pnpm --filter @toitoi/api test`
 - 参照実装: `@toitoi/nostr/storage/` と `@toitoi/atproto/storage/`
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
@@ -67,6 +68,7 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 
 `TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。  
 `TOITOI_STORAGE_DIR` が設定されている場合は、選択した protocol に replay module が必要です。replay module が無い protocol は起動時に明示エラーになります。
+`TOITOI_TRANSPORT_SOURCES` が設定されている場合は、複数 transport の replay をまとめて canonical view に反映します。`/health` の `storage.protocol` は `multi-transport` になります。
 
 `/health` には、選択中 protocol の replay 可否を示す `storage` が含まれます。  
 `/api/v1/protocols/:protocol` には、`provenance` に加えて `provenancePolicy` と `storage` が含まれ、protocol ごとの差分を見分けやすくしています。

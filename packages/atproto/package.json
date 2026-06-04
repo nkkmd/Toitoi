@@ -8,6 +8,7 @@
     "./protocol": "./protocol.js",
     "./adapter/*": "./adapter/*.js",
     "./converter/*": "./converter/*.js",
+    "./live/*": "./live/*.js",
     "./storage": "./storage/index.js",
     "./storage/*": "./storage/*.js",
     "./test_fixtures": "./test_fixtures.js",

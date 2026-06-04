@@ -6,6 +6,7 @@
 
 - `adapter/`: raw event の検証・正規化・canonical 化
 - `converter/`: canonical と Nostr 表現の相互変換
+- `live/`: relay への outbound publish helper
 - `storage/`: append-only 保存、replay、derived index
 
 ## 全体像
@@ -31,8 +32,10 @@ protocol.js
 - `protocol.js`: Nostr の protocol descriptor と公開入口
 - `adapter/`: ingest と canonical 化の中心
 - `converter/`: canonical から Nostr draft への変換
+- `live/`: relay publish 用の helper
 - `storage/`: 保存、replay、index、API 向け view
 - 運用ガイド: [docs/operations/NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md)
+- outbound 運用: [MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md](../../docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md)
 
 ## 呼び出し関係
 
