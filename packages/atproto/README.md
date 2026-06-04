@@ -28,6 +28,9 @@ packages/atproto/
 - `infra/transports/atproto/atproto_ingest_worker.js`: JSONL batch ingest の運用入口
 - `test_protocol.js`: descriptor の契約確認
 - `test_smoke.js`: `ATPROTO_LIVE_SMOKE_TEST=1 node packages/atproto/test_smoke.js` で送信後に `com.atproto.repo.getRecord` まで確認する gated smoke test
+- transport schema template: [docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md](../../docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md)
+- transport schema: [docs/protocols/ATPROTO_INQUIRY_SCHEMA.md](../../docs/protocols/ATPROTO_INQUIRY_SCHEMA.md)
+- machine-readable schema: [schemas/atproto-inquiry.schema.json](../../schemas/atproto-inquiry.schema.json)
 - `運用ガイド`: [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](../../docs/operations/ATPROTO_STORAGE_AND_REPLAY.md)
 - outbound 運用: [MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md](../../docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md)
 - API 接続: `/health` と `/api/v1/protocols/atproto` を見るときは上記運用ガイドを併読する

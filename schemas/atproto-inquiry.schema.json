@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://toitoi.dev/schemas/atproto-inquiry.schema.json",
+  "title": "Toitoi ATProto Inquiry Record",
+  "description": "Schema for Toitoi ATProto inquiry transport records (custom record app.toitoi.inquiry).",
+  "type": "object",
+  "required": [
+    "uri",
+    "did",
+    "collection",
+    "rkey",
+    "record"
+  ],
+  "properties": {
+    "uri": {
+      "type": "string",
+      "pattern": "^at://.+$",
+      "description": "ATProto URI for the record."
+    },
+    "cid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional content identifier for the record payload."
+    },
+    "did": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repository DID that owns the record."
+    },
+    "collection": {
+      "type": "string",
+      "const": "app.toitoi.inquiry",
+      "description": "ATProto collection used for Toitoi inquiries."
+    },
+    "rkey": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Record key."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional source creation timestamp."
+    },
+    "indexedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional indexing timestamp."
+    },
+    "record": {
+      "type": "object",
+      "required": [
+        "text"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["inquiry", "observation", "annotation", "response", "synthesis"],
+          "description": "Semantic event type carried in the transport record."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Natural language body of the inquiry."
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$",
+          "description": "Language tag for the inquiry text."
+        },
+        "contexts": {
+          "type": "object",
+          "description": "Abstracted locality/context metadata.",
+          "additionalProperties": true
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/relation"
+          }
+        },
+        "phase": {
+          "type": "string",
+          "enum": ["beginner", "intermediate", "expert"]
+        },
+        "trigger": {
+          "type": "object",
+          "required": ["category", "value"],
+          "properties": {
+            "category": {
+              "type": "string",
+              "minLength": 1
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "lineage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/lineageEdge"
+          }
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dsl": {
+          "type": "object",
+          "required": ["models"],
+          "properties": {
+            "models": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dslModel"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "meta": {
+          "type": "object",
+          "description": "Optional non-semantic implementation metadata.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "definitions": {
+    "relation": {
+      "type": "object",
+      "required": ["source", "target"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "lineageEdge": {
+      "type": "object",
+      "required": ["type", "target"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Relation type, typically derived_from, synthesis, annotates, or revises."
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Transport source locator or parent URI."
+        }
+      },
+      "additionalProperties": false
+    },
+    "dslVariable": {
+      "type": "object",
+      "required": ["name", "role"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": ["independent", "dependent", "mediator", "moderator"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "dslModel": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/dslVariable"
+          }
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/relation"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "description": "Optional model-level metadata.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

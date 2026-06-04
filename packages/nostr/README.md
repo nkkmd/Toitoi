@@ -8,6 +8,9 @@
 - `converter/`: canonical と Nostr 表現の相互変換
 - `live/`: relay への outbound publish helper
 - `storage/`: append-only 保存、replay、derived index
+- transport schema template: [docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md](../../docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md)
+- transport schema: [docs/protocols/NOSTR_INQUIRY_SCHEMA.md](../../docs/protocols/NOSTR_INQUIRY_SCHEMA.md)
+- machine-readable schema: [schemas/nostr-inquiry.schema.json](../../schemas/nostr-inquiry.schema.json)
 
 ## 全体像
 

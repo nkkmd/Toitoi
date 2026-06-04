@@ -1,6 +1,6 @@
 # Nostr Inquiry Schema
 
-**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-05-22**
+**Version: 0.2.2** | **Status: evolving** | **Last updated: 2026-06-05**
 
 ## 目的
 
@@ -17,6 +17,8 @@
 であるという点です。
 
 Toitoi の内部中心モデルは [CANONICAL_EVENT.md](./CANONICAL_EVENT.md) にあります。
+共通テンプレートは [INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md](./INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md) を参照してください。
+機械可読版は [schemas/nostr-inquiry.schema.json](../../schemas/nostr-inquiry.schema.json) を参照してください。
 
 ---
 
@@ -285,4 +287,6 @@ validate, verify, dedupe, ordering, normalize を経た結果として、
 
 それらは次を参照してください。
 
+- [INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md](./INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md)
 - [CANONICAL_EVENT.md](./CANONICAL_EVENT.md)
+- [schemas/nostr-inquiry.schema.json](../../schemas/nostr-inquiry.schema.json)

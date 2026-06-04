@@ -20,6 +20,10 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
+function isValidDateTimeString(value) {
+  return isNonEmptyString(value) && !Number.isNaN(Date.parse(value.trim()));
+}
+
 function asLanguageTag(value) {
   if (!isNonEmptyString(value)) {
     return 'und';
@@ -115,6 +119,8 @@ function validateAtProtoRecord(event) {
   }
   if (!isNonEmptyString(event.collection)) {
     errors.push('collection is required');
+  } else if (event.collection.trim() !== 'app.toitoi.inquiry') {
+    errors.push('collection must be app.toitoi.inquiry');
   }
   if (!isNonEmptyString(event.rkey)) {
     errors.push('rkey is required');
@@ -133,6 +139,8 @@ function validateAtProtoRecord(event) {
 
   if (record.language !== undefined && !isNonEmptyString(record.language)) {
     errors.push('record.language must be a non-empty string when provided');
+  } else if (record.language !== undefined && asLanguageTag(record.language) === 'und' && record.language.trim() !== 'und') {
+    errors.push('record.language must be a valid language tag');
   }
 
   if (record.type !== undefined && (!isNonEmptyString(record.type) || !VALID_CANONICAL_TYPES.has(record.type.trim()))) {
@@ -145,6 +153,10 @@ function validateAtProtoRecord(event) {
 
   if (record.trigger !== undefined && !isPlainObject(record.trigger)) {
     errors.push('record.trigger must be an object when provided');
+  } else if (isPlainObject(record.trigger)) {
+    if (!isNonEmptyString(record.trigger.category) || !isNonEmptyString(record.trigger.value)) {
+      errors.push('record.trigger must include category and value');
+    }
   }
 
   if (record.contexts !== undefined && !isPlainObject(record.contexts)) {
@@ -172,21 +184,50 @@ function validateAtProtoRecord(event) {
       errors.push('record.lineage must be an array when provided');
     } else {
       for (const [index, edge] of record.lineage.entries()) {
-        if (!isPlainObject(edge) || !isNonEmptyString(edge.target)) {
+        if (!isPlainObject(edge) || !isNonEmptyString(edge.type) || !isNonEmptyString(edge.target)) {
           errors.push(`record.lineage[${index}] is invalid`);
         }
       }
     }
   }
 
-  if (record.dsl !== undefined && (!isPlainObject(record.dsl) || !Array.isArray(record.dsl.models))) {
-    errors.push('record.dsl must be an object with models when provided');
+  if (record.dsl !== undefined) {
+    if (!isPlainObject(record.dsl) || !Array.isArray(record.dsl.models)) {
+      errors.push('record.dsl must be an object with models when provided');
+    } else {
+      for (const [index, model] of record.dsl.models.entries()) {
+        if (!isPlainObject(model) || !isNonEmptyString(model.id) || !isNonEmptyString(model.name)) {
+          errors.push(`record.dsl.models[${index}] is invalid`);
+          continue;
+        }
+
+        if (Array.isArray(model.variables)) {
+          for (const [varIndex, variable] of model.variables.entries()) {
+            if (!isPlainObject(variable) || !isNonEmptyString(variable.name) || !isNonEmptyString(variable.role)) {
+              errors.push(`record.dsl.models[${index}].variables[${varIndex}] is invalid`);
+            }
+          }
+        }
+
+        if (Array.isArray(model.relations)) {
+          for (const [relIndex, relation] of model.relations.entries()) {
+            if (!isPlainObject(relation) || !isNonEmptyString(relation.source) || !isNonEmptyString(relation.target)) {
+              errors.push(`record.dsl.models[${index}].relations[${relIndex}] is invalid`);
+            }
+          }
+        }
+
+        if (model.meta !== undefined && !isPlainObject(model.meta)) {
+          errors.push(`record.dsl.models[${index}].meta must be an object when provided`);
+        }
+      }
+    }
   }
 
-  if (event.createdAt !== undefined && !isNonEmptyString(event.createdAt)) {
+  if (event.createdAt !== undefined && !isValidDateTimeString(event.createdAt)) {
     errors.push('createdAt must be a non-empty string when provided');
   }
-  if (event.indexedAt !== undefined && !isNonEmptyString(event.indexedAt)) {
+  if (event.indexedAt !== undefined && !isValidDateTimeString(event.indexedAt)) {
     errors.push('indexedAt must be a non-empty string when provided');
   }
 

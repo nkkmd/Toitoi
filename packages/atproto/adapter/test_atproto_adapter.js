@@ -24,6 +24,18 @@ const tests = [
     },
   },
   {
+    name: 'reject ATProto records with unexpected collections',
+    run() {
+      const validation = validateAtProtoRecord({
+        ...makeAtProtoRecord(),
+        collection: 'app.other.inquiry',
+      });
+
+      assert.strictEqual(validation.ok, false);
+      assert.ok(validation.errors.includes('collection must be app.toitoi.inquiry'));
+    },
+  },
+  {
     name: 'canonicalize ATProto record into Canonical Event',
     run() {
       const canonicalization = canonicalizeAtProtoRecord(makeAtProtoRecord());

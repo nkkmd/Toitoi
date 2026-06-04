@@ -1,6 +1,6 @@
 # Nostr Transport
 
-**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-19**
+**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-06-05**
 
 ## 概要
 
@@ -67,6 +67,8 @@ Toitoi が Nostr で流す inquiry は transport event です。
 
 詳細な shape は [NOSTR_INQUIRY_SCHEMA.md](./NOSTR_INQUIRY_SCHEMA.md) を参照してください。
 
+ATProto 側の対応する transport 形は [ATPROTO_INQUIRY_SCHEMA.md](./ATPROTO_INQUIRY_SCHEMA.md) を参照してください。
+
 重要なのは、
 
 - Nostr event は transport representation
@@ -105,4 +107,5 @@ Toitoi は長期的に protocol-independent な構造を目指します。
 ## 関連
 
 - [NOSTR_INQUIRY_SCHEMA.md](./NOSTR_INQUIRY_SCHEMA.md)
+- [ATPROTO_INQUIRY_SCHEMA.md](./ATPROTO_INQUIRY_SCHEMA.md)
 - [CANONICAL_EVENT.md](./CANONICAL_EVENT.md)

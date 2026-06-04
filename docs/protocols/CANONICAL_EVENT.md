@@ -1,6 +1,6 @@
 # Canonical Event
 
-**Version: 0.3.1** | **Status: stable** | **Last updated: 2026-05-20**
+**Version: 0.3.2** | **Status: stable** | **Last updated: 2026-06-05**
 
 ## 目的
 
@@ -15,6 +15,8 @@ Canonical Event は、
 として扱われます。
 
 Nostr Event や将来の ATProto Record は、Canonical Event の transport への projection です。
+
+各 transport 側の詳細な shape は [NOSTR_INQUIRY_SCHEMA.md](./NOSTR_INQUIRY_SCHEMA.md) と [ATPROTO_INQUIRY_SCHEMA.md](./ATPROTO_INQUIRY_SCHEMA.md) を参照してください。
 
 ---
 
