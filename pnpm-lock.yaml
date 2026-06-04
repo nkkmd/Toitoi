@@ -36,6 +36,15 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/protocol
 
+  infra/transports/atproto:
+    dependencies:
+      '@toitoi/atproto':
+        specifier: workspace:*
+        version: link:../../../packages/atproto
+      ws:
+        specifier: ^8.18.3
+        version: 8.21.0
+
   packages/atproto:
     dependencies:
       '@toitoi/protocol':
