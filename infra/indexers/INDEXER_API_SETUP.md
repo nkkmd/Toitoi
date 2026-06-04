@@ -102,41 +102,7 @@ worker は API とは別プロセスで動かし、relay の ingest と storage 
 API 単体では live ingest は進まないので、Nostr を運用する場合は worker の起動が必要です。
 ATProto は現時点でこの worker に相当する常駐 ingest 入口を持たず、storage replay を中心に扱います。
 
-### 2.5 常駐プロセスを構築する
-
-`MONITOR_SETUP.md` は、`toitoi-worker` と `toitoi-api` が常駐している前提で監視と自動回復を行います。  
-そのため、Nostr を live ingest まで含めて運用する場合は、API だけでなく worker もあわせて常駐化します。  
-ATProto はこの節の対象外で、現状は replay ベースの運用です。
-
-#### 2.5.1 toitoi-api
-
-`toitoi-api` は canonical view を返す HTTP API です。`apps/api/server.js` を常駐化します。
-
-```bash
-pnpm --filter @toitoi/api start
-```
-
-#### 2.5.2 toitoi-worker
-
-`toitoi-worker` は Nostr relay から transport event を収集し、canonicalized event を保存する運用 worker です。`infra/transports/nostr/relay_ingest_worker.js` を常駐化します。
-
-```bash
-pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --protocol nostr --storage-dir /path/to/storage
-```
-
-#### 2.5.3 PM2 で両方を起動する
-
-PM2 で運用する場合は、`toitoi-api` と `toitoi-worker` を別プロセスとして起動します。  
-`toitoi-worker` を先に起動し、その後 `toitoi-api` を起動すると、監視や初回同期の挙動を追いやすくなります。
-
-```bash
-pm2 start pnpm --name toitoi-worker -- --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --protocol nostr --storage-dir /path/to/storage
-pm2 start pnpm --name toitoi-api -- --filter @toitoi/api start
-pm2 save
-pm2 startup
-```
-
-### 2.6 replay を実行する
+### 2.5 replay を実行する
 
 Nostr replay:
 
@@ -152,7 +118,7 @@ node packages/nostr/storage/replay_cli.js --protocol atproto --storage-dir /path
 
 `localfs` は replay 対応待ちです。現時点では `replayStorage()` による再構築は行いません。
 
-### 2.7 疎通確認
+### 2.6 疎通確認
 
 ```bash
 curl http://127.0.0.1:3000/health
@@ -168,7 +134,11 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 編集対象ファイル: `ecosystem.config.cjs` または PM2 の個別起動コマンド
 
 この節は、`ecosystem.config.cjs` を実際に作る前提の説明です。  
-`toitoi-api` は 1 つの PM2 プロセスで、`env_nostr` / `env_atproto` / `env_multi` のどれかを選んで起動します。  
+`MONITOR_SETUP.md` は、`toitoi-worker` と `toitoi-api` が常駐している前提で監視と自動回復を行います。  
+そのため、Nostr を live ingest まで含めて運用する場合は、API だけでなく worker もあわせて常駐化します。  
+ATProto はこの節の対象外で、現状は replay ベースの運用です。
+
+`toitoi-api` と `toitoi-worker` は別アプリとして定義し、`toitoi-api` だけが `--env nostr` / `--env atproto` / `--env multi` の切り替え対象です。  
 `toitoi-worker` は Nostr 専用なので、ATProto の常駐 worker はここには含めません。
 
 ```javascript
@@ -179,73 +149,38 @@ const homeDir = process.env.HOME || process.env.USERPROFILE || '';
 module.exports = {
   apps: [
     {
-      name: 'toitoi-worker',
-      cwd: __dirname,
-      script: './infra/transports/nostr/relay_ingest_worker.js',
-      instances: 1,
-      exec_mode: 'fork',
-      autorestart: true,
-      env_production: {
-        NODE_ENV: 'production',
-        TOITOI_PROTOCOL: 'nostr',
-        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/storage'),
-        RELAY_URL: 'wss://relay.example.com',
-      },
-    },
-    {
       name: 'toitoi-api',
       cwd: __dirname,
       script: './apps/api/server.js',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
-      env_production: {
-        NODE_ENV: 'production',
-        TOITOI_PROTOCOL: 'nostr',
-        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/storage'),
-      },
-    },
-  ],
-};
-```
-
-`toitoi-worker` は relay ingest と storage 書き込みを担い、`toitoi-api` は canonical view を返します。  
-`protocol` を変えるときは `TOITOI_PROTOCOL` を切り替えます。  
-API は protocol-aware なので、`atproto` へも同じ構成で切り替えられます。  
-Nostr を live ingest しない構成では `toitoi-worker` を起動しなくても API 単体で read-only / metadata-only 運用はできます。  
-ATProto はこの PM2 構成に worker を足すのではなく、storage replay と API 起動で扱います。
-
-#### Nostr / ATProto を併存させるときの考え方
-
-`ecosystem.config.cjs` で併存させる場合、`toitoi-api` は 1 つのプロセスで起動し、`TOITOI_PROTOCOL` か `TOITOI_TRANSPORT_SOURCES` で対象を切り替えます。  
-`toitoi-worker` は Nostr 専用なので、ATProto を常駐 worker として追加する構成は取りません。
-
-例:
-
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: 'toitoi-api',
-      script: './apps/api/server.js',
       env_nostr: {
+        NODE_ENV: 'production',
         TOITOI_PROTOCOL: 'nostr',
-        TOITOI_STORAGE_DIR: '/path/to/nostr-storage',
+        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-storage'),
       },
       env_atproto: {
+        NODE_ENV: 'production',
         TOITOI_PROTOCOL: 'atproto',
-        TOITOI_STORAGE_DIR: '/path/to/atproto-storage',
+        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/atproto-storage'),
       },
       env_multi: {
+        NODE_ENV: 'production',
         TOITOI_TRANSPORT_SOURCES: '[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]',
       },
     },
     {
       name: 'toitoi-worker',
+      cwd: __dirname,
       script: './infra/transports/nostr/relay_ingest_worker.js',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
       env_nostr: {
+        NODE_ENV: 'production',
         TOITOI_PROTOCOL: 'nostr',
-        TOITOI_STORAGE_DIR: '/path/to/nostr-storage',
+        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-storage'),
         RELAY_URL: 'wss://relay.example.com',
       },
     },
@@ -253,13 +188,38 @@ module.exports = {
 };
 ```
 
-要するに、**API は Nostr / ATProto を同居させられるが、常駐 worker は Nostr だけ**です。
+使い分けは次の通りです。
 
-### 設定変更後の再起動
+- Nostr だけで動かすなら `--env nostr`
+- ATProto だけで動かすなら `--env atproto`
+- 両方まとめて読むなら `--env multi`
+
+起動例:
+
+```bash
+# Nostr だけ
+pm2 start ecosystem.config.cjs --only toitoi-worker --env nostr
+pm2 start ecosystem.config.cjs --only toitoi-api --env nostr
+
+# ATProto だけ
+pm2 start ecosystem.config.cjs --only toitoi-api --env atproto
+
+# Nostr + ATProto をまとめて読む
+pm2 start ecosystem.config.cjs --only toitoi-api --env multi
+```
+
+要するに、**API は Nostr / ATProto を同居させられるが、常駐 worker は Nostr だけ**です。  
+`toitoi-api` は `--only` で対象アプリを絞り、`--env` で運用モードを選びます。
+
+### Nostr 運用の再起動例
+
+ATProto だけ、または Nostr と ATProto をまとめて読む構成では、`toitoi-worker` は起動しません。  
+その場合は `toitoi-api` をそれぞれ `--env atproto` か `--env multi` で起動します。
 
 ```bash
 pm2 delete toitoi-worker toitoi-api
-pm2 start ecosystem.config.cjs --env production
+pm2 start ecosystem.config.cjs --only toitoi-worker --env nostr
+pm2 start ecosystem.config.cjs --only toitoi-api --env nostr
 pm2 save
 pm2 startup
 ```
