@@ -60,6 +60,7 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 
 ### Core Documents
 
+* 📘 **[Glossary](./docs/concepts/GLOSSARY.md)**
 * 🗺️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
@@ -208,6 +209,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 ### コア・ドキュメント (Core Documents)
 
+* 📘 **[用語集](./docs/concepts/GLOSSARY.md)**
 * 🗺️ **[ディレクトリ責務ルール](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
