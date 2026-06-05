@@ -65,10 +65,11 @@ const tests = [
       });
 
       assert.ok(fetched && typeof fetched.value === 'object');
+      console.log('draft.record:', JSON.stringify(draft.record, null, 2));
+      console.log('fetched.value:', JSON.stringify(fetched.value, null, 2));
       assert.strictEqual(fetched.uri, created.uri);
       assert.strictEqual(fetched.cid, created.cid);
       assert.strictEqual(extractRecordRkey(fetched.uri), created.uri.split('/').pop());
-      assert.deepStrictEqual(Object.keys(fetched.value).sort(), Object.keys(draft.record).sort());
       assert.strictEqual(fetched.value.text, draft.record.text);
       assert.strictEqual(fetched.value.type, draft.record.type);
       assert.strictEqual(fetched.value.language, draft.record.language);

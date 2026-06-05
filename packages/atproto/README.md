@@ -38,3 +38,37 @@ packages/atproto/
 ## 依存関係
 
 - `protocol.js` は `packages/protocol/` の共通 descriptor helper に依存します
+
+## live smoke test の実行方法
+
+`packages/atproto/test_smoke.js` は、実際の PDS に 1 件送ってから `com.atproto.repo.getRecord` で取り直す gated smoke test です。
+
+### 1. 必要な環境変数を設定する
+
+- `ATPROTO_LIVE_SMOKE_TEST=1`
+- `ATPROTO_PDS_HOST`
+- `ATPROTO_HANDLE`
+- `ATPROTO_APP_PASSWORD`
+
+### 2. 実行する
+
+```bash
+ATPROTO_LIVE_SMOKE_TEST=1 \
+ATPROTO_PDS_HOST=https://your-pds.example \
+ATPROTO_HANDLE=your-handle \
+ATPROTO_APP_PASSWORD=your-app-password \
+node packages/atproto/test_smoke.js
+```
+
+### 3. 確認する内容
+
+- `createRecord()` の戻り値に `uri` と `cid` があること
+- `getRecord()` で同じ `uri` と `cid` が返ること
+- 送信した `draft.record` と取得した `fetched.value` の主要フィールドが一致すること
+
+### 4. PDS host の取り方
+
+- handle を `com.atproto.identity.resolveHandle` で DID に解決する
+- DID document の `service[].serviceEndpoint` を `ATPROTO_PDS_HOST` に入れる
+- `did:plc:` の場合は `https://plc.directory/<did>` を読む
+- `did:web:` の場合は `https://<domain>/.well-known/did.json` を読む
