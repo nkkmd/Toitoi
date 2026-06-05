@@ -246,10 +246,12 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 
 ---
 
-## 3. PM2 で常駐化する
+## 3. PM2 と Caddy の常駐運用
 
 作業場所: Toitoi リポジトリ root  
 参照: この節の `ecosystem.config.cjs` サンプルまたは PM2 の個別起動コマンド
+
+### 3.1 PM2 で常駐化する
 
 この節は、PM2 の定義をどう組むかの説明です。  
 `MONITOR_SETUP.md` は、`toitoi-api` と live ingest 系 worker が動いている前提で監視と自動回復を行います。  
@@ -383,6 +385,88 @@ pm2 startup
 要するに、**PM2 で常駐管理するのは API と ATProto live ingest が中心で、Nostr worker は必要に応じて PM2 でも systemd timer でも運用できる**です。  
 `toitoi-api` は `--only` で対象アプリを絞り、`--env` で運用モードを選びます。  
 定期収集だけをしたいなら、Nostr worker は systemd の template unit の方が扱いやすいです。
+
+### 3.2 Caddy による API 公開
+
+Caddy による公開は、PM2 でプロセスを安定稼働させたあとに前段へ置くのが自然です。  
+PM2 はプロセス監視と再起動を担当し、Caddy は TLS 終端と reverse proxy を担当します。  
+この分離にしておくと、API の起動方式を変えずに公開層だけ差し替えられます。  
+この節では、`localhost:3000` で起動している API を `https://api.your-domain.com` のようなドメインに流す前提で説明します。
+
+#### 3.2.1 Caddy のインストール
+
+```bash
+sudo apt install -y debian-keyring debian-archive-keyring apt-transport-https curl
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list
+sudo apt update
+sudo apt install caddy
+```
+
+#### 3.2.2 Caddyfile の設定（リバースプロキシ）
+
+Caddy の設定ファイルを編集し、あなたのドメインへのアクセスを Toitoi API（ポート 3000）に流すように設定します。
+
+```bash
+sudo nano /etc/caddy/Caddyfile
+```
+
+以下の内容を貼り付けて、`api.your-domain.com` の部分を実際のドメインに書き換えてください。
+
+```caddy
+api.your-domain.com {
+    reverse_proxy localhost:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    @options {
+        method OPTIONS
+    }
+
+    header {
+        Access-Control-Allow-Origin "*"
+        Access-Control-Allow-Methods "GET, OPTIONS"
+        Access-Control-Allow-Headers "Content-Type, Authorization"
+    }
+
+    respond @options 204
+}
+```
+
+`GET` 系の JSON API をブラウザから叩く想定があるなら、この CORS 設定でそのまま扱いやすくなります。  
+認証付きのフロントエンドと組み合わせる場合は `Access-Control-Allow-Origin "*"` の扱いを見直してください。
+
+#### 3.2.3 Caddy の再起動
+
+```bash
+sudo systemctl restart caddy
+sudo systemctl status caddy --no-pager
+```
+
+これで Caddy が自動的に Let's Encrypt と通信し、数秒で SSL 証明書（HTTPS）が適用されます。  
+動作確認は次のように行えます。
+
+```bash
+curl https://api.your-domain.com/health
+curl https://api.your-domain.com/api/v1/protocols
+```
+
+#### 3.2.4 推奨構成: PM2 と組み合わせる
+
+API の公開運用は、**PM2 で `apps/api/server.js` を常駐させ、その前段に Caddy を置く**のがいちばん素直です。  
+`--env multi` は複数 transport をまとめて読む場合の例です。  
+Nostr 単独なら `--env nostr`、ATProto 単独なら `--env atproto` に置き換えてください。  
+Caddy 側は引き続き `localhost:3000` を向け先にしておけば大丈夫です。
+
+```bash
+pm2 start ecosystem.config.cjs --only toitoi-api --env multi
+pm2 save
+pm2 startup
+sudo systemctl restart caddy
+```
 
 ### Nostr 定期実行
 
