@@ -69,6 +69,6 @@ Boundary Object により：
 
 ## 関連概念
 
-- Inquiry Model
+- [Inquiry Model](./GLOSSARY.md#inquiry-model)
 - Provenance
 - Canonical Event
