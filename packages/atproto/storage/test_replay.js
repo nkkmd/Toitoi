@@ -6,7 +6,11 @@ const os = require('os');
 const path = require('path');
 const { ingestAtProtoEvents } = require('../adapter/ingest_pipeline');
 const { persistIngestResult } = require('./persistence');
-const { loadPersistedIndexSnapshot, replayStorage } = require('./replay');
+const {
+  buildCanonicalIdMapFromRawRecords,
+  loadPersistedIndexSnapshot,
+  replayStorage,
+} = require('./replay');
 const { makeAtProtoRecord } = require('../test_fixtures');
 
 function makeTempDir() {
@@ -56,9 +60,34 @@ const tests = [
       assert.strictEqual(replayed.indexSnapshot.total, 2);
       assert.ok(Array.isArray(replayed.indexSnapshot.byType.inquiry));
       assert.strictEqual(replayed.indexSnapshot.byType.inquiry.length, 2);
+      assert.strictEqual(
+        replayed.ingestResult.accepted[0].canonicalEvent.id,
+        ingestResult.accepted[0].canonicalEvent.id
+      );
+      assert.strictEqual(replayed.rawRecords[0].canonicalEventId, ingestResult.accepted[0].canonicalEvent.id);
 
       const persistedSnapshot = loadPersistedIndexSnapshot(storageDir);
       assert.strictEqual(persistedSnapshot.total, 2);
+    },
+  },
+  {
+    name: 'buildCanonicalIdMapFromRawRecords keeps the earliest canonical id',
+    run() {
+      const mapping = buildCanonicalIdMapFromRawRecords([
+        {
+          rawEvent: { uri: 'at://did:plc:toitoi123/app.toitoi.inquiry/source-a' },
+          canonicalEventId: 'tt:evt:01JVVFIRSTATPROTO0000000000000000',
+        },
+        {
+          rawEvent: { uri: 'at://did:plc:toitoi123/app.toitoi.inquiry/source-a' },
+          canonicalEventId: 'tt:evt:01JVVSECONDATPROTO000000000000000',
+        },
+      ]);
+
+      assert.strictEqual(
+        mapping.get('at://did:plc:toitoi123/app.toitoi.inquiry/source-a'),
+        'tt:evt:01JVVFIRSTATPROTO0000000000000000'
+      );
     },
   },
 ];

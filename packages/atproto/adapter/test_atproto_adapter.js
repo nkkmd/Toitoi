@@ -41,9 +41,21 @@ const tests = [
       const canonicalization = canonicalizeAtProtoRecord(makeAtProtoRecord());
 
       assert.strictEqual(canonicalization.ok, true);
+      assert.match(canonicalization.canonicalEvent.id, /^tt:evt:/);
       assert.strictEqual(canonicalization.canonicalEvent.provenance.sources[0].protocol, 'atproto');
       assert.strictEqual(canonicalization.canonicalEvent.provenance.sources[0].uri, makeAtProtoRecord().uri);
       assert.strictEqual(canonicalization.canonicalEvent.body.text.includes('雑草'), true);
+    },
+  },
+  {
+    name: 'canonicalize respects an explicit canonical id override',
+    run() {
+      const canonicalization = canonicalizeAtProtoRecord(makeAtProtoRecord(), {
+        id: 'tt:evt:01JVVATPROTOOVERRIDE0000000000000',
+      });
+
+      assert.strictEqual(canonicalization.ok, true);
+      assert.strictEqual(canonicalization.canonicalEvent.id, 'tt:evt:01JVVATPROTOOVERRIDE0000000000000');
     },
   },
   {

@@ -759,11 +759,15 @@ Phase 14 で固めた multi-transport fan-out / fan-in の方針を、`provenanc
 
 ### 完了メモ
 
-- まだ着手前
-- `docs/protocols/CANONICAL_EVENT.md` / `docs/architecture/STANDARD_API_MVP.md` / `docs/concepts/PROVENANCE.md` / `docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md` の方針を実装に接続する
-- `packages/protocol/multi_transport.js` と `packages/protocol/multi_transport_replay.js` の identity mapping / merge 方針を検証する
-- `packages/nostr/adapter/` と `packages/atproto/adapter/` の canonicalization で id / provenance / rawRef の整合を確認する
-- `apps/api/standard_api_service.js` で canonical view が 1 件として見えることを contract test で固定する
+- 2026-06-05 時点で Phase 15 を完了扱いとする
+- canonical id を opaque な `tt:evt:<UUIDv4>` 系として発行し、adapter の canonicalization に接続した
+- raw log に `canonicalEventId` を保持し、replay 時に canonical id を復元できるようにした
+- Nostr / ATProto の replay で、raw storage から再 canonicalize しても同じ canonical id を再現できるようにした
+- raw log の対応表は最初に発行された canonical id を優先し、後続バッチで同じ source が見えても replay の identity をぶらさないようにした
+- `packages/protocol/test_canonical_identity.js` で canonical id の発行と mapping を回帰確認した
+- `packages/nostr/storage/test_replay.js` と `packages/atproto/storage/test_replay.js` で replay 安定性を回帰確認した
+- `packages/nostr/adapter/test_nostr_adapter.js` と `packages/atproto/adapter/test_atproto_adapter.js` で explicit override を含む canonicalization を固定した
+- `docs/protocols/CANONICAL_EVENT.md` / `docs/architecture/STANDARD_API_MVP.md` / `docs/concepts/PROVENANCE.md` / `docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md` の方針と整合する形で、identity / provenance の実装接続を進めた
 
 ---
 

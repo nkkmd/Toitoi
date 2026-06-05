@@ -241,20 +241,74 @@ function buildDerivedIndex(canonicalEvents) {
   };
 }
 
+function buildCanonicalIdMapFromRawRecords(rawRecords) {
+  const canonicalIdMap = new Map();
+
+  for (const record of rawRecords) {
+    if (!record || typeof record !== 'object') {
+      continue;
+    }
+
+    const canonicalEventId = typeof record.canonicalEventId === 'string' && record.canonicalEventId.trim() !== ''
+      ? record.canonicalEventId.trim()
+      : null;
+    const rawEvent = record.rawEvent && typeof record.rawEvent === 'object' ? record.rawEvent : null;
+    const sourceId = rawEvent && typeof rawEvent.id === 'string' && rawEvent.id.trim() !== ''
+      ? rawEvent.id.trim()
+      : null;
+
+    if (canonicalEventId && sourceId && !canonicalIdMap.has(sourceId)) {
+      canonicalIdMap.set(sourceId, canonicalEventId);
+    }
+  }
+
+  return canonicalIdMap;
+}
+
 function replayStorage(storageDir, options = {}) {
   const paths = resolveStoragePaths(storageDir);
   const rawRecords = loadPersistedRawRecords(storageDir);
   const canonicalRecords = loadPersistedCanonicalRecords(storageDir);
+  const canonicalIdMap = buildCanonicalIdMapFromRawRecords(rawRecords);
 
   let ingestResult;
-  if (rawRecords.length > 0) {
+  if (rawRecords.length > 0 && canonicalIdMap.size > 0) {
     const rawEvents = rawRecords
       .map(record => record && record.rawEvent)
       .filter(Boolean);
     ingestResult = ingestNostrEvents(rawEvents, {
       skipVerify: options.skipVerify !== undefined ? Boolean(options.skipVerify) : true,
       verifyFn: options.verifyFn,
+      canonicalIdMap,
     });
+  } else if (rawRecords.length > 0 && canonicalRecords.length > 0) {
+    const canonicalEvents = canonicalRecords
+      .map(record => record && record.canonicalEvent)
+      .filter(Boolean);
+    ingestResult = {
+      accepted: canonicalEvents.map(canonicalEvent => ({
+        rawEvent: null,
+        normalizedEvent: null,
+        canonicalEvent,
+        warnings: [],
+        verification: null,
+      })),
+      invalid: [],
+      duplicates: [],
+      unverified: [],
+      processedEvents: canonicalEvents.map(canonicalEvent => ({
+        status: 'accepted',
+        rawEvent: null,
+        normalizedEvent: null,
+        canonicalEvent,
+        warnings: [],
+        verification: null,
+        dedupeKey: null,
+        ordering: null,
+        errors: [],
+      })),
+      orderedEvents: [],
+    };
   } else {
     const canonicalEvents = canonicalRecords
       .map(record => record && record.canonicalEvent)
@@ -319,6 +373,7 @@ function loadPersistedIndexSnapshot(storageDir) {
 
 module.exports = {
   buildDerivedIndex,
+  buildCanonicalIdMapFromRawRecords,
   loadPersistedIndexSnapshot,
   replayStorage,
 };

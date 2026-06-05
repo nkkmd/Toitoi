@@ -8,6 +8,7 @@ const multiTransportOutbound = require('./multi_transport_outbound');
 const multiTransportDelivery = require('./multi_transport_delivery');
 const protocolRuntime = require('./protocol_runtime');
 const protocolStorageRuntime = require('./protocol_storage_runtime');
+const canonicalIdentity = require('./canonical_identity');
 
 module.exports = {
   ...protocolDescriptor,
@@ -18,4 +19,5 @@ module.exports = {
   ...multiTransportDelivery,
   ...protocolRuntime,
   ...protocolStorageRuntime,
+  ...canonicalIdentity,
 };

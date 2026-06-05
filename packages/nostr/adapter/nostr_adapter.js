@@ -1,5 +1,7 @@
 'use strict';
 
+const { resolveCanonicalEventId } = require('@toitoi/protocol');
+
 const VALID_NOSTR_INQUIRY_KIND = 1042;
 const VALID_PHASES = new Set(['beginner', 'intermediate', 'expert']);
 const VALID_DSL_SUBKEYS = new Set(['dsl:model', 'dsl:var', 'dsl:rel', 'dsl:meta']);
@@ -348,7 +350,7 @@ function canonicalizeNostrEvent(event, options = {}) {
   }
 
   const canonicalEvent = {
-    id: options.id ?? `tt:evt:${deriveStableToken(normalizedEvent.id)}`,
+    id: resolveCanonicalEventId(normalizedEvent.id, options),
     schemaVersion: '0.3.1',
     type: options.type ?? 'inquiry',
     createdAt: new Date(normalizedEvent.created_at * 1000).toISOString(),
@@ -404,12 +406,6 @@ function canonicalizeNostrEvent(event, options = {}) {
     warnings: normalization.warnings,
     canonicalEvent,
   };
-}
-
-function deriveStableToken(sourceId) {
-  const text = isNonEmptyString(sourceId) ? sourceId.trim() : 'nostr';
-  const sanitized = text.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
-  return (sanitized + '00000000000000000000000000').slice(0, 26);
 }
 
 function classifyEvent(event, options = {}) {

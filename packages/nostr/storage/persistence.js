@@ -103,6 +103,9 @@ function persistIngestResult(storageDir, ingestResult, options = {}) {
       errors: Array.isArray(item.errors) ? item.errors : [],
       verification: sanitizeVerification(item.verification),
       rawEvent: cloneJson(item.rawEvent),
+      canonicalEventId: item.canonicalEvent && typeof item.canonicalEvent.id === 'string'
+        ? item.canonicalEvent.id
+        : null,
     };
     appendJsonlRecord(paths.rawLogPath, rawRecord);
     rawRecordIds.push(rawStorageId);

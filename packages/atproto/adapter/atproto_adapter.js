@@ -1,6 +1,6 @@
 'use strict';
 
-const crypto = require('crypto');
+const { resolveCanonicalEventId } = require('@toitoi/protocol');
 
 const VALID_CANONICAL_TYPES = new Set([
   'inquiry',
@@ -328,22 +328,6 @@ function normalizeAtProtoRecord(event) {
   };
 }
 
-function deriveStableToken(sourceId) {
-  const text = isNonEmptyString(sourceId) ? sourceId.trim() : 'atproto';
-  const alphabet = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-  const digest = crypto.createHash('sha256').update(text).digest();
-  let value = BigInt(`0x${digest.subarray(0, 16).toString('hex')}`);
-  let token = '';
-
-  for (let index = 0; index < 26; index += 1) {
-    const charIndex = Number(value & 31n);
-    token = alphabet[charIndex] + token;
-    value >>= 5n;
-  }
-
-  return token;
-}
-
 function canonicalizeAtProtoRecord(event, options = {}) {
   const normalization = normalizeAtProtoRecord(event);
   if (!normalization.ok) {
@@ -380,7 +364,7 @@ function canonicalizeAtProtoRecord(event, options = {}) {
   }
 
   const canonicalEvent = {
-    id: options.id ?? `tt:evt:${deriveStableToken(normalizedEvent.uri || normalizedEvent.cid || normalizedEvent.rkey)}`,
+    id: resolveCanonicalEventId(normalizedEvent.uri || normalizedEvent.cid || normalizedEvent.rkey, options),
     schemaVersion: '0.3.1',
     type: options.type ?? record.type ?? 'inquiry',
     createdAt,
@@ -527,7 +511,6 @@ module.exports = {
   classifyEvent,
   compareEventsForOrdering,
   dedupeKey,
-  deriveStableToken,
   normalizeAtProtoRecord,
   sortByTransportOrder,
   validateAtProtoRecord,

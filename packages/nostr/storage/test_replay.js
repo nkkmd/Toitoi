@@ -6,7 +6,11 @@ const os = require('os');
 const path = require('path');
 const { ingestNostrEvents } = require('../adapter/ingest_pipeline');
 const { persistIngestResult } = require('./persistence');
-const { loadPersistedIndexSnapshot, replayStorage } = require('./replay');
+const {
+  buildCanonicalIdMapFromRawRecords,
+  loadPersistedIndexSnapshot,
+  replayStorage,
+} = require('./replay');
 
 function makeEvent(overrides = {}) {
   return {
@@ -52,10 +56,32 @@ const tests = [
       assert.strictEqual(replayed.indexSnapshot.total, 2);
       assert.ok(Array.isArray(replayed.indexSnapshot.byType.inquiry));
       assert.strictEqual(replayed.indexSnapshot.byType.inquiry.length, 2);
+      assert.strictEqual(
+        replayed.ingestResult.accepted[0].canonicalEvent.id,
+        ingestResult.accepted[0].canonicalEvent.id
+      );
+      assert.strictEqual(replayed.rawRecords[0].canonicalEventId, ingestResult.accepted[0].canonicalEvent.id);
       assert.ok(replayed.indexSnapshot.byId[replayed.ingestResult.accepted[0].canonicalEvent.id]);
 
       const persistedSnapshot = loadPersistedIndexSnapshot(storageDir);
       assert.strictEqual(persistedSnapshot.total, 2);
+    },
+  },
+  {
+    name: 'buildCanonicalIdMapFromRawRecords keeps the earliest canonical id',
+    run() {
+      const mapping = buildCanonicalIdMapFromRawRecords([
+        {
+          rawEvent: { id: 'source-a' },
+          canonicalEventId: 'tt:evt:01JVVFIRST000000000000000000000000',
+        },
+        {
+          rawEvent: { id: 'source-a' },
+          canonicalEventId: 'tt:evt:01JVVSECOND00000000000000000000000',
+        },
+      ]);
+
+      assert.strictEqual(mapping.get('source-a'), 'tt:evt:01JVVFIRST000000000000000000000000');
     },
   },
 ];

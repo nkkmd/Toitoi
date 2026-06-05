@@ -94,6 +94,7 @@ const tests = [
       const result = canonicalizeNostrEvent(makeBaseEvent(), { skipVerify: true });
       assert.strictEqual(result.ok, true);
       assert.ok(result.canonicalEvent);
+      assert.match(result.canonicalEvent.id, /^tt:evt:/);
       assert.strictEqual(result.canonicalEvent.schemaVersion, '0.3.1');
       assert.strictEqual(result.canonicalEvent.type, 'inquiry');
       assert.strictEqual(result.canonicalEvent.body.text, '雑草の生え方が場所によって違うのはなぜ？');
@@ -104,6 +105,18 @@ const tests = [
       assert.strictEqual(result.canonicalEvent.phase, 'intermediate');
       assert.strictEqual(result.canonicalEvent.lineage, undefined);
       assert.deepStrictEqual(result.canonicalEvent.dsl.models[0].id, 'm1');
+    },
+  },
+  {
+    name: 'canonicalize respects an explicit canonical id override',
+    run() {
+      const result = canonicalizeNostrEvent(makeBaseEvent(), {
+        skipVerify: true,
+        id: 'tt:evt:01JVVNOSTROVERRIDE000000000000000',
+      });
+
+      assert.strictEqual(result.ok, true);
+      assert.strictEqual(result.canonicalEvent.id, 'tt:evt:01JVVNOSTROVERRIDE000000000000000');
     },
   },
   {
