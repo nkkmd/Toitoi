@@ -22,6 +22,7 @@ infra/indexers/
 
 - API 起動: `TOITOI_PROTOCOL=<name> TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
 - multi-transport API 起動: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]' pnpm --filter @toitoi/api start`
+- 複数 Nostr relay を扱う場合は、relay ごとに storage を分けて `TOITOI_TRANSPORT_SOURCES` に並べる
 - replay: `node packages/nostr/storage/replay_cli.js --protocol <name> --storage-dir /path/to/storage --verify`
 - multi-transport replay の統合: `apps/api/server.js` と `packages/protocol/multi_transport_replay.js`
 - protocol 選択の基盤: `packages/protocol/protocol_runtime.js` と `packages/protocol/protocol_storage_runtime.js`

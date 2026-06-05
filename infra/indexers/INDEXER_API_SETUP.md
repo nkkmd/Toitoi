@@ -78,6 +78,12 @@ Nostr と ATProto をまとめて扱う場合:
 TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]' pnpm --filter @toitoi/api start
 ```
 
+Nostr の relay を複数まとめて扱う場合も同じです。
+
+```bash
+TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-relay-a"},{"protocol":"nostr","storageDir":"/path/to/nostr-relay-b"}]' pnpm --filter @toitoi/api start
+```
+
 `TOITOI_STORAGE_DIR` が未設定なら、API は空の index snapshot でも起動できます。  
 `localfs` は現時点で runtime replay が未対応なので、storage 付き起動はしません。
 `TOITOI_TRANSPORT_SOURCES` が入っている場合、API は `multi-transport` の storage runtime として起動し、source 跨ぎの provenance 集約を反映します。
@@ -98,16 +104,23 @@ Nostr relay から ingest する場合は、`relay-url` と `storage-dir` を指
 pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --protocol nostr --storage-dir /path/to/storage
 ```
 
+複数 relay を運用する場合は、relay ごとに worker を分けて、`storage-dir` も別々にします。
+
+```bash
+pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay-a.example.com --protocol nostr --storage-dir /path/to/nostr-relay-a
+pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay-b.example.com --protocol nostr --storage-dir /path/to/nostr-relay-b
+```
+
 #### 2.4.2 worker の役割
 
 worker は API とは別プロセスで動かし、relay の ingest と storage 書き込みを担当します。  
 API 単体では live ingest は進まないので、Nostr を運用する場合は worker の起動が必要です。  
+relay が複数ある場合は、worker を relay ごとに増やします。API はそれぞれの storage を `TOITOI_TRANSPORT_SOURCES` でまとめて読みます。
 
 #### 2.4.3 定期実行で回す場合
 
-Nostr worker は常駐プロセスよりも、`10分おき` や `1時間おき` のような定期実行に向いています。  
-この場合は `systemd service` で 1 回実行する worker を定義し、`systemd timer` から起動します。  
-PM2 の `autorestart` は「落ちたら再起動」用であって、定期スケジュールの代わりにはなりません。
+Nostr worker を `10分おき` や `1時間おき` のように回すなら、`systemd service` + `systemd timer` の組み合わせが自然です。  
+`PM2` の `autorestart` は「落ちたら再起動」用であって、定期スケジュールの代わりにはなりません。
 
 #### 2.4.4 systemd timer の設定例
 
@@ -128,6 +141,24 @@ Environment=TOITOI_STORAGE_DIR=/var/lib/toitoi/nostr-storage
 Environment=RELAY_URL=wss://relay.example.com
 ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/nostr-transport start -- --relay-url "$RELAY_URL" --protocol nostr --storage-dir "$TOITOI_STORAGE_DIR"'
 ```
+
+複数 relay を回す場合は、service を relay ごとに分けるか、template unit にします。
+
+```ini
+[Unit]
+Description=Toitoi Nostr ingest worker for %i
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/you/github/Toitoi
+Environment=NODE_ENV=production
+Environment=TOITOI_PROTOCOL=nostr
+Environment=TOITOI_STORAGE_DIR=/var/lib/toitoi/nostr-%i-storage
+Environment=RELAY_URL=wss://%i.example.com
+ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/nostr-transport start -- --relay-url "$RELAY_URL" --protocol nostr --storage-dir "$TOITOI_STORAGE_DIR"'
+```
+
+この場合は `toitoi-nostr-worker@relay-a.service` と `toitoi-nostr-worker@relay-b.service` のように使えます。
 
 `/etc/systemd/system/toitoi-nostr-worker.timer`
 
@@ -222,13 +253,12 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 
 この節は、PM2 の定義をどう組むかの説明です。  
 `MONITOR_SETUP.md` は、`toitoi-api` と live ingest 系 worker が動いている前提で監視と自動回復を行います。  
-そのため、PM2 は API と ATProto live ingest の常駐管理に使い、Nostr worker は `systemd timer` などで定期実行するのが自然です。  
-ATProto も live ingest ならここで常駐化できます。  
-一方で `batch ingest` は常駐ではなく、アーカイブを 1 回処理する単発ジョブとして使います。  
-また、現在の `relay_ingest_worker.js` は単発 ingest 向きなので、Nostr の新着回収を定期実行で回すなら `systemd timer` の方が自然です。
+そのため、PM2 は API と ATProto live ingest の常駐管理に向いています。  
+Nostr worker も常駐させるなら PM2 で個別アプリとして追加できますが、定期回収だけを目的にするなら `systemd timer` の方が扱いやすいです。  
+`batch ingest` は常駐ではなく、アーカイブを 1 回処理する単発ジョブとして使います。
 
 `toitoi-api` と ATProto live worker は別アプリとして定義します。  
-以下の `ecosystem.config.cjs` 例では `toitoi-api` と `toitoi-atproto-worker` を分けて起動できます。  
+以下の `ecosystem.config.cjs` 例では、`toitoi-api`、`toitoi-atproto-worker`、Nostr の relay ごとの worker を分けて起動できます。  
 この例は説明用で、リポジトリにファイルとして追加する必要はありません。
 
 ```javascript
@@ -283,6 +313,34 @@ module.exports = {
         ATPROTO_WANTED_COLLECTIONS: 'app.toitoi.inquiry',
       },
     },
+    {
+      name: 'toitoi-nostr-worker-relay-a',
+      cwd: repoRoot,
+      script: './infra/transports/nostr/relay_ingest_worker.js',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      env_nostr_relay_a: {
+        NODE_ENV: 'production',
+        TOITOI_PROTOCOL: 'nostr',
+        RELAY_URL: 'wss://relay-a.example.com',
+        RELAY_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-relay-a'),
+      },
+    },
+    {
+      name: 'toitoi-nostr-worker-relay-b',
+      cwd: repoRoot,
+      script: './infra/transports/nostr/relay_ingest_worker.js',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      env_nostr_relay_b: {
+        NODE_ENV: 'production',
+        TOITOI_PROTOCOL: 'nostr',
+        RELAY_URL: 'wss://relay-b.example.com',
+        RELAY_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-relay-b'),
+      },
+    },
   ],
 };
 ```
@@ -291,6 +349,7 @@ module.exports = {
 
 - ATProto live ingest だけで動かすなら `--env atproto_live`
 - API は必要な protocol に応じて `--env nostr` / `--env atproto` / `--env multi` を選びます
+- relay ごとの Nostr worker を PM2 で回すなら、`toitoi-nostr-worker-relay-a` / `toitoi-nostr-worker-relay-b` のように個別アプリを増やします
 
 起動例:
 
@@ -303,6 +362,10 @@ pm2 start ecosystem.config.cjs --only toitoi-api --env multi
 
 # ATProto live ingest だけ
 pm2 start ecosystem.config.cjs --only toitoi-atproto-worker --env atproto_live
+
+# Nostr relay ごとの worker だけ
+pm2 start ecosystem.config.cjs --only toitoi-nostr-worker-relay-a --env nostr_relay_a
+pm2 start ecosystem.config.cjs --only toitoi-nostr-worker-relay-b --env nostr_relay_b
 ```
 
 `pm2 save` は、今の PM2 プロセス一覧を保存して、再起動後に `pm2 resurrect` できるようにするコマンドです。  
@@ -317,8 +380,9 @@ pm2 save
 pm2 startup
 ```
 
-要するに、**PM2 で常駐管理するのは API と ATProto live ingest で、Nostr worker は systemd timer で定期実行する**です。  
-`toitoi-api` は `--only` で対象アプリを絞り、`--env` で運用モードを選びます。
+要するに、**PM2 で常駐管理するのは API と ATProto live ingest が中心で、Nostr worker は必要に応じて PM2 でも systemd timer でも運用できる**です。  
+`toitoi-api` は `--only` で対象アプリを絞り、`--env` で運用モードを選びます。  
+定期収集だけをしたいなら、Nostr worker は systemd の template unit の方が扱いやすいです。
 
 ### Nostr 定期実行
 
@@ -360,7 +424,7 @@ curl "http://127.0.0.1:3000/api/v1/inquiries?limit=1"
 
 raw event を source of truth にし、canonicalized event と index snapshot は replay で再生成します。
 `node packages/nostr/storage/replay_cli.js` は protocol-aware CLI で、`--protocol` で replay 先を切り替えます。
-複数 transport を合わせる場合は、各 storage を個別に replay したうえで `TOITOI_TRANSPORT_SOURCES` を使って API 側で統合します。
+複数 transport を合わせる場合は、各 storage を個別に replay したうえで `TOITOI_TRANSPORT_SOURCES` を使って API 側で統合します。Nostr relay が複数あっても、storage を分けておけば同じ手順で扱えます。
 
 ---
 
