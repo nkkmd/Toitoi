@@ -1,6 +1,6 @@
 # Standard API MVP
 
-**Status: stable** | **Last updated: 2026-06-04**
+**Status: stable** | **Last updated: 2026-06-05**
 
 ## 目的
 
@@ -95,6 +95,55 @@ relation term で引いた event の view です。
 
 - root canonical event
 - children 再帰構造
+
+---
+
+## 推奨する identity モデル
+
+Phase 14 以降の multi-transport 運用では、Canonical Event を次の 3 層で扱うのが最も分かりやすいです。
+
+### 1. root canonical event
+
+- 1 つの問いの意味的な本体
+- converter の前に canonical id を確定し、以後は維持する
+- Nostr / ATProto のどちらへ投影しても同じ `id` を使う
+
+### 2. transport projection
+
+- root canonical event を各 transport の形へ投影したもの
+- transport 固有の `kind` や `uri` は projection 側で持つ
+- `provenance.sources[]` に source ごとの参照を残す
+
+### 3. derived event
+
+- root canonical event から意味的に派生した別イベント
+- 新しい canonical id を割り当てる
+- `lineage` で親子関係を表現する
+
+### 実務上の指針
+
+- 同一性が明示できる場合は、複数 transport の source を 1 つの canonical id に集約する
+- 同一性が曖昧な場合は、無理に 1 件へ畳まず別 event として保持する
+- DSL は補助的な解釈層として扱い、イベント identity の本体にしない
+
+```json
+{
+  "id": "tt:evt:01JVVROOT0000000000000000000000000",
+  "type": "inquiry",
+  "body": {
+    "text": "雑草の生え方が場所によって違うのはなぜ？",
+    "language": "ja"
+  },
+  "provenance": {
+    "sources": [
+      { "protocol": "nostr", "sourceId": "<nostr_event_id>" },
+      { "protocol": "atproto", "sourceId": "at://did:plc:.../app.toitoi.inquiry/..." }
+    ]
+  }
+}
+```
+
+派生 event を作る場合は、別の `id` を与え、`lineage` で root への関係を表現します。
 
 ---
 

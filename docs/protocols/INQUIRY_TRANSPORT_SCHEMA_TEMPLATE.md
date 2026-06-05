@@ -70,6 +70,23 @@ Canonicalized Event
 5. canonicalization は別層で行う
 6. delete / replace / ordering / trust は transport 由来の判断として扱う
 
+### Identity 方針
+
+個別 schema では、identity の扱いを明示します。
+
+- transport 側の identity は dedupe と参照のための source identity として定義する
+- Canonical Event に投影した後の `id` は、可能なら converter 前に確定した canonical identity を使う
+- 複数 transport へ同じ意味内容を投影する場合は、同じ canonical identity に収束させる
+- 同一性が曖昧な case は、無理に merge せず別 event として保持する
+- `lineage` は派生関係、`dsl` は補助的 projection として扱い、identity の主根拠にはしない
+
+個別 schema では、次のどちらを採るかも明示します。
+
+- source identity first: transport 固有の key を主キーにする
+- canonical identity first: Canonical Event の `id` を主キーにする
+
+Toitoi の Standard API と multi-transport replay では、後者を優先します。
+
 ---
 
 ## 対象 {{TRANSPORT_NOUN}}
@@ -161,6 +178,13 @@ Canonicalized Event
 - owner / author identity
 - collection / kind
 - replay / storage hint
+
+必要に応じて、以下も provenance か raw reference に含めます。
+
+- transport source identity
+- transport-specific duplicate key
+- canonical identity への対応表
+- lineage の参照元
 
 ---
 

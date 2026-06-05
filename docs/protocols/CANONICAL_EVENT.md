@@ -110,6 +110,14 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 4. index は Canonical Event から派生する補助構造として扱う
 5. ingest と replay は同じ canonicalization ルールで動かす
 
+### Identity と派生の分離
+
+- `id` は Canonical Event draft の時点で確定し、converter の前後で維持する
+- 同じ意味内容を複数 transport に投影する場合は、同じ `id` を使う
+- `lineage` は別イベントへの派生関係を表すものであり、transport ごとの投影差分を表すためのものではない
+- 同一性が曖昧な case は、別 event として残し、必要に応じて relation / lineage でつなぐ
+- DSL は補助的な projection であり、identity の主たる根拠にしない
+
 ---
 
 ## Canonical Event が担うもの
@@ -141,7 +149,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 
 ```json
 {
-  "id": "tt:evt:01JV7Y8K7Y4Y2M4Q7W8J9R0ABC",
+  "id": "tt:evt:550e8400e29b41d4a716446655440000",
   "schemaVersion": "0.3.1",
   "type": "inquiry",
   "createdAt": "2026-05-19T00:00:00Z",
@@ -163,7 +171,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
   "lineage": [
     {
       "type": "derived_from",
-      "target": "tt:evt:01JV..."
+      "target": "tt:evt:550e8400e29b41d4a716446655440000"
     }
   ],
   "provenance": {
@@ -200,7 +208,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 `provenance.sources[]` は、どの protocol event から来たかを追跡するための必須情報です。
 `rawRef` は raw event または raw payload の参照先を保持するための専用フィールドです。
 `provenance` は来歴、`rawRef` は再取得・再 canonicalize のための参照を担います。
-`id` は `tt:evt:<ULID>` を推奨し、移行期間の互換として `tt:obj:<ULID>` も受け入れられます。
+`id` は `tt:evt:<UUIDv4>` を推奨し、移行期間の互換として `tt:obj:<UUIDv4>` も受け入れられます。
 
 ---
 
