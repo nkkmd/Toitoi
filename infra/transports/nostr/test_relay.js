@@ -1,6 +1,6 @@
 // test_relay.js
 // Toitoi リレー統合テストスクリプト
-// Protocol Schema v0.1.2 / Architecture v0.3.0 対応
+// Nostr Inquiry Schema v0.2.2 / Canonical Event v0.3.2 対応
 //
 // 使用法:
 //   node test_relay.js
@@ -28,6 +28,9 @@
 const { generateSecretKey, finalizeEvent, Relay } = require('nostr-tools');
 const WebSocket = require('ws');
 global.WebSocket = WebSocket;
+
+const NOSTR_INQUIRY_SCHEMA_VERSION = '0.2.2';
+const CANONICAL_EVENT_SCHEMA_VERSION = '0.3.2';
 
 // ═══════════════════════════════════════════════════════════════
 // 設定
@@ -72,7 +75,7 @@ function section(no, title) {
 
 // ═══════════════════════════════════════════════════════════════
 // DSL ローカルバリデーター（送信前チェック）
-// Protocol Schema v0.1.2 §2.6 準拠
+// Nostr Inquiry Schema v0.2.2 のタグ仕様に準拠
 // ═══════════════════════════════════════════════════════════════
 
 const VALID_DSL_SUBKEYS  = new Set(['dsl:model', 'dsl:var', 'dsl:rel', 'dsl:meta']);
@@ -126,6 +129,12 @@ function validateDsl(tags) {
                 if (!val1 || val1.trim() === '')
                     errors.push(`dsl:meta [${modelId}]: キー（val1）が空`);
                 break;
+        }
+    }
+
+    for (const tag of tags.filter(t => Array.isArray(t) && t[0] === 'e')) {
+        if (!isNonEmptyString(tag[1]) || !isNonEmptyString(tag[2]) || !isNonEmptyString(tag[3])) {
+            errors.push('e tag must include target event id, relay url, and relation type');
         }
     }
 
@@ -631,6 +640,24 @@ async function testBoundaryObject(relay, sk) {
         },
         true
     );
+
+    // 3-10: trigger を含む最小代表例（現行 schema の見本）
+    await publishTest(relay, sk,
+        'trigger を含む最小代表例（context + relationship + phase + trigger）',
+        {
+            kind: 1042,
+            created_at: now(),
+            tags: [
+                ['t', 'agroecology'],
+                ['context', 'climate_zone', 'warm-temperate'],
+                ['relationship', 'microclimate', 'weed_flora'],
+                ['phase', 'intermediate'],
+                ['trigger', 'farmer_observation', 'weed_change'],
+            ],
+            content: '農家の観察がきっかけで、微気候と雑草相の違いを考えた。',
+        },
+        true
+    );
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -991,7 +1018,7 @@ async function testDslMeta(relay, sk) {
 // ═══════════════════════════════════════════════════════════════
 
 async function testLineage(relay, sk) {
-    section(8, 'Lineage（e タグ）— 問いの系譜');
+    section(8, 'Lineage（e タグ）— derived_from / synthesis');
 
     // 8-1: Genesis Inquiry（e タグなし）
     const genesis = await publishTest(relay, sk,
@@ -1357,7 +1384,7 @@ async function main() {
     console.log('');
     console.log('╔══════════════════════════════════════════════════════════════╗');
     console.log('║  Toitoi Relay Integration Test                               ║');
-    console.log('║  Protocol Schema v0.1.2 / Architecture v0.3.0               ║');
+    console.log(`║  Nostr Inquiry Schema v${NOSTR_INQUIRY_SCHEMA_VERSION} / Canonical Event v${CANONICAL_EVENT_SCHEMA_VERSION} ║`);
     console.log(`║  接続先: ${RELAY_URL.slice(0, 52).padEnd(52)}║`);
     console.log('╚══════════════════════════════════════════════════════════════╝');
 
