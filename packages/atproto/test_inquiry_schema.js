@@ -24,6 +24,14 @@ const tests = [
       assert.strictEqual(schema.properties.record.required.includes('text'), true);
       assert.strictEqual(schema.properties.record.properties.phase.enum.includes('intermediate'), true);
       assert.strictEqual(schema.properties.record.properties.dsl.required[0], 'models');
+      assert.strictEqual(
+        schema.properties.record.properties.contexts.additionalProperties.type,
+        'string',
+      );
+      assert.deepStrictEqual(
+        schema.definitions.lineageEdge.properties.type.enum,
+        ['derived_from', 'synthesis', 'annotates', 'revises'],
+      );
     },
   },
 ];

@@ -17,8 +17,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^tt:(evt|obj):[0-9A-HJKMNP-TV-Z]{26}$",
-      "description": "Transport-independent canonical event ID. Recommended format: tt:evt:<ULID>; tt:obj:<ULID> remains accepted for legacy data."
+      "pattern": "^tt:evt:[^\\s]+$",
+      "description": "Transport-independent canonical event ID. The value is opaque and must use the tt:evt:<opaque-id> form."
     },
 
     "schemaVersion": {

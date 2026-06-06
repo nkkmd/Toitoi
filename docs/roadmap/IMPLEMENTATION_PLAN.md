@@ -736,7 +736,7 @@ Phase 14 で固めた multi-transport fan-out / fan-in の方針を、`provenanc
 
 - canonical id は opaque な主識別子として扱い、`body` や transport 固有の source id から直接導かない
 - `Canonical Event draft` を作る時点で 1 回だけ発行し、converter 前後で同じ値を維持する
-- 生成方式は `tt:evt:<UUIDv4>` を基本とし、`tt:obj:<UUIDv4>` も同様に扱えるようにする
+- 生成方式は opaque な `tt:evt:<opaque-id>` に統一する
 - 保存時は unique 制約を前提にし、万一の衝突があれば再発行で吸収する
 - cross-transport の同一性は canonical id ではなく、identity mapping や provenance で解決する
 
@@ -760,7 +760,7 @@ Phase 14 で固めた multi-transport fan-out / fan-in の方針を、`provenanc
 ### 完了メモ
 
 - 2026-06-05 時点で Phase 15 を完了扱いとする
-- canonical id を opaque な `tt:evt:<UUIDv4>` 系として発行し、adapter の canonicalization に接続した
+- canonical id を opaque な `tt:evt:<opaque-id>` として発行し、adapter の canonicalization に接続した
 - raw log に `canonicalEventId` を保持し、replay 時に canonical id を復元できるようにした
 - Nostr / ATProto の replay で、raw storage から再 canonicalize しても同じ canonical id を再現できるようにした
 - raw log の対応表は最初に発行された canonical id を優先し、後続バッチで同じ source が見えても replay の identity をぶらさないようにした

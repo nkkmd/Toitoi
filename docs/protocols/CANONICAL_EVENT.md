@@ -208,7 +208,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 `provenance.sources[]` は、どの protocol event から来たかを追跡するための必須情報です。
 `rawRef` は raw event または raw payload の参照先を保持するための専用フィールドです。
 `provenance` は来歴、`rawRef` は再取得・再 canonicalize のための参照を担います。
-`id` は `tt:evt:<UUIDv4>` を推奨し、移行期間の互換として `tt:obj:<UUIDv4>` も受け入れられます。
+`id` は opaque な `tt:evt:<opaque-id>` を使います。
 
 ---
 

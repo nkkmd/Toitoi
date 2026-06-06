@@ -34,6 +34,13 @@ const tests = [
     },
   },
   {
+    name: 'normalizeCanonicalEventId rejects non-evt tt prefixes',
+    run() {
+      assert.strictEqual(normalizeCanonicalEventId('tt:obj:legacy-value'), null);
+      assert.strictEqual(normalizeCanonicalEventId('tt:other:value'), null);
+    },
+  },
+  {
     name: 'resolveCanonicalEventId creates fresh ids when no mapping exists',
     run() {
       const first = resolveCanonicalEventId('source-3');

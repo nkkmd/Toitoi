@@ -43,11 +43,212 @@
       "type": "array",
       "description": "Nostr tag list. Each tag is a string array.",
       "items": {
-        "type": "array",
-        "minItems": 1,
-        "items": {
-          "type": "string"
-        }
+        "oneOf": [
+          {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [
+              { "const": "t" },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": [
+              { "const": "context" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": [
+              { "const": "relationship" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [
+              { "const": "phase" },
+              {
+                "type": "string",
+                "enum": ["beginner", "intermediate", "expert"]
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": [
+              { "const": "trigger" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+              { "const": "e" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": [
+              { "const": "dsl:model" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+              { "const": "dsl:var" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "enum": ["independent", "dependent", "mediator", "moderator"]
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+              { "const": "dsl:rel" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": [
+              { "const": "dsl:meta" },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ],
+            "additionalItems": false
+          },
+          {
+            "type": "array",
+            "minItems": 1,
+            "items": [
+              {
+                "type": "string",
+                "not": {
+                  "enum": [
+                    "t",
+                    "context",
+                    "relationship",
+                    "phase",
+                    "trigger",
+                    "e",
+                    "dsl:model",
+                    "dsl:var",
+                    "dsl:rel",
+                    "dsl:meta"
+                  ]
+                }
+              }
+            ],
+            "additionalItems": {
+              "type": "string"
+            }
+          }
+        ]
       }
     },
     "sig": {

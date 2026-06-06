@@ -11,25 +11,20 @@ function loadSchema(relativePath) {
 
 const tests = [
   {
-    name: 'Nostr inquiry schema mirrors the transport contract',
+    name: 'Canonical event schema matches the current identity contract',
     run() {
-      const schema = loadSchema('schemas/nostr-inquiry.schema.json');
+      const schema = loadSchema('schemas/canonical-event.schema.json');
 
-      assert.strictEqual(schema.title, 'Toitoi Nostr Inquiry Event');
-      assert.strictEqual(schema.properties.kind.const, 1042);
+      assert.strictEqual(schema.title, 'Toitoi Canonical Event');
       assert.deepStrictEqual(
         schema.required,
-        ['kind', 'id', 'pubkey', 'created_at', 'content', 'tags', 'sig'],
+        ['id', 'schemaVersion', 'type', 'createdAt', 'body', 'provenance'],
       );
-      assert.strictEqual(schema.properties.tags.items.oneOf.length >= 10, true);
-      assert.deepStrictEqual(
-        schema.properties.tags.items.oneOf[0].items.map(item => item.const ?? null),
-        ['t', null],
-      );
-      assert.strictEqual(
-        schema.properties.tags.items.oneOf.at(-1).items[0].not.enum.includes('phase'),
-        true,
-      );
+      assert.strictEqual(schema.properties.schemaVersion.const, '0.3.1');
+      assert.strictEqual(schema.properties.id.pattern, '^tt:evt:[^\\s]+$');
+      assert.deepStrictEqual(schema.properties.body.required, ['text', 'language']);
+      assert.deepStrictEqual(schema.properties.provenance.required, ['sources']);
+      assert.strictEqual(schema.properties.provenance.properties.sources.minItems, 1);
     },
   },
 ];

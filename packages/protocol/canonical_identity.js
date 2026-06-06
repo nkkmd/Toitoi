@@ -12,9 +12,15 @@ function normalizeCanonicalEventId(value) {
   }
 
   const normalized = value.trim();
-  return normalized.startsWith('tt:evt:') || normalized.startsWith('tt:obj:')
-    ? normalized
-    : `tt:evt:${normalized}`;
+  if (normalized.startsWith('tt:evt:')) {
+    return normalized;
+  }
+
+  if (normalized.startsWith('tt:')) {
+    return null;
+  }
+
+  return `tt:evt:${normalized}`;
 }
 
 function createUuidV4() {

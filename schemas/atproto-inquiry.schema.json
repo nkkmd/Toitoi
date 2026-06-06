@@ -71,7 +71,10 @@
         "contexts": {
           "type": "object",
           "description": "Abstracted locality/context metadata.",
-          "additionalProperties": true
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "relationships": {
           "type": "array",
@@ -155,8 +158,8 @@
       "properties": {
         "type": {
           "type": "string",
-          "minLength": 1,
-          "description": "Relation type, typically derived_from, synthesis, annotates, or revises."
+          "enum": ["derived_from", "synthesis", "annotates", "revises"],
+          "description": "Relation type. Allowed values follow the current transport contract."
         },
         "target": {
           "type": "string",
