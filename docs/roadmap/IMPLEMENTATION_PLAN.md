@@ -767,7 +767,7 @@ Phase 14 で固めた multi-transport fan-out / fan-in の方針を、`provenanc
 - `packages/protocol/test_canonical_identity.js` で canonical id の発行と mapping を回帰確認した
 - `packages/nostr/storage/test_replay.js` と `packages/atproto/storage/test_replay.js` で replay 安定性を回帰確認した
 - `packages/nostr/adapter/test_nostr_adapter.js` と `packages/atproto/adapter/test_atproto_adapter.js` で explicit override を含む canonicalization を固定した
-- `docs/protocols/CANONICAL_EVENT.md` / `docs/architecture/STANDARD_API_MVP.md` / `docs/concepts/PROVENANCE.md` / `docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md` の方針と整合する形で、identity / provenance の実装接続を進めた
+- `docs/protocols/CANONICAL_EVENT.md` / `docs/architecture/STANDARD_API_MVP.md` / `docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md` / `docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md` の方針と整合する形で、identity / provenance の実装接続を進めた
 
 ---
 

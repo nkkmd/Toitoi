@@ -163,4 +163,4 @@ Phase 14 では、ここで定義した観点を実装に接続し、必要な c
 
 - [../roadmap/IMPLEMENTATION_PLAN.md](../roadmap/IMPLEMENTATION_PLAN.md)
 - [../protocols/CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
-- [../concepts/PROVENANCE.md](../concepts/PROVENANCE.md)
+- [../concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md](../concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)

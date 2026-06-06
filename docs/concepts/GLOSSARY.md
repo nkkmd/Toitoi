@@ -182,14 +182,14 @@ Toitoi では問いを：
 - 定義: ある問いや観察が「誰によって、どこで、どの文脈で」生まれたかを示す来歴情報です。
 - 位置づけ: 知識の根拠と履歴を保持するための要素です。
 - 補足: 結果だけでなく、生成過程も commons memory として残します。
-- 参照: [`PROVENANCE.md`](./PROVENANCE.md)
+- 参照: [`CANONICAL_IDENTITY_AND_PROVENANCE.md`](./CANONICAL_IDENTITY_AND_PROVENANCE.md)
 
 ### lineage
 
 - 定義: 派生関係や系譜を表すつながりです。
 - 位置づけ: provenance とは別に、問い同士の関係を追うために使います。
 - 補足: 「何から派生したか」「何を統合したか」を表現します。
-- 参照: [`PROVENANCE.md`](./PROVENANCE.md)
+- 参照: [`CANONICAL_IDENTITY_AND_PROVENANCE.md`](./CANONICAL_IDENTITY_AND_PROVENANCE.md)
 
 ### boundary object
 

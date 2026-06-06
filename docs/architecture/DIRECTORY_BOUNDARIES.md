@@ -302,7 +302,7 @@ Toitoi が扱う概念・意味論を整理する文書群です。
 |---|---|
 | `GLOSSARY.md` | 用語集 / 問いの定義を含む |
 | `BOUNDARY_OBJECT.md` | 境界対象 |
-| `PROVENANCE.md` | 来歴 |
+| `CANONICAL_IDENTITY_AND_PROVENANCE.md` | 来歴と canonical identity |
 | `TOITOI_VOCABULARY.md` | 標準語彙 |
 
 扱う内容:
