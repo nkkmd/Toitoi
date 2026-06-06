@@ -81,7 +81,7 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 * ⚙️ **Indexer Architecture**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
 * 🧩 **Current Indexer MVP**: `packages/protocol/`, `packages/nostr/`, and protocol-specific `storage/` implementations
 * 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
-* 📱 **Frontend UI Layer**: **[`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
+* 📱 **Frontend UI Layer**: **[`apps/frontend/README.md`](./apps/frontend/README.md)**
 * 🛠️ **pnpm Workspace Guide**: **[`docs/operations/PNPM_WORKSPACE_GUIDE.md`](./docs/operations/PNPM_WORKSPACE_GUIDE.md)**
 
 ### Entry Points by Purpose
@@ -96,7 +96,7 @@ If you're not sure where to start, begin here.
 | API consumers | [`apps/api/README.md`](./apps/api/README.md) | Use this for HTTP API verification, local startup, and client implementation. `server.js` and `standard_api_service.js` are the main implementation files. |
 | Conversion and ingestion implementers | `packages/<protocol>/adapter/` | Handles relay ingest, JSONL ingest, and validation logic. For Nostr, start with `relay_ingest.js`, `ingest_pipeline.js`, and `nostr_adapter.js`. |
 | Persistence, replay, and search implementers | `packages/<protocol>/storage/` | Used for raw/canonical storage, replay, index rebuilds, and search verification. For Nostr, the main files are `replay.js`, `indexer.js`, and `replay_cli.js`. |
-| Frontend implementers | [`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md) | Use this for UI design, screen implementation, and display-spec checks. `apps/frontend/` is the implementation entry point. |
+| Frontend implementers | [`apps/frontend/README.md`](./apps/frontend/README.md) | Use this for UI design, screen implementation, and display-spec checks. `apps/frontend/` is the implementation entry point. |
 
 ### Directory Boundaries
 
@@ -228,7 +228,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * 🧠 **AIシステム概要**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **インデクサー・API層**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
 * 🧩 **現行インデクサーMVP**: `packages/protocol/`、`packages/nostr/`、および protocol ごとの `storage/` 実装
-* 📱 **フロントエンド・UI層**: **[`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md)**
+* 📱 **フロントエンド・UI層**: **[`apps/frontend/README.md`](./apps/frontend/README.md)**
 
 ### 目的別の入口
 
@@ -242,7 +242,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 | API 利用者 | [`apps/api/README.md`](./apps/api/README.md) | HTTP API の利用確認、ローカル起動、クライアント実装の入口です。`server.js` と `standard_api_service.js` が実装本体です。 |
 | 変換・取り込みの実装担当 | `packages/<protocol>/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。Nostr では `relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js` を見ます。 |
 | 永続化・再生・検索の実装担当 | `packages/<protocol>/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。Nostr では `replay.js`、`indexer.js`、`replay_cli.js` が中心です。 |
-| フロントエンド実装担当 | [`apps/frontend/FRONTEND_UX_DESIGN.md`](./apps/frontend/FRONTEND_UX_DESIGN.md) | UI 設計、画面実装、表示仕様の確認に使います。`apps/frontend/` が実装の入口です。 |
+| フロントエンド実装担当 | [`apps/frontend/README.md`](./apps/frontend/README.md) | UI 設計、画面実装、表示仕様の確認に使います。`apps/frontend/` が実装の入口です。 |
 
 ### ディレクトリ責務 (Directory Boundaries)
 

@@ -1,8 +1,17 @@
-# Toitoi フロントエンド設計書：生態学的直感を刺激するUI/UX
+# Toitoi フロントエンド README
 
 **Version: 0.3.1** | **Status: evolving** | **Last updated: 2026-05-24**
 
-本ドキュメントは、デジタル・アグロエコロジー・コモンズ「Toitoi」における **フロントエンド・ビューア層（農家向けダッシュボード / アプリケーション）** のリファレンス実装ガイドおよびUX設計書です。
+この README は、`apps/frontend/` に置くフロントエンド設計と実装方針の入口です。
+
+本ドキュメントは、デジタル・アグロエコロジー・コモンズ「Toitoi」における **フロントエンド・ビューア層（農家向けダッシュボード / アプリケーション）** の入口です。  
+UI 方針、画面構成、API 連携、実装の考え方をひとまとめにしています。
+
+## まず読む
+
+1. [Standard API README](../api/README.md)
+1. [AI System Overview](../../docs/architecture/AI_SYSTEM_OVERVIEW.md)
+1. [Edge AI Hub](../edge-ai/README.md)
 
 既存のスマート農業アプリが「指示・管理・ダッシュボード（グラフの羅列）」を志向するのに対し、本システムは「探索・共鳴・ネットワークの可視化」を志向します。フロントエンドの読み込み側は Canonical Event に対応する canonical view を扱い、投稿リクエスト時にのみエッジ側の converter に渡して Nostr Inquiry Event として送信します。
 

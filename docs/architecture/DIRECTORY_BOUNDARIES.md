@@ -109,7 +109,7 @@ Toitoi/
 
 含まれる主なファイル:
 
-- `FRONTEND_UX_DESIGN.md`
+- `README.md`
 
 ### `apps/edge-ai/`
 
