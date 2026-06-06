@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://toitoi.dev/schemas/canonical-event.schema.json",
+  "$id": "https://toitoi.cultivationdata.net/schemas/v1/canonical-event.schema.json",
   "title": "Toitoi Canonical Event",
   "description": "Schema for Toitoi Canonical Event JSONL objects (spec v0.3.1).",
   "type": "object",

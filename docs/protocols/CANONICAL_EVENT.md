@@ -195,7 +195,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 
 ## スキーマ補足
 
-`schemas/canonical-event.schema.json` は、このドキュメントの最小構造を機械可読にしたものです。
+`schemas/canonical-event.schema.json` は、このドキュメントの最小構造を機械可読にしたものです。公開上の識別子は `https://toitoi.cultivationdata.net/schemas/v1/canonical-event.schema.json` です。
 
 実装上は、次の任意フィールドを追加できます。
 
