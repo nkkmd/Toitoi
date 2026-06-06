@@ -129,6 +129,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 - lineage
 - optional な DSL projection
 - provenance
+- identityClaims
 - source references
 
 ---
@@ -203,11 +204,13 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 - `labels`
 - `meta`
 - `rawRef`
+- `identityClaims`
 - `dsl.models[].meta`
 
 `provenance.sources[]` は、どの protocol event から来たかを追跡するための必須情報です。
 `rawRef` は raw event または raw payload の参照先を保持するための専用フィールドです。
 `provenance` は来歴、`rawRef` は再取得・再 canonicalize のための参照を担います。
+`identityClaims` は canonical event に対応する third-party verifiable claim を保持する任意フィールドです。
 `id` は opaque な `tt:evt:<opaque-id>` を使います。
 
 ---

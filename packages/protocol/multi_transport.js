@@ -1,5 +1,9 @@
 'use strict';
 
+const {
+  createIdentityKey,
+} = require('./identity_verification');
+
 function isPlainObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
 }
@@ -116,7 +120,7 @@ function mergeProvenanceSources(existingSources, incomingSources) {
 function inheritMissingFields(target, incoming) {
   const scalarFields = ['schemaVersion', 'type', 'createdAt', 'phase'];
   const objectFields = ['body', 'contexts', 'trigger', 'dsl', 'meta'];
-  const arrayFields = ['labels', 'relationships', 'lineage'];
+  const arrayFields = ['labels', 'relationships', 'lineage', 'identityClaims'];
 
   for (const field of scalarFields) {
     if ((target[field] === undefined || target[field] === null || target[field] === '') && incoming[field] !== undefined) {
@@ -323,6 +327,10 @@ function buildDerivedIndexFromCanonicalEvents(canonicalEvents, options = {}) {
         byCanonicalId: isPlainObject(options.identityIndex.byCanonicalId) ? { ...options.identityIndex.byCanonicalId } : {},
       }
     : { bySourceId: {}, byCanonicalId: {} };
+  const identityKeyIndex = {
+    byKey: {},
+    byCanonicalId: {},
+  };
 
   const byId = {};
   const byType = {};
@@ -463,6 +471,17 @@ function buildDerivedIndexFromCanonicalEvents(canonicalEvents, options = {}) {
 
     registerIdentityAliases(identityIndex, resolvedCanonicalId, aliases);
 
+    const identityKey = createIdentityKey(event);
+    if (!identityKeyIndex.byKey[identityKey]) {
+      identityKeyIndex.byKey[identityKey] = resolvedCanonicalId;
+    }
+    if (!Array.isArray(identityKeyIndex.byCanonicalId[resolvedCanonicalId])) {
+      identityKeyIndex.byCanonicalId[resolvedCanonicalId] = [];
+    }
+    if (!identityKeyIndex.byCanonicalId[resolvedCanonicalId].includes(identityKey)) {
+      identityKeyIndex.byCanonicalId[resolvedCanonicalId].push(identityKey);
+    }
+
     for (const sourceId of sourceIds) {
       const canonicalId = resolveIdentityMapping(identityIndex, sourceId) || resolvedCanonicalId;
       if (!sourceIdIndex[sourceId]) {
@@ -559,6 +578,7 @@ function buildDerivedIndexFromCanonicalEvents(canonicalEvents, options = {}) {
     provenanceIndex,
     sourceIdIndex,
     canonicalIdentityIndex: identityIndex,
+    identityKeyIndex,
     lineageEdges,
     lineageChildrenByTarget,
     lineageParentsBySource,

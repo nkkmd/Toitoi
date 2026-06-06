@@ -126,6 +126,14 @@
       "additionalProperties": false
     },
 
+    "identityClaims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/identityClaim"
+      },
+      "description": "Optional third-party verifiable identity claims attached to the canonical event."
+    },
+
     "rawRef": {
       "type": "object",
       "required": ["protocol", "sourceId"],
@@ -299,6 +307,101 @@
           "type": "integer",
           "minimum": 0,
           "description": "Optional source kind or event type when applicable."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "identityClaim": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "claimType",
+        "ruleVersion",
+        "identityKey",
+        "canonicalId",
+        "issuer",
+        "issuedAt",
+        "verification"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1"
+        },
+        "claimType": {
+          "type": "string",
+          "const": "identity"
+        },
+        "ruleVersion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identityKey": {
+          "type": "string",
+          "pattern": "^tt:key:[^\\s]+$"
+        },
+        "canonicalId": {
+          "type": "string",
+          "pattern": "^tt:evt:[^\\s]+$"
+        },
+        "issuer": {
+          "type": "object",
+          "required": ["protocol", "sourceId"],
+          "properties": {
+            "protocol": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "signerId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "publicKey": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verification": {
+          "type": "object",
+          "required": ["method", "payloadHash"],
+          "properties": {
+            "method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "payloadHash": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "signature": {
+              "type": "string",
+              "minLength": 1
+            },
+            "keyId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "publicKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "verified", "rejected"]
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

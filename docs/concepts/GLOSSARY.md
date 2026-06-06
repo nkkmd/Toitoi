@@ -350,13 +350,13 @@ Toitoi では問いを：
 
 - 定義: canonical event から再計算できる、transport-independent な照合キーです。
 - 位置づけ: canonical id を引くための安定した中間キーとして使います。
-- 補足: 送信者だけでなく、受信者や第三者も同じルールで再現できることを重視します。
+- 補足: 送信者だけでなく、受信者や第三者も同じルールで再現できることを重視します。provenance や rawRef ではなく、semantic identity に関わる安定した内容から計算します。
 
 ### identity claim
 
 - 定義: identity key と canonical identity の対応を示す検証可能な主張です。
 - 位置づけ: third-party verification のための証拠層です。
-- 補足: provenance とは別に、同一性の根拠を署名や検証手段つきで表します。
+- 補足: provenance とは別に、同一性の根拠を JSON の claim として表し、署名や検証手段は pluggable にします。
 
 ### multi-transport
 

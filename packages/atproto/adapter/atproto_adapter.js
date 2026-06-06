@@ -1,6 +1,9 @@
 'use strict';
 
-const { resolveCanonicalEventId } = require('@toitoi/protocol');
+const {
+  issueIdentityClaim,
+  resolveCanonicalEventId,
+} = require('@toitoi/protocol');
 
 const VALID_CANONICAL_TYPES = new Set([
   'inquiry',
@@ -414,6 +417,18 @@ function canonicalizeAtProtoRecord(event, options = {}) {
     protocol: 'atproto',
     sourceId: normalizedEvent.uri,
   };
+
+  const identityClaim = issueIdentityClaim(canonicalEvent, {
+    issuer: {
+      protocol: 'atproto',
+      sourceId: normalizedEvent.uri,
+    },
+    signer: options.identityClaimSigner || null,
+    verificationMethod: options.identityClaimVerificationMethod,
+    ruleVersion: options.identityClaimRuleVersion,
+    identityKeyOptions: options.identityKeyOptions,
+  });
+  canonicalEvent.identityClaims = [identityClaim];
 
   return {
     ok: true,

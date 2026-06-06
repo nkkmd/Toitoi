@@ -286,6 +286,9 @@ function createStandardApiService(options = {}) {
     ? options.describeProtocolStorage
     : null;
   const protocolStorageRuntime = options.protocolStorageRuntime || null;
+  const canonicalViewOptions = {
+    identityClaimRegistry: options.identityClaimRegistry || null,
+  };
 
   function describeSelectedStorage() {
     if (protocolStorageRuntime && typeof protocolStorageRuntime.describe === 'function') {
@@ -318,7 +321,10 @@ function createStandardApiService(options = {}) {
   function projectRelationListView(indexSnapshot, searchParams) {
     const term = parseStringParam(searchParams, 'relationship');
     const filters = readCommonWindowOptions(searchParams);
-    return projectRelationView(indexSnapshot, term, filters);
+    return projectRelationView(indexSnapshot, term, {
+      ...filters,
+      ...canonicalViewOptions,
+    });
   }
 
   function projectQueryListView(indexSnapshot, searchParams) {
@@ -352,10 +358,13 @@ function createStandardApiService(options = {}) {
       total,
       limit: filters.limit,
       offset: filters.offset,
-      results: windowed.map(event => ({
-        event: projectCanonicalEvent(event),
-        provenance: projectCanonicalEvent(event).provenance,
-      })),
+      results: windowed.map(event => {
+        const projected = projectCanonicalEvent(event, canonicalViewOptions);
+        return {
+          event: projected,
+          provenance: projected.provenance,
+        };
+      }),
     };
   }
 
@@ -401,7 +410,7 @@ function createStandardApiService(options = {}) {
 
   function handleInquiryLookup(eventId) {
     const indexSnapshot = getCurrentIndexSnapshot();
-    const result = projectEventLookupView(indexSnapshot, eventId);
+    const result = projectEventLookupView(indexSnapshot, eventId, canonicalViewOptions);
     if (!result) {
       return buildJsonResponse(404, {
         message: 'Inquiry not found',
@@ -414,7 +423,7 @@ function createStandardApiService(options = {}) {
 
   function handleInquiryDetail(eventId) {
     const indexSnapshot = getCurrentIndexSnapshot();
-    const result = projectEventDetailView(indexSnapshot, eventId);
+    const result = projectEventDetailView(indexSnapshot, eventId, canonicalViewOptions);
     if (!result) {
       return buildJsonResponse(404, {
         message: 'Inquiry not found',

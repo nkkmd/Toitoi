@@ -6,7 +6,9 @@ const os = require('os');
 const path = require('path');
 const {
   buildJetstreamUrl,
+  normalizeIdentityClaimSigner,
   parseArgs,
+  readIdentityClaimSignerFromEnv,
   toAtProtoRecordFromJetstreamMessage,
   writeResult,
 } = require('./atproto_ingest_worker');
@@ -78,6 +80,85 @@ const tests = [
       assert.strictEqual(args.streamUrl, 'wss://jetstream.example/subscribe');
       assert.strictEqual(args.format, 'report');
       assert.deepStrictEqual(args.wantedCollections, ['app.toitoi.inquiry', 'app.bsky.feed.post']);
+    },
+  },
+  {
+    name: 'parseArgs reads identity claim signer settings from environment',
+    run() {
+      const envBackup = {
+        TOITOI_IDENTITY_CLAIM_METHOD: process.env.TOITOI_IDENTITY_CLAIM_METHOD,
+        TOITOI_IDENTITY_CLAIM_KEY_ID: process.env.TOITOI_IDENTITY_CLAIM_KEY_ID,
+        TOITOI_IDENTITY_CLAIM_PUBLIC_KEY: process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY,
+        TOITOI_IDENTITY_CLAIM_PRIVATE_KEY: process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY,
+        TOITOI_IDENTITY_CLAIM_RULE_VERSION: process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION,
+      };
+
+      process.env.TOITOI_IDENTITY_CLAIM_METHOD = 'ed25519';
+      process.env.TOITOI_IDENTITY_CLAIM_KEY_ID = 'atproto-key';
+      process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY = '-----BEGIN PUBLIC KEY-----\npublic\n-----END PUBLIC KEY-----';
+      process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\nprivate\n-----END PRIVATE KEY-----';
+      process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION = 'identity-key-v1';
+
+      try {
+        const args = parseArgs([
+          'node',
+          'script',
+          '--in',
+          'input.jsonl',
+          '--out',
+          'output.json',
+        ]);
+
+        assert.strictEqual(args.identityClaimSigner.method, 'ed25519');
+        assert.strictEqual(args.identityClaimSigner.keyId, 'atproto-key');
+        assert.strictEqual(args.identityClaimSigner.ruleVersion, 'identity-key-v1');
+      } finally {
+        for (const [key, value] of Object.entries(envBackup)) {
+          if (value === undefined) {
+            delete process.env[key];
+          } else {
+            process.env[key] = value;
+          }
+        }
+      }
+    },
+  },
+  {
+    name: 'readIdentityClaimSignerFromEnv returns null when unset',
+    run() {
+      const envBackup = {
+        TOITOI_IDENTITY_CLAIM_METHOD: process.env.TOITOI_IDENTITY_CLAIM_METHOD,
+        TOITOI_IDENTITY_CLAIM_KEY_ID: process.env.TOITOI_IDENTITY_CLAIM_KEY_ID,
+        TOITOI_IDENTITY_CLAIM_PUBLIC_KEY: process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY,
+        TOITOI_IDENTITY_CLAIM_PRIVATE_KEY: process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY,
+        TOITOI_IDENTITY_CLAIM_RULE_VERSION: process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION,
+      };
+
+      delete process.env.TOITOI_IDENTITY_CLAIM_METHOD;
+      delete process.env.TOITOI_IDENTITY_CLAIM_KEY_ID;
+      delete process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY;
+      delete process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY;
+      delete process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION;
+
+      try {
+        assert.strictEqual(readIdentityClaimSignerFromEnv(), null);
+      } finally {
+        for (const [key, value] of Object.entries(envBackup)) {
+          if (value === undefined) {
+            delete process.env[key];
+          } else {
+            process.env[key] = value;
+          }
+        }
+      }
+    },
+  },
+  {
+    name: 'normalizeIdentityClaimSigner rejects ed25519 without keys',
+    run() {
+      assert.throws(() => {
+        normalizeIdentityClaimSigner({ method: 'ed25519' });
+      }, /requires public and private keys/);
     },
   },
   {

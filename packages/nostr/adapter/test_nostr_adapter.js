@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const assert = require('assert');
 const {
   classifyEvent,
@@ -10,6 +11,7 @@ const {
   validateNostrInquiryEvent,
   verifyNostrEvent,
 } = require('./nostr_adapter');
+const { verifyIdentityClaim } = require('@toitoi/protocol');
 
 function makeBaseEvent(overrides = {}) {
   return {
@@ -91,7 +93,16 @@ const tests = [
   {
     name: 'canonicalize maps Nostr event fields into Canonical Event shape',
     run() {
-      const result = canonicalizeNostrEvent(makeBaseEvent(), { skipVerify: true });
+      const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519');
+      const result = canonicalizeNostrEvent(makeBaseEvent(), {
+        skipVerify: true,
+        identityClaimSigner: {
+          method: 'ed25519',
+          privateKey,
+          publicKey,
+          keyId: 'nostr-test-key',
+        },
+      });
       assert.strictEqual(result.ok, true);
       assert.ok(result.canonicalEvent);
       assert.match(result.canonicalEvent.id, /^tt:evt:/);
@@ -105,6 +116,12 @@ const tests = [
       assert.strictEqual(result.canonicalEvent.phase, 'intermediate');
       assert.strictEqual(result.canonicalEvent.lineage, undefined);
       assert.deepStrictEqual(result.canonicalEvent.dsl.models[0].id, 'm1');
+      assert.ok(Array.isArray(result.canonicalEvent.identityClaims));
+      assert.strictEqual(result.canonicalEvent.identityClaims[0].verification.method, 'ed25519');
+      assert.strictEqual(
+        verifyIdentityClaim(result.canonicalEvent.identityClaims[0]).valid,
+        true,
+      );
     },
   },
   {

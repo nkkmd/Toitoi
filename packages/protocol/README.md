@@ -32,6 +32,7 @@ index.js
 - `protocol_catalog.js`: 標準 protocol の集約
 - `protocol_runtime.js`: 起動時の選択、introspection、help 出力
 - `protocol_storage_runtime.js`: protocol ごとの replay 入口選択
+- `identity_verification.js`: identity key / claim / registry
 - `index.js`: まとめて再公開する入口
 
 ## 呼び出し関係

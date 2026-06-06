@@ -1,6 +1,9 @@
 'use strict';
 
-const { resolveCanonicalEventId } = require('@toitoi/protocol');
+const {
+  issueIdentityClaim,
+  resolveCanonicalEventId,
+} = require('@toitoi/protocol');
 
 const VALID_NOSTR_INQUIRY_KIND = 1042;
 const VALID_PHASES = new Set(['beginner', 'intermediate', 'expert']);
@@ -399,6 +402,18 @@ function canonicalizeNostrEvent(event, options = {}) {
   if (isNonEmptyString(options.payloadHash)) {
     canonicalEvent.rawRef.payloadHash = options.payloadHash;
   }
+
+  const identityClaim = issueIdentityClaim(canonicalEvent, {
+    issuer: {
+      protocol: 'nostr',
+      sourceId: normalizedEvent.id,
+    },
+    signer: options.identityClaimSigner || null,
+    verificationMethod: options.identityClaimVerificationMethod,
+    ruleVersion: options.identityClaimRuleVersion,
+    identityKeyOptions: options.identityKeyOptions,
+  });
+  canonicalEvent.identityClaims = [identityClaim];
 
   return {
     ok: true,

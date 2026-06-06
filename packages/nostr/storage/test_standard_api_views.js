@@ -57,6 +57,9 @@ const tests = [
       assert.strictEqual(projected.id, rootCanonical.id);
       assert.ok(projected.provenance);
       assert.strictEqual(projected.provenance.sourceCount, 1);
+      assert.ok(projected.identity);
+      assert.ok(Array.isArray(projected.identityClaims));
+      assert.match(projected.identity.key, /^tt:key:identity-key-v1:sha256:[0-9a-f]{64}$/);
       assert.ok(!Object.prototype.hasOwnProperty.call(projected, 'highlight'));
 
       const detail = projectEventDetailView(replayed.indexSnapshot, rootId);

@@ -20,6 +20,40 @@ function parseJson(value, fallback) {
   }
 }
 
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function normalizeIdentityClaimSigner(input = {}) {
+  const method = isNonEmptyString(input.method) ? input.method.trim() : '';
+  if (!method || method === 'none') {
+    return null;
+  }
+
+  const signer = {
+    method,
+  };
+
+  if (isNonEmptyString(input.ruleVersion)) {
+    signer.ruleVersion = input.ruleVersion.trim();
+  }
+  if (isNonEmptyString(input.keyId)) {
+    signer.keyId = input.keyId.trim();
+  }
+  if (isNonEmptyString(input.publicKey)) {
+    signer.publicKey = input.publicKey.trim();
+  }
+  if (isNonEmptyString(input.privateKey)) {
+    signer.privateKey = input.privateKey.trim();
+  }
+
+  if (method === 'ed25519' && (!signer.privateKey || !signer.publicKey)) {
+    throw new Error('ed25519 identity claim signing requires public and private keys');
+  }
+
+  return signer;
+}
+
 function parseArgs(argv) {
   const args = {
     relayUrl: process.env.RELAY_URL || '',
@@ -35,6 +69,13 @@ function parseArgs(argv) {
       maxDelayMs: Number.parseInt(process.env.RELAY_RETRY_MAX_DELAY_MS || '10000', 10),
       factor: Number.parseFloat(process.env.RELAY_RETRY_FACTOR || '2'),
     },
+    identityClaimSigner: normalizeIdentityClaimSigner({
+      method: process.env.TOITOI_IDENTITY_CLAIM_METHOD || '',
+      keyId: process.env.TOITOI_IDENTITY_CLAIM_KEY_ID || '',
+      publicKey: process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY || '',
+      privateKey: process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY || '',
+      ruleVersion: process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION || '',
+    }),
     help: false,
   };
 
@@ -201,6 +242,11 @@ function printHelp(runtime = createProtocolRuntime()) {
     '  RELAY_RETRY_INITIAL_DELAY_MS',
     '  RELAY_RETRY_MAX_DELAY_MS',
     '  RELAY_RETRY_FACTOR',
+    '  TOITOI_IDENTITY_CLAIM_METHOD',
+    '  TOITOI_IDENTITY_CLAIM_KEY_ID',
+    '  TOITOI_IDENTITY_CLAIM_PUBLIC_KEY',
+    '  TOITOI_IDENTITY_CLAIM_PRIVATE_KEY',
+    '  TOITOI_IDENTITY_CLAIM_RULE_VERSION',
     '',
     renderProtocolHelp(runtime),
   ].join('\n'));
@@ -253,6 +299,7 @@ async function main() {
 
   const result = await ingestRelayUrl(args.relayUrl, args.filter, {
     skipVerify: !args.verify,
+    identityClaimSigner: args.identityClaimSigner || null,
     retry: args.retry,
     onRetry({ attempt, retries, delayMs, error }) {
       process.stderr.write(
@@ -291,4 +338,5 @@ module.exports = {
   printHelp,
   writeResult,
   main,
+  normalizeIdentityClaimSigner,
 };

@@ -1,5 +1,6 @@
 'use strict';
 
+const crypto = require('crypto');
 const assert = require('assert');
 const {
   canonicalizeAtProtoRecord,
@@ -7,6 +8,7 @@ const {
   normalizeAtProtoRecord,
   validateAtProtoRecord,
 } = require('./atproto_adapter');
+const { verifyIdentityClaim } = require('@toitoi/protocol');
 const { makeAtProtoRecord } = require('../test_fixtures');
 
 const tests = [
@@ -38,13 +40,27 @@ const tests = [
   {
     name: 'canonicalize ATProto record into Canonical Event',
     run() {
-      const canonicalization = canonicalizeAtProtoRecord(makeAtProtoRecord());
+      const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519');
+      const canonicalization = canonicalizeAtProtoRecord(makeAtProtoRecord(), {
+        identityClaimSigner: {
+          method: 'ed25519',
+          privateKey,
+          publicKey,
+          keyId: 'atproto-test-key',
+        },
+      });
 
       assert.strictEqual(canonicalization.ok, true);
       assert.match(canonicalization.canonicalEvent.id, /^tt:evt:/);
       assert.strictEqual(canonicalization.canonicalEvent.provenance.sources[0].protocol, 'atproto');
       assert.strictEqual(canonicalization.canonicalEvent.provenance.sources[0].uri, makeAtProtoRecord().uri);
       assert.strictEqual(canonicalization.canonicalEvent.body.text.includes('雑草'), true);
+      assert.ok(Array.isArray(canonicalization.canonicalEvent.identityClaims));
+      assert.strictEqual(canonicalization.canonicalEvent.identityClaims[0].verification.method, 'ed25519');
+      assert.strictEqual(
+        verifyIdentityClaim(canonicalization.canonicalEvent.identityClaims[0]).valid,
+        true,
+      );
     },
   },
   {

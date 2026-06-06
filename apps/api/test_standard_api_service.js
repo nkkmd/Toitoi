@@ -6,6 +6,7 @@ const { persistIngestResult } = require('@toitoi/nostr/storage/persistence');
 const { replayStorage } = require('@toitoi/nostr/storage/replay');
 const { makeEvent, makeTempDir } = require('@toitoi/nostr/storage/test_fixtures');
 const { createStandardApiService } = require('./standard_api_service');
+const { createIdentityKey } = require('@toitoi/protocol');
 
 const tests = [
   {
@@ -59,6 +60,7 @@ const tests = [
       const replayed = replayStorage(storageDir, { persistIndex: false });
       const rootCanonical = replayed.ingestResult.accepted[0].canonicalEvent;
       const childCanonical = replayed.ingestResult.accepted[1].canonicalEvent;
+      const rootIdentityKey = createIdentityKey(rootCanonical);
       const dslCanonical = replayed.ingestResult.accepted[2].canonicalEvent;
       const service = createStandardApiService({
         indexSnapshot: replayed.indexSnapshot,
@@ -85,6 +87,11 @@ const tests = [
       assert.strictEqual(lookup.statusCode, 200);
       assert.strictEqual(lookup.body.id, rootCanonical.id);
       assert.ok(lookup.body.provenance);
+      assert.ok(lookup.body.identity);
+      assert.ok(Array.isArray(lookup.body.identityClaims));
+      assert.strictEqual(lookup.body.identity.key, rootIdentityKey);
+      assert.ok(lookup.body.identity.claim);
+      assert.strictEqual(lookup.body.identity.claim.canonicalId, rootCanonical.id);
       assert.ok(!Object.prototype.hasOwnProperty.call(lookup.body, 'highlight'));
 
       const detail = service.handleRequest({ method: 'GET', url: `/api/v1/inquiries/${rootId}/detail` });

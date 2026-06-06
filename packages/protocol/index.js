@@ -9,6 +9,7 @@ const multiTransportDelivery = require('./multi_transport_delivery');
 const protocolRuntime = require('./protocol_runtime');
 const protocolStorageRuntime = require('./protocol_storage_runtime');
 const canonicalIdentity = require('./canonical_identity');
+const identityVerification = require('./identity_verification');
 
 module.exports = {
   ...protocolDescriptor,
@@ -20,4 +21,5 @@ module.exports = {
   ...protocolRuntime,
   ...protocolStorageRuntime,
   ...canonicalIdentity,
+  ...identityVerification,
 };

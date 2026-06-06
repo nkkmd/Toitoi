@@ -79,6 +79,11 @@ const tests = [
       assert.strictEqual(merged.canonicalEvents.length, 1);
       assert.strictEqual(merged.identityIndex.bySourceId[nostrRawId], sharedCanonicalId);
       assert.strictEqual(merged.identityIndex.bySourceId[atprotoRawUri], sharedCanonicalId);
+      assert.ok(merged.indexSnapshot.identityKeyIndex);
+      assert.strictEqual(
+        merged.indexSnapshot.identityKeyIndex.byCanonicalId[sharedCanonicalId].length,
+        1,
+      );
 
       const service = createStandardApiService({
         indexSnapshot: merged.indexSnapshot,

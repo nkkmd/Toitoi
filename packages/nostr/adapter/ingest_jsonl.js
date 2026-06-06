@@ -6,6 +6,50 @@ const readline = require('readline');
 const { ingestNostrEvents } = require('./ingest_pipeline');
 const { persistIngestResult } = require('../storage/persistence');
 
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function normalizeIdentityClaimSigner(input = {}) {
+  const method = isNonEmptyString(input.method) ? input.method.trim() : '';
+  if (!method || method === 'none') {
+    return null;
+  }
+
+  const signer = {
+    method,
+  };
+
+  if (isNonEmptyString(input.ruleVersion)) {
+    signer.ruleVersion = input.ruleVersion.trim();
+  }
+  if (isNonEmptyString(input.keyId)) {
+    signer.keyId = input.keyId.trim();
+  }
+  if (isNonEmptyString(input.publicKey)) {
+    signer.publicKey = input.publicKey.trim();
+  }
+  if (isNonEmptyString(input.privateKey)) {
+    signer.privateKey = input.privateKey.trim();
+  }
+
+  if (method === 'ed25519' && (!signer.privateKey || !signer.publicKey)) {
+    throw new Error('ed25519 identity claim signing requires public and private keys');
+  }
+
+  return signer;
+}
+
+function readIdentityClaimSignerFromEnv() {
+  return normalizeIdentityClaimSigner({
+    method: process.env.TOITOI_IDENTITY_CLAIM_METHOD || '',
+    keyId: process.env.TOITOI_IDENTITY_CLAIM_KEY_ID || '',
+    publicKey: process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY || '',
+    privateKey: process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY || '',
+    ruleVersion: process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION || '',
+  });
+}
+
 function parseArgs(argv) {
   const args = {
     in: null,
@@ -13,6 +57,7 @@ function parseArgs(argv) {
     format: 'report',
     skipVerify: true,
     storageDir: null,
+    identityClaimSigner: readIdentityClaimSignerFromEnv(),
     help: false,
   };
 
@@ -160,6 +205,7 @@ async function main() {
   const rawEvents = await readJsonl(args.in);
   const ingestResult = ingestNostrEvents(rawEvents, {
     skipVerify: args.skipVerify,
+    identityClaimSigner: args.identityClaimSigner || null,
   });
 
   if (args.storageDir) {
@@ -187,6 +233,8 @@ module.exports = {
   parseArgs,
   printHelp,
   readJsonl,
+  readIdentityClaimSignerFromEnv,
   writeOutput,
   main,
+  normalizeIdentityClaimSigner,
 };

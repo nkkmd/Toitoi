@@ -15,6 +15,46 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
+function normalizeIdentityClaimSigner(input = {}) {
+  const method = isNonEmptyString(input.method) ? input.method.trim() : '';
+  if (!method || method === 'none') {
+    return null;
+  }
+
+  const signer = {
+    method,
+  };
+
+  if (isNonEmptyString(input.ruleVersion)) {
+    signer.ruleVersion = input.ruleVersion.trim();
+  }
+  if (isNonEmptyString(input.keyId)) {
+    signer.keyId = input.keyId.trim();
+  }
+  if (isNonEmptyString(input.publicKey)) {
+    signer.publicKey = input.publicKey.trim();
+  }
+  if (isNonEmptyString(input.privateKey)) {
+    signer.privateKey = input.privateKey.trim();
+  }
+
+  if (method === 'ed25519' && (!signer.privateKey || !signer.publicKey)) {
+    throw new Error('ed25519 identity claim signing requires public and private keys');
+  }
+
+  return signer;
+}
+
+function readIdentityClaimSignerFromEnv() {
+  return normalizeIdentityClaimSigner({
+    method: process.env.TOITOI_IDENTITY_CLAIM_METHOD || '',
+    keyId: process.env.TOITOI_IDENTITY_CLAIM_KEY_ID || '',
+    publicKey: process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY || '',
+    privateKey: process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY || '',
+    ruleVersion: process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION || '',
+  });
+}
+
 function parseJson(value, fallback) {
   if (typeof value !== 'string' || value.trim() === '') {
     return fallback;
@@ -62,6 +102,7 @@ function parseArgs(argv) {
     sourceLabel: process.env.ATPROTO_INGEST_SOURCE_LABEL || '',
     batchId: process.env.ATPROTO_INGEST_BATCH_ID || '',
     protocol: process.env.ATPROTO_PROTOCOL || process.env.TOITOI_PROTOCOL || 'atproto',
+    identityClaimSigner: readIdentityClaimSignerFromEnv(),
     wantedCollections: parseList(
       process.env.ATPROTO_WANTED_COLLECTIONS || '',
       DEFAULT_WANTED_COLLECTIONS
@@ -241,6 +282,7 @@ function printHelp() {
     '  --wanted-collections <csv> Jetstream collection filter (default: app.toitoi.inquiry)',
     '  --cursor-buffer-us <n>     rewind buffer on reconnect (default: 5000000)',
     '  --state-file <path>        live stream cursor state file',
+    '  TOITOI_IDENTITY_CLAIM_*    optional identity claim signer settings',
     '  --format report|accepted|canonical',
     '  --out <path>               output file path',
     '  --verify                   attempt verification when available',
@@ -461,6 +503,7 @@ function writeLiveSummary(outputPath, summary) {
 async function ingestBatch(rawEvents, args, context = {}) {
   const ingestResult = ingestAtProtoEvents(rawEvents, {
     skipVerify: !args.verify,
+    identityClaimSigner: args.identityClaimSigner || null,
   });
 
   if (args.storageDir) {
@@ -701,6 +744,8 @@ module.exports = {
   parseArgs,
   printHelp,
   readJsonl,
+  normalizeIdentityClaimSigner,
+  readIdentityClaimSignerFromEnv,
   writeResult,
   resolveStateFile,
   loadStreamState,

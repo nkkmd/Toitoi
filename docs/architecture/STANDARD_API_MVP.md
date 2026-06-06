@@ -40,6 +40,14 @@ Phase 14 以降は、必要に応じて Nostr / ATProto をまたいだ multi-tr
 
 現行の検索は token containment ベースです。検索結果に `highlight` を要求せず、embeddings も optional な将来拡張として扱います。
 
+### 4. identity key summary は canonical view に載せる
+
+Phase 16 以降は、canonical event の意味的に安定な内容から再計算した `identity key` を canonical view の補助メタデータとして返します。
+
+- `provenance` とは別に扱う
+- `identity claim` が存在する場合は summary を返す
+- claim の全文や署名素材は raw view に混ぜない
+
 ---
 
 ## Canonical View

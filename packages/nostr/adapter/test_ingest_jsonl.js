@@ -5,7 +5,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { ingestNostrEvents } = require('./ingest_pipeline');
-const { readJsonl, writeOutput } = require('./ingest_jsonl');
+const {
+  normalizeIdentityClaimSigner,
+  readIdentityClaimSignerFromEnv,
+  readJsonl,
+  writeOutput,
+} = require('./ingest_jsonl');
 
 function makeTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'toitoi-ingest-jsonl-'));
@@ -96,6 +101,55 @@ const tests = [
       const canonical = JSON.parse(lines[0]);
       assert.strictEqual(canonical.type, 'inquiry');
       assert.strictEqual(canonical.body.text, 'one');
+    },
+  },
+  {
+    name: 'reads identity claim signer settings from environment',
+    run() {
+      const envBackup = {
+        TOITOI_IDENTITY_CLAIM_METHOD: process.env.TOITOI_IDENTITY_CLAIM_METHOD,
+        TOITOI_IDENTITY_CLAIM_KEY_ID: process.env.TOITOI_IDENTITY_CLAIM_KEY_ID,
+        TOITOI_IDENTITY_CLAIM_PUBLIC_KEY: process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY,
+        TOITOI_IDENTITY_CLAIM_PRIVATE_KEY: process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY,
+        TOITOI_IDENTITY_CLAIM_RULE_VERSION: process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION,
+      };
+
+      process.env.TOITOI_IDENTITY_CLAIM_METHOD = 'ed25519';
+      process.env.TOITOI_IDENTITY_CLAIM_KEY_ID = 'ingest-jsonl-key';
+      process.env.TOITOI_IDENTITY_CLAIM_PUBLIC_KEY = '-----BEGIN PUBLIC KEY-----\npublic\n-----END PUBLIC KEY-----';
+      process.env.TOITOI_IDENTITY_CLAIM_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\nprivate\n-----END PRIVATE KEY-----';
+      process.env.TOITOI_IDENTITY_CLAIM_RULE_VERSION = 'identity-key-v1';
+
+      try {
+        const signer = readIdentityClaimSignerFromEnv();
+        assert.strictEqual(signer.method, 'ed25519');
+        assert.strictEqual(signer.keyId, 'ingest-jsonl-key');
+        assert.strictEqual(signer.ruleVersion, 'identity-key-v1');
+      } finally {
+        for (const [key, value] of Object.entries(envBackup)) {
+          if (value === undefined) {
+            delete process.env[key];
+          } else {
+            process.env[key] = value;
+          }
+        }
+      }
+    },
+  },
+  {
+    name: 'normalizes identity claim signer configuration',
+    run() {
+      assert.strictEqual(normalizeIdentityClaimSigner({ method: 'none' }), null);
+      const signer = normalizeIdentityClaimSigner({
+        method: 'ed25519',
+        privateKey: ' private ',
+        publicKey: ' public ',
+        keyId: ' key-1 ',
+      });
+      assert.strictEqual(signer.method, 'ed25519');
+      assert.strictEqual(signer.privateKey, 'private');
+      assert.strictEqual(signer.publicKey, 'public');
+      assert.strictEqual(signer.keyId, 'key-1');
     },
   },
 ];
