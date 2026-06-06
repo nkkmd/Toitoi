@@ -346,6 +346,18 @@ Toitoi では問いを：
 - 位置づけ: 明示的に同一といえる場合にだけ行います。
 - 補足: 類似だけで merge しないのが Toitoi の保守的な方針です。
 
+### identity key
+
+- 定義: canonical event から再計算できる、transport-independent な照合キーです。
+- 位置づけ: canonical id を引くための安定した中間キーとして使います。
+- 補足: 送信者だけでなく、受信者や第三者も同じルールで再現できることを重視します。
+
+### identity claim
+
+- 定義: identity key と canonical identity の対応を示す検証可能な主張です。
+- 位置づけ: third-party verification のための証拠層です。
+- 補足: provenance とは別に、同一性の根拠を署名や検証手段つきで表します。
+
 ### multi-transport
 
 - 定義: 複数の transport をまたいで、共通の canonical view を扱うことです。
