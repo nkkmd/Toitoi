@@ -1,14 +1,14 @@
 # Standard API
 
-**Version: 0.3.4** | **Status: evolving** | **Last updated: 2026-06-04**
+**Version: 0.3.5** | **Status: current** | **Last updated: 2026-06-06**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
 Canonical Event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。  
 この README は、API 利用者向けの単一の入口として、従来の詳細仕様を吸収しています。
 
-Phase 14 以降の前提として、API は Nostr と ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
-同一性は「明示的に同一といえる場合」にだけ merge し、曖昧な case は別 event のまま返します。
+Phase 15 完了後の前提として、API は Nostr と ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
+同一性は「明示的に同一といえる場合」にだけ merge し、曖昧な case は別 event のまま返します。canonical identity と provenance の役割分担は Phase 15 の contract に合わせて固定しています。
 
 `TOITOI_TRANSPORT_SOURCES` が設定されている場合は、複数 transport の replay をまとめて canonical view に反映します。
 
@@ -87,7 +87,7 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 現在の API は、protocol ごとの `storage/indexer.js` と `storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。  
 デフォルトの参照実装は Nostr ですが、`TOITOI_PROTOCOL` に応じて `atproto` へ切り替えられます。
 
-Phase 14 以降は、必要に応じて `TOITOI_TRANSPORT_SOURCES` から複数 transport を合成した canonical view を返します。
+Phase 15 以降は、必要に応じて `TOITOI_TRANSPORT_SOURCES` から複数 transport を合成した canonical view を返します。
 
 現在の主要関数は次の通りです。
 

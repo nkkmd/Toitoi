@@ -1,6 +1,6 @@
 # Toitoi Edge AI Low-Resource Profile
 
-**Version: 0.1.6** | **Status: evolving** | **Last updated: 2026-06-04**
+**Version: 0.1.7** | **Status: evolving** | **Last updated: 2026-06-06**
 
 この文書は、`RAM 4GB / Ubuntu 24.04 LTS` のエッジ端末で Toitoi の AI 要約・タグ付けを安定運用するための**参考用の最小構成例**です。
 
@@ -9,7 +9,7 @@
 
 AI 導入全体の段階や、問い生成を始めるための最低仕様は、[`AI_ADOPTION_ROADMAP.md`](../roadmap/AI_ADOPTION_ROADMAP.md) を参照してください。
 
-Phase 14 以降の Toitoi 本体と組み合わせる場合、AI 側は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を入力として使います。  
+Phase 15 完了後の Toitoi 本体と組み合わせる場合、AI 側は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を入力として使います。  
 transport ごとの差分や identity mapping は、API / infra / ops 側に閉じます。
 
 ---

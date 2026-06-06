@@ -1,6 +1,6 @@
 # ディレクトリ責務ルール
 
-**Status: stable** | **Last updated: 2026-06-04**
+**Status: stable** | **Last updated: 2026-06-06**
 
 ## 目的
 
@@ -105,7 +105,7 @@ Toitoi/
 
 ### `apps/frontend/`
 
-ユーザー向けの viewer / UI layer を置きます。
+ユーザー向けの viewer / UI layer を置きます。読み込み側は canonical view と provenance summary を扱い、書き込みが必要な場合のみ edge 側の converter に委ねます。
 
 含まれる主なファイル:
 
@@ -113,7 +113,7 @@ Toitoi/
 
 ### `apps/edge-ai/`
 
-local-first AI inference layer を置きます。
+local-first AI inference / augmentation layer を置きます。canonical view と provenance summary を入力にして、Canonical Event draft や補助的な構造化を行います。
 
 含まれる主なファイル:
 
@@ -124,6 +124,7 @@ local-first AI inference layer を置きます。
 Standard API の reference implementation を置きます。
 
 canonical event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。
+Phase 15 では、canonical identity と provenance の役割分担を固定し、明示的な同一性がある場合だけ multi-transport の provenance 集約を反映します。
 
 含まれる主なファイル:
 
@@ -171,7 +172,7 @@ Canonical Event 中心の multi-protocol indexer 運用資産を置きます。
 - `INDEXER_API_SETUP.md`
 - `CLEAN_START.md`
 
-Phase 14 以降は、multi-transport replay と outbound fan-out を含む共通運用入口として扱います。  
+Phase 15 以降は、canonical identity / provenance を前提にした multi-transport replay と outbound fan-out を含む共通運用入口として扱います。  
 今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提に `infra/indexers/` 直下の運用入口を整理します。
 
 ## `packages/`
@@ -184,7 +185,7 @@ Phase 14 以降は、multi-transport replay と outbound fan-out を含む共通
 - canonical converter
 - protocol utility
 
-現行のフェーズ5実装では、Nostr の protocol-specific 共有コードを次のように分けています。
+現行の Phase 15 実装では、Nostr の protocol-specific 共有コードを次のように分けています。
 
 - `packages/nostr/adapter/`: validate / verify / normalize / canonicalize
 - `packages/nostr/storage/`: append-only 保存、replay、derived index
@@ -208,7 +209,7 @@ runtime replay は現状 unsupported ですが、将来的に file/archive-backe
 ### `packages/nostr/`
 
 Nostr を Toitoi の first operational transport layer として扱うための共通入口です。
-Phase 14 以降は、Nostr 実装を multi-transport の一対象として扱い、ATProto などと並べて canonical view に流せる前提です。
+Phase 15 以降は、Nostr 実装を multi-transport の一対象として扱い、ATProto などと並べて canonical identity first の canonical view に流せる前提です。
 
 ### `packages/nostr/converter/`
 
@@ -239,6 +240,7 @@ Toitoi の設計、思想、protocol、operations、concepts、roadmap を整理
 | `AI_ADOPTION_ROADMAP.md` | AI 導入段階と問い生成の最低仕様 |
 | `DOCUMENTATION_VERSION_POLICY.md` | ドキュメント版管理ポリシー |
 | `DIRECTORY_BOUNDARIES.md` | ディレクトリ責務ルール |
+| `MULTI_TRANSPORT_IDENTITY_POLICY.md` | canonical identity / provenance の共通方針 |
 | `MULTI_PROTOCOL_INDEXER.md` | multi-protocol indexer の責務分離 |
 | `STANDARD_API_MVP.md` | Standard API の契約 |
 
@@ -249,6 +251,7 @@ Toitoi の設計、思想、protocol、operations、concepts、roadmap を整理
 - transport abstraction
 - storage model
 - AI responsibilities
+- canonical identity / provenance
 - synchronization model
 
 ### `docs/protocols/`
@@ -262,6 +265,7 @@ protocol / event structure / archive format に関する文書群です。
 | `NOSTR_TRANSPORT.md` | Nostr transport の役割 |
 | `CANONICAL_EVENT.md` | canonical event model |
 | `NOSTR_INQUIRY_SCHEMA.md` | Nostr inquiry transport schema |
+| `INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md` | protocol 別 transport schema の共通テンプレート |
 
 扱う内容:
 

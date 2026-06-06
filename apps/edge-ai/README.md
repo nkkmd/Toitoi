@@ -1,14 +1,14 @@
 # Toitoi Edge AI Hub
 
-**Version: 0.6.3** | **Status: evolving** | **Last updated: 2026-06-04**
+**Version: 0.6.4** | **Status: current** | **Last updated: 2026-06-06**
 
 この文書は、`apps/edge-ai/` に置くエッジ AI 関連文書の案内ハブです。
 
 実装手順そのものは、低リソース向けの最小構成を含めて分離しています。  
 特に [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](../../docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) は参考用の構成例です。
 
-Phase 14 以降は、AI 側は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を参照する前提です。  
-transport ごとの差分や identity mapping は、API / infra / ops 側に閉じます。
+Phase 15 完了後は、AI 側は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を参照する前提です。  
+transport ごとの差分や identity mapping は、API / infra / ops 側に閉じます。canonical identity と provenance の役割分担は、ここでは API 契約として受け取る側に徹します。
 
 > まずここから読む
 > 1. `RAM 4GB / Ubuntu 24.04 LTS` で導入するなら [Edge AI Low-Resource Profile](../../docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)
