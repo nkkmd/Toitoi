@@ -2,6 +2,8 @@
 
 `packages/protocol/` は、protocol descriptor と registry の共通基盤です。
 
+Phase 16 以降は、identity key / claim の計算、検証、registry 解決もここで共有します。
+
 Nostr や ATProto のような個別 protocol は、ここで定義される共通の形に合わせて descriptor を作ります。
 
 ## 全体像
@@ -32,7 +34,7 @@ index.js
 - `protocol_catalog.js`: 標準 protocol の集約
 - `protocol_runtime.js`: 起動時の選択、introspection、help 出力
 - `protocol_storage_runtime.js`: protocol ごとの replay 入口選択
-- `identity_verification.js`: identity key / claim / registry
+- `identity_verification.js`: identity key / claim / verification / registry
 - `index.js`: まとめて再公開する入口
 
 ## 呼び出し関係
@@ -48,6 +50,7 @@ index.js
 - capability table を生成したいとき
 - 新しい protocol package を増やしたいとき
 - registry で重複登録を防ぎたいとき
+- third-party verifiable identity claim を共通化したいとき
 
 ## 依存関係
 

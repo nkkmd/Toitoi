@@ -48,7 +48,7 @@ Toitoi is a "nested commons" composed of 3 modules connected through a common pr
 * **[Infrastructure Layer] Commons Relay**: A decentralized relay network that permanently archives only "inquiries".
 * **[Viewer Layer] Indexer & UI**: Collects distributed inquiries and visualizes them as a mind map.
 
-In the long term, Toitoi aims to preserve knowledge archives through a protocol-independent canonical event and provenance structure.
+Toitoi preserves knowledge archives through a protocol-independent canonical event, identity key / claim, and provenance structure.
 
 Nostr is currently the first operational transport layer.
 
@@ -61,6 +61,7 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 ### Core Documents
 
 * 📘 **[Glossary](./docs/concepts/GLOSSARY.md)**
+* 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
 * 🗺️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
@@ -197,7 +198,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 * **[インフラ層] コモンズ・リレー**: 「問い」だけを永続的にアーカイブする分散リレー網。
 * **[ビューア層] インデクサー＆UI**: 分散する問いを収集し、マインドマップとして可視化する。
 
-長期的には、Toitoi は protocol-independent な canonical event と provenance の構造を通じて、知識アーカイブを保存することを目指しています。
+Toitoi は protocol-independent な canonical event、identity key / claim、provenance の構造を通じて、知識アーカイブを保存します。
 
 現在、Nostr は最初の operational transport layer として扱われています。
 
@@ -210,6 +211,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 ### コア・ドキュメント (Core Documents)
 
 * 📘 **[用語集](./docs/concepts/GLOSSARY.md)**
+* 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
 * 🗺️ **[ディレクトリ責務ルール](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
