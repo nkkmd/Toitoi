@@ -236,7 +236,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 ### `body`
 
 - 自然言語の主表現
-- Boundary Object を保持する
+- boundary object を保持する
 
 ### `contexts`
 

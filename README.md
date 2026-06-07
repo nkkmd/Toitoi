@@ -36,7 +36,7 @@ Toitoi completely overturns this structure:
 1. **Circulating "Questions" instead of "Answers"**
    Raw, location-specific data is never exposed to the outside world. The local AI extracts only "inquiries into ecological relationships" (e.g., the relationship between microclimate and weed flora) from the data and releases only those inquiries into the network.
 2. **Overcoming the Dilemma of Locality**
-   Through a common format defined as a "Boundary Object," farmers in different regions with different climates and soils can connect through "weak ties" without destroying each other's context.
+   Through a common format defined as a [boundary object](./docs/concepts/GLOSSARY.md#boundary-object), farmers in different regions with different climates and soils can connect through "weak ties" without destroying each other's context.
 3. **Visualizing the Evolutionary Tree**
    The process of "translational co-evolution" (Actor-Network Theory)—where an inquiry is translated to another farmland and synthesized with different inquiries—is recorded and visualized as a graphical evolutionary tree.
 

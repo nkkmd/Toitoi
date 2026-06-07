@@ -119,7 +119,7 @@ Canonicalized Event
 ### `content`
 
 - inquiry の自然言語本体
-- Boundary Object として常に保持する
+- boundary object として常に保持する
 - DSL や将来の構造化情報はこれを置き換えない
 
 ### `tags`

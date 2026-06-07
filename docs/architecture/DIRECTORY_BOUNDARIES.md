@@ -300,8 +300,7 @@ Toitoi が扱う概念・意味論を整理する文書群です。
 
 | File | 内容 |
 |---|---|
-| `GLOSSARY.md` | 用語集 / 問いの定義を含む |
-| `BOUNDARY_OBJECT.md` | 境界対象 |
+| `GLOSSARY.md` | 用語集 / 問い・境界対象を含む概念辞書 |
 | `CANONICAL_IDENTITY_AND_PROVENANCE.md` | 来歴と canonical identity |
 | `TOITOI_VOCABULARY.md` | 標準語彙 |
 
@@ -312,6 +311,7 @@ Toitoi が扱う概念・意味論を整理する文書群です。
 - translation
 - semantic linkage
 - commons memory
+- boundary object
 
 ### `docs/essays/`
 

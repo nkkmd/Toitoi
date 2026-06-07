@@ -1,6 +1,6 @@
 # Toitoi AI System Overview
 
-**Status: evolving** | **Last updated: 2026-06-06**
+**Status: evolving** | **Last updated: 2026-06-07**
 
 ## 概要
 
@@ -78,7 +78,7 @@ Target transport event
 つまり AI の主責務は、
 
 - 観察から問いを作る
-- 自然言語の Boundary Object を保つ
+- 自然言語の boundary object を保つ
 - 必要なら DSL を補助的に付与する
 - Canonical Event draft を生成する
 

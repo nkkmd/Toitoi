@@ -162,7 +162,7 @@ Canonicalized Event
 ### `record.text`
 
 - inquiry の自然言語本体
-- Boundary Object として常に保持する
+- boundary object として常に保持する
 - 追加の構造化情報はこれを置き換えない
 
 ---
