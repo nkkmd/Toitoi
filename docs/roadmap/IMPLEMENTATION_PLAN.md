@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-06-05**
+**Status: evolving** | **Last updated: 2026-06-07**
 
 ## 目的
 
@@ -548,7 +548,7 @@ protocol descriptor / registry を使って、どの protocol をどう起動す
 
 ### 補足
 
-Phase 10 以降の indexer は、protocol ごとに別実装を増やすのではなく、canonical event を共通入力とする multi-protocol core として扱います。
+Phase 10 以降の indexer は、protocol ごとに別実装を増やすのではなく、canonical event を共通入力とする multi-protocol の共通 indexer として扱います。
 
 - protocol 固有の検証・正規化・重複排除・順序付けは adapter 側に閉じる
 - indexer は lookup / list / search / relation / lineage の補助構造を共通で提供する
@@ -569,14 +569,14 @@ UI と AI が protocol を意識せずに扱える Standard API を、複数 pro
 - provenance / trust の露出範囲を再確認する
 - list / detail / relation / tree / search の返却差分を吸収する
 - protocol ごとの差分を metadata に閉じる
-- indexer core が protocol 追加で分岐しないことを確認する
+- 共通 indexer が protocol 追加で分岐しないことを確認する
 
 ### 完了条件
 
 - どの protocol でも同じ API 形で参照できる
 - API 契約が protocol 追加で壊れない
 - provenance と trust の露出方針が維持されている
-- 共通 indexer core を前提に、protocol-specific な indexer 実装を増やさずに拡張できる
+- 共通 indexer を前提に、protocol-specific な indexer 実装を増やさずに拡張できる
 
 ### 完了メモ
 

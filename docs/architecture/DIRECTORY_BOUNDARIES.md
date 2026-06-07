@@ -1,6 +1,6 @@
 # ディレクトリ責務ルール
 
-**Status: stable** | **Last updated: 2026-06-06**
+**Status: stable** | **Last updated: 2026-06-07**
 
 ## 目的
 
@@ -173,7 +173,7 @@ Canonical Event 中心の multi-protocol indexer 運用資産を置きます。
 - `CLEAN_START.md`
 
 Phase 15 以降は、canonical identity / provenance を前提にした multi-transport replay と outbound fan-out を含む共通運用入口として扱います。  
-今後 protocol が増えた場合は、protocol ごとに indexer core を増やすのではなく、共通 indexer core を前提に `infra/indexers/` 直下の運用入口を整理します。
+今後 protocol が増えた場合は、protocol ごとに専用の運用入口を増やすのではなく、共通の indexer 運用手順を前提に `infra/indexers/` 直下の運用入口を整理します。
 
 ## `packages/`
 
