@@ -206,6 +206,64 @@ canonical identity の再現性は、次の前提に依存します。
 
 この場合、Toitoi は無理に同一扱いせず、別 event として保持する方を優先します。
 
+### transport ごとの差分が canonical id に効くか
+
+Nostr から canonicalize した event と ATProto から canonicalize した event は、見た目が少し違っても、**canonical id の再解決に効く差分と、効かない差分があります**。
+
+#### 記号の読み替え
+
+この文書では、比較を読みやすくするために次のように置き換えて考えてよいです。
+
+- `A` = 送信前の元の canonical event
+- `B` = `A` を Nostr に投影して、そこから canonicalize し直した event
+- `C` = `A` を ATProto に投影して、そこから canonicalize し直した event
+
+要するに、`A` は元本、`B` は Nostr 経由の戻り値、`C` は ATProto 経由の戻り値です。
+
+#### 基本ルール
+
+- `canonical id` の再解決は、`source identity` と `identity mapping` を主に使う
+- `body`, `provenance`, `rawRef`, transport endpoint, storage hint は `canonical id` の直接入力にしない
+- したがって、`B` と `C` の差が主に provenance 系なら、通常は canonical id に影響しない
+- ただし、`source identity` 自体が違えば、同じ canonical id に戻るとは限らない
+
+#### 影響する差分
+
+| 差分の種類 | canonical id に効くか | 理由 |
+|---|---|---|
+| `sourceId` が違う | yes | `resolveCanonicalEventId(...)` の入力になるため |
+| 明示的な `identity mapping` が違う | yes | 同じ source から同じ canonical id に戻せなくなるため |
+| canonicalization ルールが違う | yes | 同じ入力でも別の canonical event になるため |
+| raw event が欠損している | yes | source identity を再取得できないため |
+| `body.text` のみが違う | usually no | それ自体は canonical id の直接入力ではないため |
+| `provenance` の形が違う | no | 来歴の記録であって canonical id の入力ではないため |
+| `rawRef` の補助情報が違う | no | 再取得用メタデータであり canonical id の入力ではないため |
+| `labels` や `dsl` の transport 表現が違う | usually no | semantic content に吸収される範囲なら canonical id には直結しないため |
+
+#### 実務上の見方
+
+- **`A` を Nostr に投影して戻した `B` は、通常 `A` と同じ canonical id に戻る**
+- **`A` を ATProto に投影して戻した `C` も、通常 `A` と同じ canonical id に戻る**
+- ただし、**Nostr raw と ATProto raw を別々に ingest して後で同一視する**場合は、明示的な mapping がない限り別 canonical id になる可能性がある
+- つまり、`A -> B` と `A -> C` は「往復」の話で、`Nostr raw` と `ATProto raw` の独立 ingest は別の話として分けて考える
+
+### transport ごとの sourceId
+
+`mapping` の入口を考えるときは、まず「どの raw field が `sourceId` になるか」を決めます。  
+この実装では、`sourceId` は canonical id の直接入力ではなく、`resolveCanonicalEventId(...)` が参照する照合キーです。
+
+| transport | sourceId に使う raw field | 具体例 | mapping のキーとして使う値 |
+|---|---|---|---|
+| Nostr | `event.id` | `abc123...` | `event.id` |
+| ATProto | `record.uri` / `uri` | `at://did:plc:.../app.toitoi.inquiry/rkey...` | `uri` |
+
+#### 補足
+
+- Nostr では raw event の `id` が source identity の中心です
+- ATProto では `uri` が source identity の中心です
+- `cid`, `did`, `collection`, `rkey` は provenance / 検証 / 追跡には有用ですが、この実装の `canonicalIdMap` の主キーとしては `uri` を使います
+- したがって、`mapping あり` とは「`event.id` か `uri` をキーに、既存の canonical id を引ける状態」です
+
 ---
 
 ## provenance の役割
