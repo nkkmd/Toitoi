@@ -264,6 +264,28 @@ Nostr から canonicalize した event と ATProto から canonicalize した ev
 - `cid`, `did`, `collection`, `rkey` は provenance / 検証 / 追跡には有用ですが、この実装の `canonicalIdMap` の主キーとしては `uri` を使います
 - したがって、`mapping あり` とは「`event.id` か `uri` をキーに、既存の canonical id を引ける状態」です
 
+#### 100 件 API が成立する条件
+
+たとえば、同じ 100 件の問いを Nostr と ATProto の両方に出して、API では 100 件だけを見せたいとします。  
+この理想は今の設計で実現可能ですが、**「似ているから自動で 1 件になる」わけではありません**。
+
+ここでいう `mapping あり` とは、次のどちらかです。
+
+- `event.id` や `uri` から、既存の canonical id を明示的に引ける
+- replay で保存済みの `canonicalEventId` を復元できる
+
+`明示的に引ける` とは、推測ではなく、次のような対応表や保存情報があるという意味です。
+
+- `identityMapping` に `sourceId -> canonicalId` が入っている
+- replay 時に raw record から `canonicalEventId` を復元できる
+- API の lookup や index 参照で、`sourceId` と canonical id の対応が既に確定している
+
+`mapping なし` とは、これらがなく、raw からその場で canonical id を新規発行する状態です。  
+この場合、同じ内容でも別 canonical event になる可能性があります。
+
+つまり、**100 件 API は「同じ意味の event だけを同じ canonical id に畳む」ことで成立します**。  
+類似内容だけでは merge しないので、Nostr と ATProto を別々に ingest しただけでは 200 件に見えることがあります。
+
 ---
 
 ## provenance の役割
