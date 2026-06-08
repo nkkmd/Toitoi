@@ -224,7 +224,8 @@ Nostr worker は PM2 に載せず、定期回収は `systemd timer` に寄せま
 const path = require('path');
 
 const repoRoot = __dirname;
-const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+const nostrStorageDir = path.join(repoRoot, 'nostr-storage');
+const atprotoStorageDir = path.join(repoRoot, 'atproto-storage');
 
 module.exports = {
   apps: [
@@ -238,16 +239,19 @@ module.exports = {
       env_nostr: {
         NODE_ENV: 'production',
         TOITOI_PROTOCOL: 'nostr',
-        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-storage'),
+        TOITOI_STORAGE_DIR: nostrStorageDir,
       },
       env_atproto: {
         NODE_ENV: 'production',
         TOITOI_PROTOCOL: 'atproto',
-        TOITOI_STORAGE_DIR: path.join(homeDir, 'path/to/atproto-storage'),
+        TOITOI_STORAGE_DIR: atprotoStorageDir,
       },
       env_multi: {
         NODE_ENV: 'production',
-        TOITOI_TRANSPORT_SOURCES: '[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]',
+        TOITOI_TRANSPORT_SOURCES: JSON.stringify([
+          { protocol: 'nostr', storageDir: nostrStorageDir },
+          { protocol: 'atproto', storageDir: atprotoStorageDir },
+        ]),
       },
     },
     {
@@ -263,7 +267,7 @@ module.exports = {
         // Jetstream の接続先
         ATPROTO_STREAM_URL: 'wss://jetstream.example/subscribe',
         // ingest の保存先
-        ATPROTO_STORAGE_DIR: path.join(homeDir, 'path/to/atproto-storage'),
+        ATPROTO_STORAGE_DIR: atprotoStorageDir,
         // 保存ログに付ける送信元ラベル
         ATPROTO_INGEST_SOURCE_LABEL: 'jetstream',
         // 取り込み対象の collection
@@ -307,6 +311,8 @@ pm2 startup
 要するに、**PM2 で常駐管理するのは API と ATProto live ingest が中心で、Nostr worker は systemd timer に寄せる**、という切り分けです。  
 `toitoi-api` は `--only` で対象アプリを絞り、`--env` で運用モードを選びます。  
 定期収集だけをしたいなら、Nostr worker は systemd の template unit の方が扱いやすいです。
+
+このサンプルのように、**storage をリポジトリ直下に置くなら `repoRoot` 基準で絶対パスを渡す**のが安全です。`homeDir` 基準や相対パスが混ざると、API が別の空ディレクトリを見てしまうことがあります。
 
 ### 3.2 Caddy による API 公開
 
