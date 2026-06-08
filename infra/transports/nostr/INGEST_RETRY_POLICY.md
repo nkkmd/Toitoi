@@ -67,6 +67,8 @@ pnpm --filter @toitoi/nostr-transport start -- \
   --retry-factor 2
 ```
 
+`start` 直後の `--` は `pnpm` の区切りですが、この worker はそれを無視します。
+
 ### Environment
 
 - `RELAY_RETRY_ATTEMPTS`

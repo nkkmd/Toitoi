@@ -47,4 +47,5 @@ atproto_ingest_worker.js
 
 - 起動: `pnpm --filter @toitoi/atproto-transport start -- --in <raw.jsonl> --out <result.jsonl> --storage-dir /path/to/storage`
 - live 起動: `pnpm --filter @toitoi/atproto-transport start -- --stream-url wss://jetstream.example/subscribe --storage-dir /path/to/storage`
+- `start` 直後の `--` は `pnpm` の区切りですが、この worker はそれを無視します。
 - テスト: `pnpm --filter @toitoi/atproto-transport test`

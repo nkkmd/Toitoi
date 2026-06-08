@@ -49,8 +49,10 @@ relay_ingest_worker.js
 
 - 起動: `pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --storage-dir /path/to/storage`
 - protocol 選択: `pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --protocol nostr --storage-dir /path/to/storage`
+- `start` 直後の `--` は `pnpm` の引数区切りです。この worker はそれを無視するので、そのまま使えます。
 - テスト: `pnpm --filter @toitoi/nostr-transport test`
 - replay: `pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir /path/to/storage --verify`
+- replay CLI も `start` と同様に `--` 区切りを無視します。
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 依存先

@@ -1,6 +1,6 @@
 # Toitoi 実装ロードマップ
 
-**Status: evolving** | **Last updated: 2026-06-07**
+**Status: evolving** | **Last updated: 2026-06-08**
 
 ## 目的
 
@@ -190,6 +190,7 @@ Canonical を中心に据えつつ、raw event も保持して再処理できる
 - `packages/nostr/storage/replay.js` で raw event からの replay と derived index 再構築を追加
 - `packages/nostr/storage/replay_cli.js` で replay の実行入口を追加
 - `packages/nostr/adapter/ingest_jsonl.js` と `infra/transports/nostr/relay_ingest_worker.js` に `--storage-dir` を追加
+- `pnpm --filter ... start -- ...` 由来の `--` 区切りは、`relay_ingest_worker.js` と `replay_cli.js` で無視するようにして運用入口の引数事故を防いだ
 - `docs/operations/NOSTR_STORAGE_AND_REPLAY.md` を正本として復旧手順を追加
 - `packages/nostr/storage/test_*` で保存・replay・CLI の回帰確認を追加
 
@@ -544,6 +545,7 @@ protocol descriptor / registry を使って、どの protocol をどう起動す
 - `packages/protocol/protocol_runtime.js` を追加し、registry ベースの protocol 選択と introspection を共通化した
 - `apps/api/server.js` と `apps/api/standard_api_service.js` で `/health` と `/api/v1/protocols` に protocol metadata を反映した
 - `infra/transports/nostr/relay_ingest_worker.js` で `ingestFromRelayUrl` を descriptor 経由で選ぶようにし、`--protocol` を受けられるようにした
+- `infra/transports/nostr/relay_ingest_worker.js`、`infra/transports/atproto/atproto_ingest_worker.js`、`packages/nostr/storage/replay_cli.js` で `pnpm` の `--` 区切りを無視するようにし、起動経路の引数解釈を安定化した
 - `packages/protocol/test_protocol_runtime.js` と関連 API / worker テストで回帰確認した
 
 ### 補足

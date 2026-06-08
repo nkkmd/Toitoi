@@ -42,6 +42,23 @@ const tests = [
     },
   },
   {
+    name: 'parseArgs ignores a pnpm-style separator',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--',
+        '--relay-url',
+        'wss://relay.example.com',
+        '--storage-dir',
+        './nostr-storage',
+      ]);
+
+      assert.strictEqual(args.relayUrl, 'wss://relay.example.com');
+      assert.strictEqual(args.storageDir, './nostr-storage');
+    },
+  },
+  {
     name: 'parseArgs accepts an explicit protocol',
     run() {
       const args = parseArgs([

@@ -46,6 +46,26 @@ const tests = [
     },
   },
   {
+    name: 'parseArgs ignores a pnpm-style separator',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--',
+        '--in',
+        'input.jsonl',
+        '--out',
+        'output.json',
+        '--storage-dir',
+        './atproto-storage',
+      ]);
+
+      assert.strictEqual(args.input, 'input.jsonl');
+      assert.strictEqual(args.output, 'output.json');
+      assert.strictEqual(args.storageDir, './atproto-storage');
+    },
+  },
+  {
     name: 'parseArgs accepts an explicit batch source label',
     run() {
       const args = parseArgs([

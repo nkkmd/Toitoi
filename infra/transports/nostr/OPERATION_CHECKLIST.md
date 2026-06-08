@@ -49,6 +49,7 @@
 - [ ] `provenance` と `rawRef` を含む canonicalized snapshot が揃っているか確認する
 - [ ] `~/nostr-archive/agroecology-commons/inquiry*.jsonl` の transport archive も必要に応じて確認する
 - [ ] replay が必要なら `pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir <dir> --verify` を使う
+- [ ] replay CLI は `--` 区切りを無視するので、上の書き方のままでよい
 - [ ] バックアップを別場所に保管する
 
 ---

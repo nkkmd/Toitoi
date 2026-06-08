@@ -45,6 +45,23 @@ const tests = [
     },
   },
   {
+    name: 'parseArgs ignores a pnpm-style separator',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--',
+        '--storage-dir',
+        '/tmp/example',
+        '--protocol',
+        'atproto',
+      ]);
+
+      assert.strictEqual(args.storageDir, '/tmp/example');
+      assert.strictEqual(args.protocol, 'atproto');
+    },
+  },
+  {
     name: 'parseArgs accepts a replay protocol',
     run() {
       const args = parseArgs([

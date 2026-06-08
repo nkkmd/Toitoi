@@ -40,6 +40,7 @@ replay.js
 - `standard_api_views.js` は `apps/api/standard_api_service.js` と `test_standard_api_views.js` から使われます
 - `replay_cli.js` は運用時の replay 入口です
 - `replay_cli.js` は `--protocol` / `TOITOI_PROTOCOL` で protocol-aware に replay 先を選べます
+- `pnpm --filter @toitoi/nostr replay -- --protocol ...` の `--` 区切りは `replay_cli.js` 側で無視されます
 - `index.js` は storage 関連の再公開用のまとめ入口です
 
 ## どこで使うか

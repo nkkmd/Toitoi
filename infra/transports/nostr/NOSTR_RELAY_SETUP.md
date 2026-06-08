@@ -627,6 +627,8 @@ tar -czf toitoi-storage-backup-$(date +%Y%m%d-%H%M%S).tgz -C /path/to/storage .
 pnpm --filter @toitoi/nostr replay -- --protocol nostr --storage-dir /path/to/storage --verify
 ```
 
+`pnpm` の `--` 区切りは replay CLI 側で無視されるので、この書き方で使えます。
+
 transport archive は「再投入できる raw transport event の履歴」、storage backup は「canonicalized event / provenance / rawRef / index snapshot の復旧」に使います。役割を混ぜないのが大事です。
 
 ---

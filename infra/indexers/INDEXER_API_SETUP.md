@@ -104,6 +104,10 @@ Nostr relay から ingest する場合は、`relay-url` と `storage-dir` を指
 pnpm --filter @toitoi/nostr-transport start -- --relay-url wss://relay.example.com --protocol nostr --storage-dir /path/to/storage
 ```
 
+`start` 直後の `--` は `pnpm` の区切りです。worker 側で無視するので、そのまま使えます。
+
+`start` 直後の `--` は `pnpm` の区切りですが、この worker はその区切りを無視するため、上の書き方のままで動きます。
+
 複数 relay を運用する場合は、relay ごとに worker を分けて、`storage-dir` も別々にします。
 
 ```bash
@@ -135,6 +139,8 @@ batch ingest は保存済みの JSONL アーカイブを 1 回読み、live inge
 pnpm --filter @toitoi/atproto-transport start -- --in /path/to/atproto-archive.jsonl --out /path/to/atproto-report.json --storage-dir /path/to/storage
 ```
 
+`start` 直後の `--` は `pnpm` の区切りです。worker 側で無視するので、そのまま使えます。
+
 - `--in`: 取り込み元の JSONL アーカイブです。保存済みデータを 1 回だけ読み込みます。
 - `--out`: ingest 結果のレポート出力先です。`report` 形式の集計結果を書き出します。
 - `--storage-dir`: canonical 化した結果や ingest log を保存するディレクトリです。
@@ -145,6 +151,8 @@ pnpm --filter @toitoi/atproto-transport start -- --in /path/to/atproto-archive.j
 ```bash
 pnpm --filter @toitoi/atproto-transport start -- --stream-url wss://jetstream.example/subscribe --storage-dir /path/to/storage
 ```
+
+`start` 直後の `--` は `pnpm` の区切りです。worker 側で無視するので、そのまま使えます。
 
 live mode では `ATPROTO_STREAM_URL` / `ATPROTO_STORAGE_DIR` / `ATPROTO_WANTED_COLLECTIONS` を PM2 の `env_atproto_live` で渡せます。
 
