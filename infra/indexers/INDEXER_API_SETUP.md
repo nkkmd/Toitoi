@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の multi-protocol インデクサーAPI
 
-**Version: 0.6.3** | **Status: evolving** | **Last updated: 2026-06-05**
+**Version: 0.6.5** | **Status: evolving** | **Last updated: 2026-06-08**
 
 このガイドは、Canonical Event を共通入力にした indexer / API の構築・復旧・再構築手順をまとめたものです。
 
@@ -93,7 +93,7 @@ TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-rela
 `toitoi-nostr-worker` は Nostr relay から transport event を収集し、canonicalized event を保存する運用 worker です。  
 入力は relay subscription で、出力は `raw-events.jsonl` / `canonical-events.jsonl` / `ingest-log.jsonl` / `index-snapshot.json` です。  
 この worker は 1 回の ingest を終えたら終了する単発ジョブとして扱えます。  
-そのため、`systemd timer` や `cron` で定期起動する運用に向いています。  
+そのため、`systemd timer` で定期起動する運用に向いています。  
 `infra/transports/nostr/relay_ingest_worker.js` を直接起動して使います。
 
 #### 2.4.1 Nostr worker を起動する
@@ -117,74 +117,10 @@ worker は API とは別プロセスで動かし、relay の ingest と storage 
 API 単体では live ingest は進まないので、Nostr を運用する場合は worker の起動が必要です。  
 relay が複数ある場合は、worker を relay ごとに増やします。API はそれぞれの storage を `TOITOI_TRANSPORT_SOURCES` でまとめて読みます。
 
-#### 2.4.3 定期実行で回す場合
+#### 2.4.3 定期実行の扱い
 
-Nostr worker を `10分おき` や `1時間おき` のように回すなら、`systemd service` + `systemd timer` の組み合わせが自然です。  
-`PM2` の `autorestart` は「落ちたら再起動」用であって、定期スケジュールの代わりにはなりません。
-
-#### 2.4.4 systemd timer の設定例
-
-以下は、10分おきに Nostr worker を起動する最小構成の例です。
-
-`/etc/systemd/system/toitoi-nostr-worker.service`
-
-```ini
-[Unit]
-Description=Toitoi Nostr ingest worker
-
-[Service]
-Type=oneshot
-WorkingDirectory=/home/you/github/Toitoi
-Environment=NODE_ENV=production
-Environment=TOITOI_PROTOCOL=nostr
-Environment=TOITOI_STORAGE_DIR=/var/lib/toitoi/nostr-storage
-Environment=RELAY_URL=wss://relay.example.com
-ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/nostr-transport start -- --relay-url "$RELAY_URL" --protocol nostr --storage-dir "$TOITOI_STORAGE_DIR"'
-```
-
-複数 relay を回す場合は、service を relay ごとに分けるか、template unit にします。
-
-```ini
-[Unit]
-Description=Toitoi Nostr ingest worker for %i
-
-[Service]
-Type=oneshot
-WorkingDirectory=/home/you/github/Toitoi
-Environment=NODE_ENV=production
-Environment=TOITOI_PROTOCOL=nostr
-Environment=TOITOI_STORAGE_DIR=/var/lib/toitoi/nostr-%i-storage
-Environment=RELAY_URL=wss://%i.example.com
-ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/nostr-transport start -- --relay-url "$RELAY_URL" --protocol nostr --storage-dir "$TOITOI_STORAGE_DIR"'
-```
-
-この場合は `toitoi-nostr-worker@relay-a.service` と `toitoi-nostr-worker@relay-b.service` のように使えます。
-
-`/etc/systemd/system/toitoi-nostr-worker.timer`
-
-```ini
-[Unit]
-Description=Run Toitoi Nostr ingest worker every 10 minutes
-
-[Timer]
-OnCalendar=*:0/10
-Persistent=true
-Unit=toitoi-nostr-worker.service
-
-[Install]
-WantedBy=timers.target
-```
-
-有効化と起動は次のようにします。
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now toitoi-nostr-worker.timer
-sudo systemctl list-timers --all | grep toitoi-nostr-worker
-```
-
-ログ確認は `journalctl -u toitoi-nostr-worker.service` を使います。  
-`Persistent=true` を入れておくと、サーバー再起動中に飛んだ実行回数を次回起動時に補いやすくなります。
+Nostr worker の定期実行は、この章では詳細に展開せず、後ろの `3.3` にまとめます。  
+ここでは「Nostr worker は単発ジョブとして動く」「定期回収は運用章で扱う」だけ押さえておけば十分です。
 
 ### 2.5 ATProto ingest worker を起動する
 
@@ -210,7 +146,7 @@ pnpm --filter @toitoi/atproto-transport start -- --in /path/to/atproto-archive.j
 pnpm --filter @toitoi/atproto-transport start -- --stream-url wss://jetstream.example/subscribe --storage-dir /path/to/storage
 ```
 
-live mode では `ATPROTO_STREAM_URL` / `ATPROTO_STORAGE_DIR` / `ATPROTO_WANTED_COLLECTIONS` を PM2 の env で渡せます。
+live mode では `ATPROTO_STREAM_URL` / `ATPROTO_STORAGE_DIR` / `ATPROTO_WANTED_COLLECTIONS` を PM2 の `env_atproto_live` で渡せます。
 
 - `ATPROTO_STREAM_URL`: Jetstream の購読先 websocket URL です。`--stream-url` と同じ意味で、live ingest の接続先になります。
 - `ATPROTO_STORAGE_DIR`: ingest の保存先ディレクトリです。raw / canonical / ingest log / live state snapshot をここに書き込みます。
@@ -246,21 +182,32 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 
 ---
 
-## 3. PM2 と Caddy の常駐運用
+## 3. PM2・Caddy・systemd timer の運用
 
 作業場所: Toitoi リポジトリ root  
 参照: この節の `ecosystem.config.cjs` サンプルまたは PM2 の個別起動コマンド
 
+### 3.0 まずは役割をひと目で見る
+
+| 項目 | 役割 | 起動・常駐方法 | 主な対象 | 補足 |
+|---|---|---|---|---|
+| PM2 | API と ATProto live ingest を常駐化 | `pm2 start` / `pm2 save` / `pm2 startup` | `toitoi-api` / `toitoi-atproto-worker` | Nostr は対象外 |
+| Caddy | HTTPS と reverse proxy を担当 | `systemctl restart caddy` | `localhost:3000` の API | 公開前段に置く |
+| systemd timer | Nostr worker を定期起動 | `systemctl enable --now toitoi-nostr-worker.timer` | `toitoi-nostr-worker.service` | 定期回収用 |
+
+この章は、まず表で全体像をつかみ、そのあと `3.1` で PM2、`3.2` で Caddy、`3.3` で Nostr の定期実行を読む構成です。  
+初見なら、運用の流れだけ先に押さえてから、それぞれのコマンド例を順に確認してください。
+
 ### 3.1 PM2 で常駐化する
 
 この節は、PM2 の定義をどう組むかの説明です。  
-`MONITOR_SETUP.md` は、`toitoi-api` と live ingest 系 worker が動いている前提で監視と自動回復を行います。  
+`MONITOR_SETUP.md` は、`toitoi-api` と ATProto live ingest worker が動いている前提で監視と自動回復を行います。  
 そのため、PM2 は API と ATProto live ingest の常駐管理に向いています。  
-Nostr worker も常駐させるなら PM2 で個別アプリとして追加できますが、定期回収だけを目的にするなら `systemd timer` の方が扱いやすいです。  
+Nostr worker は PM2 に載せず、定期回収は `systemd timer` に寄せます。  
 `batch ingest` は常駐ではなく、アーカイブを 1 回処理する単発ジョブとして使います。
 
 `toitoi-api` と ATProto live worker は別アプリとして定義します。  
-以下の `ecosystem.config.cjs` 例では、`toitoi-api`、`toitoi-atproto-worker`、Nostr の relay ごとの worker を分けて起動できます。  
+以下の `ecosystem.config.cjs` 例では、`toitoi-api` と `toitoi-atproto-worker` を分けて起動できます。  
 この例は説明用で、リポジトリにファイルとして追加する必要はありません。
 
 ```javascript
@@ -315,34 +262,6 @@ module.exports = {
         ATPROTO_WANTED_COLLECTIONS: 'app.toitoi.inquiry',
       },
     },
-    {
-      name: 'toitoi-nostr-worker-relay-a',
-      cwd: repoRoot,
-      script: './infra/transports/nostr/relay_ingest_worker.js',
-      instances: 1,
-      exec_mode: 'fork',
-      autorestart: true,
-      env_nostr_relay_a: {
-        NODE_ENV: 'production',
-        TOITOI_PROTOCOL: 'nostr',
-        RELAY_URL: 'wss://relay-a.example.com',
-        RELAY_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-relay-a'),
-      },
-    },
-    {
-      name: 'toitoi-nostr-worker-relay-b',
-      cwd: repoRoot,
-      script: './infra/transports/nostr/relay_ingest_worker.js',
-      instances: 1,
-      exec_mode: 'fork',
-      autorestart: true,
-      env_nostr_relay_b: {
-        NODE_ENV: 'production',
-        TOITOI_PROTOCOL: 'nostr',
-        RELAY_URL: 'wss://relay-b.example.com',
-        RELAY_STORAGE_DIR: path.join(homeDir, 'path/to/nostr-relay-b'),
-      },
-    },
   ],
 };
 ```
@@ -351,7 +270,6 @@ module.exports = {
 
 - ATProto live ingest だけで動かすなら `--env atproto_live`
 - API は必要な protocol に応じて `--env nostr` / `--env atproto` / `--env multi` を選びます
-- relay ごとの Nostr worker を PM2 で回すなら、`toitoi-nostr-worker-relay-a` / `toitoi-nostr-worker-relay-b` のように個別アプリを増やします
 
 起動例:
 
@@ -364,10 +282,6 @@ pm2 start ecosystem.config.cjs --only toitoi-api --env multi
 
 # ATProto live ingest だけ
 pm2 start ecosystem.config.cjs --only toitoi-atproto-worker --env atproto_live
-
-# Nostr relay ごとの worker だけ
-pm2 start ecosystem.config.cjs --only toitoi-nostr-worker-relay-a --env nostr_relay_a
-pm2 start ecosystem.config.cjs --only toitoi-nostr-worker-relay-b --env nostr_relay_b
 ```
 
 `pm2 save` は、今の PM2 プロセス一覧を保存して、再起動後に `pm2 resurrect` できるようにするコマンドです。  
@@ -382,7 +296,7 @@ pm2 save
 pm2 startup
 ```
 
-要するに、**PM2 で常駐管理するのは API と ATProto live ingest が中心で、Nostr worker は必要に応じて PM2 でも systemd timer でも運用できる**です。  
+要するに、**PM2 で常駐管理するのは API と ATProto live ingest が中心で、Nostr worker は systemd timer に寄せる**、という切り分けです。  
 `toitoi-api` は `--only` で対象アプリを絞り、`--env` で運用モードを選びます。  
 定期収集だけをしたいなら、Nostr worker は systemd の template unit の方が扱いやすいです。
 
@@ -468,10 +382,79 @@ pm2 startup
 sudo systemctl restart caddy
 ```
 
-### Nostr 定期実行
+### 3.3 Nostr worker は systemd timer で定期実行する
 
 Nostr worker は PM2 ではなく `systemd timer` で定期起動します。  
-詳細は 2.4.4 の `systemd timer` 設定例を参照してください。
+この方針にしておくと、PM2 は常駐系の `toitoi-api` と ATProto live ingest に集中でき、Nostr の定期回収は OS 側のスケジューラに寄せられます。
+
+#### 3.3.1 定期実行の考え方
+
+Nostr worker を `10分おき` や `1時間おき` のように回すなら、`systemd service` + `systemd timer` の組み合わせが自然です。  
+`PM2` の `autorestart` は「落ちたら再起動」用であって、定期スケジュールの代わりにはなりません。
+
+#### 3.3.2 systemd timer の設定例
+
+以下は、10分おきに Nostr worker を起動する最小構成の例です。
+
+`/etc/systemd/system/toitoi-nostr-worker.service`
+
+```ini
+[Unit]
+Description=Toitoi Nostr ingest worker
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/you/github/Toitoi
+Environment=NODE_ENV=production
+Environment=TOITOI_PROTOCOL=nostr
+Environment=TOITOI_STORAGE_DIR=/var/lib/toitoi/nostr-storage
+Environment=RELAY_URL=wss://relay.example.com
+ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/nostr-transport start -- --relay-url "$RELAY_URL" --protocol nostr --storage-dir "$TOITOI_STORAGE_DIR"'
+```
+
+複数 relay を回す場合は、service を relay ごとに分けるか、template unit にします。
+
+```ini
+[Unit]
+Description=Toitoi Nostr ingest worker for %i
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/you/github/Toitoi
+Environment=NODE_ENV=production
+Environment=TOITOI_PROTOCOL=nostr
+Environment=TOITOI_STORAGE_DIR=/var/lib/toitoi/nostr-%i-storage
+Environment=RELAY_URL=wss://%i.example.com
+ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/nostr-transport start -- --relay-url "$RELAY_URL" --protocol nostr --storage-dir "$TOITOI_STORAGE_DIR"'
+```
+
+この場合は `toitoi-nostr-worker@relay-a.service` と `toitoi-nostr-worker@relay-b.service` のように使えます。
+
+`/etc/systemd/system/toitoi-nostr-worker.timer`
+
+```ini
+[Unit]
+Description=Run Toitoi Nostr ingest worker every 10 minutes
+
+[Timer]
+OnCalendar=*:0/10
+Persistent=true
+Unit=toitoi-nostr-worker.service
+
+[Install]
+WantedBy=timers.target
+```
+
+有効化と起動は次のようにします。
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now toitoi-nostr-worker.timer
+sudo systemctl list-timers --all | grep toitoi-nostr-worker
+```
+
+ログ確認は `journalctl -u toitoi-nostr-worker.service` を使います。  
+`Persistent=true` を入れておくと、サーバー再起動中に飛んだ実行回数を次回起動時に補いやすくなります。
 
 ---
 
