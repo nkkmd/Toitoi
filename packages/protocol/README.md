@@ -63,3 +63,16 @@ index.js
 - `test_protocol_descriptor.js`
 - `test_protocol_registry.js`
 - `test_protocol_catalog.js`
+- `test_live_multi_transport.js`: `TOITOI_LIVE_MULTI_TRANSPORT_TEST=1` で有効化する、実稼働の Nostr relay / ATProto PDS をまたぐ live 統合テスト。`NOSTR_RELAY_URL` / `NOSTR_SECRET_KEY` / `ATPROTO_PDS_HOST` / `ATPROTO_HANDLE` / `ATPROTO_APP_PASSWORD` が必要です
+
+### 実行方法
+
+```bash
+TOITOI_LIVE_MULTI_TRANSPORT_TEST=1 \
+NOSTR_RELAY_URL=wss://your-relay.example \
+NOSTR_SECRET_KEY=... \
+ATPROTO_PDS_HOST=https://your-pds.example \
+ATPROTO_HANDLE=your-handle \
+ATPROTO_APP_PASSWORD=your-app-password \
+node packages/protocol/test_live_multi_transport.js
+```
