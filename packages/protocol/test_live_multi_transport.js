@@ -4,8 +4,6 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { Relay } = require('nostr-tools');
-const WebSocket = require('ws');
 
 const { createStandardApiService } = require('../../apps/api/standard_api_service');
 const { ingestAtProtoEvents } = require('../atproto/adapter/ingest_pipeline');
@@ -13,7 +11,6 @@ const { publishCanonicalEventToAtProto } = require('../atproto/live/outbound');
 const { getRecord, extractRecordRkey } = require('../atproto/live/atproto_client');
 const { persistIngestResult: persistAtProtoIngestResult } = require('../atproto/storage/persistence');
 const { replayStorage: replayAtProtoStorage } = require('../atproto/storage/replay');
-const { publishCanonicalEventToNostrRelay } = require('../nostr/live/outbound');
 const { ingestRelayUrl } = require('../nostr/adapter/relay_ingest');
 const { persistIngestResult: persistNostrIngestResult } = require('../nostr/storage/persistence');
 const { replayStorage: replayNostrStorage } = require('../nostr/storage/replay');
@@ -66,6 +63,8 @@ function requireEnv(name) {
 }
 
 function connectRelay(relayUrl) {
+  const { Relay } = require('nostr-tools');
+  const WebSocket = require('ws');
   global.WebSocket = WebSocket;
   return Relay.connect(relayUrl);
 }
@@ -143,6 +142,7 @@ const tests = [
 
       logStep('canonical id to verify', sharedCanonicalId);
 
+      const { publishCanonicalEventToNostrRelay } = require('../nostr/live/outbound');
       const nostrRelay = await connectRelay(relayUrl);
       try {
         logStep('publishing to Nostr relay', relayUrl);
