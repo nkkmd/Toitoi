@@ -23,7 +23,30 @@ const tests = [
       assert.ok(Array.isArray(lingonberryCapabilityRows));
       assert.strictEqual(lingonberryProtocolDescriptor.protocol, 'lingonberry');
       assert.strictEqual(typeof descriptor.adapter.normalizeRawEvent, 'function');
+      assert.strictEqual(typeof descriptor.adapter.ingestFromRelayUrl, 'function');
       assert.strictEqual(typeof descriptor.converter.toTransport, 'function');
+    },
+  },
+  {
+    name: 'lingonberry protocol descriptor ingests from carrier URL',
+    async run() {
+      const originalFetch = global.fetch;
+      global.fetch = async () => ({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        text: async () => JSON.stringify({ objects: [fixture] }),
+      });
+
+      try {
+        const descriptor = createLingonberryProtocolDescriptor();
+        const result = await descriptor.adapter.ingestFromRelayUrl('https://relay.example', { limit: 10 }, { skipVerify: true });
+
+        assert.strictEqual(result.accepted.length, 1);
+        assert.strictEqual(result.accepted[0].canonicalEvent.rawRef.protocol, 'lingonberry');
+      } finally {
+        global.fetch = originalFetch;
+      }
     },
   },
   {
@@ -68,12 +91,12 @@ const tests = [
   },
 ];
 
-function run() {
+async function run() {
   let failed = 0;
 
   for (const test of tests) {
     try {
-      test.run();
+      await test.run();
       console.log(`PASS ${test.name}`);
     } catch (error) {
       failed += 1;

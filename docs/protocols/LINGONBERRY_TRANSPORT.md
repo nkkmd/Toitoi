@@ -1,6 +1,6 @@
 # Lingonberry Transport
 
-**Version: 0.1.0** | **Status: draft** | **Last updated: 2026-06-24**
+**Version: 0.1.1** | **Status: draft** | **Last updated: 2026-06-24**
 
 ## 目的
 
@@ -36,12 +36,13 @@ Canonicalized Event
 
 ## 対象
 
-Phase 17 の最初の対象は次の 2 つです。
+Phase 17 以降の対象は次の 3 つです。
 
 - Lingonberry `knowledge object`
 - Lingonberry HTTP publish request envelope
+- Lingonberry carrier object collection (`GET /v1/objects`)
 
-live relay ingest は後続の gated smoke とし、最初は archive / JSONL / batch ingest を優先します。
+live ingest は、常時接続 worker ではなく、Nostr と同じ oneshot worker + `systemd timer` で carrier から定期取得する運用を優先します。archive / JSONL / batch ingest も replay 可能な補助経路として維持します。
 
 ---
 

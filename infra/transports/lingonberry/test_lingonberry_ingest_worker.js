@@ -6,9 +6,11 @@ const os = require('os');
 const path = require('path');
 const fixture = require('../../../packages/lingonberry/fixtures/minimal-publish-request.json');
 const {
+  extractCarrierObjects,
   normalizeIdentityClaimSigner,
   parseArgs,
   readArchive,
+  readCarrier,
   readJsonl,
   writeResult,
 } = require('./lingonberry_ingest_worker');
@@ -63,6 +65,28 @@ const tests = [
     },
   },
   {
+    name: 'parseArgs reads carrier URL options',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--carrier-url',
+        'https://relay.example',
+        '--carrier-cursor',
+        'abc',
+        '--carrier-limit',
+        '25',
+        '--storage-dir',
+        './lingonberry-storage',
+      ]);
+
+      assert.strictEqual(args.carrierUrl, 'https://relay.example');
+      assert.strictEqual(args.carrierCursor, 'abc');
+      assert.strictEqual(args.carrierLimit, 25);
+      assert.strictEqual(args.storageDir, './lingonberry-storage');
+    },
+  },
+  {
     name: 'parseArgs ignores a pnpm-style separator',
     run() {
       const args = parseArgs([
@@ -94,6 +118,14 @@ const tests = [
         'archive',
         '--out',
         'output.json',
+      ]), /mutually exclusive/);
+      assert.throws(() => parseArgs([
+        'node',
+        'script',
+        '--archive-dir',
+        'archive',
+        '--carrier-url',
+        'https://relay.example',
       ]), /mutually exclusive/);
     },
   },
@@ -128,6 +160,51 @@ const tests = [
       const events = await readArchive(dir);
       assert.strictEqual(events.length, 1);
       assert.strictEqual(events[0].object.rawRef.sourceId, 'draft:toitoi-example-0001');
+    },
+  },
+  {
+    name: 'extractCarrierObjects accepts common carrier response shapes',
+    run() {
+      assert.strictEqual(extractCarrierObjects([fixture])[0].object.id, fixture.object.id);
+      assert.strictEqual(extractCarrierObjects({ objects: [fixture] })[0].object.id, fixture.object.id);
+      assert.strictEqual(
+        extractCarrierObjects({ items: [{ requestJson: JSON.stringify(fixture) }] })[0].object.id,
+        fixture.object.id,
+      );
+      assert.strictEqual(
+        extractCarrierObjects({ records: [{ object: fixture.object }] })[0].id,
+        fixture.object.id,
+      );
+    },
+  },
+  {
+    name: 'readCarrier reads objects from a carrier collection endpoint',
+    async run() {
+      const originalFetch = global.fetch;
+      const calls = [];
+      global.fetch = async (url, init) => {
+        calls.push({ url, init });
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => JSON.stringify({ objects: [fixture] }),
+        };
+      };
+
+      try {
+        const events = await readCarrier('https://relay.example', {
+          cursor: 'abc',
+          limit: 5,
+        });
+
+        assert.strictEqual(events.length, 1);
+        assert.strictEqual(events[0].object.id, fixture.object.id);
+        assert.strictEqual(calls[0].url, 'https://relay.example/v1/objects?cursor=abc&limit=5');
+        assert.strictEqual(calls[0].init.method, 'GET');
+      } finally {
+        global.fetch = originalFetch;
+      }
     },
   },
   {

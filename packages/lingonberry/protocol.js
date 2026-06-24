@@ -19,11 +19,47 @@ const {
   convertCanonicalToLingonberryObject,
   fromTransportToCanonicalLingonberry,
 } = require('./converter/canonical_to_lingonberry_converter');
+const { listObjects } = require('./live/http_client');
 
-function notImplemented(label) {
-  return () => {
-    throw new Error(`${label} is not implemented yet`);
-  };
+function extractCarrierObjects(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Lingonberry carrier response must be an array or object');
+  }
+
+  for (const key of ['objects', 'items', 'records']) {
+    if (Array.isArray(payload[key])) {
+      return payload[key].map(item => {
+        if (item && typeof item === 'object' && item.request) {
+          return item.request;
+        }
+        if (item && typeof item === 'object' && item.requestJson) {
+          return JSON.parse(item.requestJson);
+        }
+        if (item && typeof item === 'object' && item.object && item.publisher) {
+          return item;
+        }
+        if (item && typeof item === 'object' && item.object) {
+          return item.object;
+        }
+        return item;
+      });
+    }
+  }
+
+  throw new Error('Lingonberry carrier response missing objects array');
+}
+
+async function ingestFromCarrierUrl(carrierUrl, filter = {}, options = {}) {
+  const payload = await listObjects({
+    carrierUrl,
+    cursor: filter?.cursor || options.cursor || '',
+    since: filter?.since || options.since || '',
+    limit: Number.isInteger(filter?.limit) ? filter.limit : options.limit,
+  });
+  return ingestLingonberryEvents(extractCarrierObjects(payload), options);
 }
 
 function createLingonberryProtocolDescriptor() {
@@ -37,10 +73,10 @@ function createLingonberryProtocolDescriptor() {
       canonicalizeRawEvent: canonicalizeLingonberryEvent,
       classifyRawEvent: classifyEvent,
       ingestRawEvents: ingestLingonberryEvents,
-      ingestFromRelayUrl: notImplemented('Lingonberry ingestFromRelayUrl'),
+      ingestFromRelayUrl: ingestFromCarrierUrl,
       describe: () => ({
         protocol: 'lingonberry',
-        sourceKind: 'knowledge object / HTTP publish request / archive',
+        sourceKind: 'knowledge object / HTTP publish request / carrier / archive',
         dedupeKeyStrategy: 'rawRef.sourceId, falling back to object id',
         orderingStrategy: 'createdAt + source id',
       }),
@@ -71,7 +107,7 @@ function createLingonberryProtocolDescriptor() {
     },
     notes: [
       'Lingonberry knowledge objects are treated as Toitoi transport projections, not as the Toitoi internal center model.',
-      'Live relay ingest is intentionally left gated for a later slice; archive and batch ingest are the first target.',
+      'Carrier ingest uses GET /v1/objects as a timer-friendly direct acquisition path; archive and batch ingest remain supported.',
     ],
   });
 }
@@ -87,4 +123,5 @@ module.exports = {
   lingonberryProtocolRegistry,
   convertCanonicalToLingonberryObject,
   fromTransportToCanonicalLingonberry,
+  ingestFromCarrierUrl,
 };

@@ -5,6 +5,7 @@ const fixture = require('../fixtures/minimal-publish-request.json');
 const {
   buildPublishRequest,
   getCapabilities,
+  listObjects,
   getObject,
   getReady,
   publishObject,
@@ -62,6 +63,41 @@ const tests = [
         assert.strictEqual(calls[0].init.headers['content-type'], 'application/json');
         assert.strictEqual(JSON.parse(calls[0].init.body).object.id, fixture.object.id);
         assert.strictEqual(payload.id, fixture.object.id);
+      } finally {
+        global.fetch = originalFetch;
+      }
+    },
+  },
+  {
+    name: 'listObjects calls the Lingonberry object collection endpoint',
+    async run() {
+      const originalFetch = global.fetch;
+      const calls = [];
+      global.fetch = async (url, init) => {
+        calls.push({ url, init });
+        return {
+          ok: true,
+          status: 200,
+          statusText: 'OK',
+          text: async () => JSON.stringify({ objects: [fixture] }),
+        };
+      };
+
+      try {
+        const payload = await listObjects({
+          carrierUrl: 'https://relay.example',
+          cursor: 'abc',
+          since: '2026-06-24T00:00:00Z',
+          limit: 10,
+        });
+
+        assert.strictEqual(calls.length, 1);
+        assert.strictEqual(
+          calls[0].url,
+          'https://relay.example/v1/objects?cursor=abc&since=2026-06-24T00%3A00%3A00Z&limit=10',
+        );
+        assert.strictEqual(calls[0].init.method, 'GET');
+        assert.strictEqual(payload.objects[0].object.id, fixture.object.id);
       } finally {
         global.fetch = originalFetch;
       }

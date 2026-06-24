@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 const { ingestLingonberryEvents } = require('../../../packages/lingonberry/adapter/ingest_pipeline');
+const { listObjects } = require('../../../packages/lingonberry/live/http_client');
 const { persistIngestResult } = require('../../../packages/lingonberry/storage/persistence');
 
 function isNonEmptyString(value) {
@@ -51,6 +52,10 @@ function parseArgs(argv) {
   const args = {
     input: process.env.LINGONBERRY_INGEST_INPUT || '',
     archiveDir: process.env.LINGONBERRY_ARCHIVE_DIR || '',
+    carrierUrl: process.env.LINGONBERRY_CARRIER_URL || '',
+    carrierCursor: process.env.LINGONBERRY_CARRIER_CURSOR || '',
+    carrierSince: process.env.LINGONBERRY_CARRIER_SINCE || '',
+    carrierLimit: Number.parseInt(process.env.LINGONBERRY_CARRIER_LIMIT || '0', 10),
     output: process.env.LINGONBERRY_INGEST_OUTPUT || '',
     format: process.env.LINGONBERRY_INGEST_FORMAT || 'report',
     verify: process.env.LINGONBERRY_VERIFY === '1',
@@ -115,6 +120,38 @@ function parseArgs(argv) {
       args.archiveDir = argv[++i];
       continue;
     }
+    if (arg.startsWith('--carrier-url=')) {
+      args.carrierUrl = arg.slice('--carrier-url='.length);
+      continue;
+    }
+    if (arg === '--carrier-url') {
+      args.carrierUrl = argv[++i];
+      continue;
+    }
+    if (arg.startsWith('--carrier-cursor=')) {
+      args.carrierCursor = arg.slice('--carrier-cursor='.length);
+      continue;
+    }
+    if (arg === '--carrier-cursor') {
+      args.carrierCursor = argv[++i];
+      continue;
+    }
+    if (arg.startsWith('--carrier-since=')) {
+      args.carrierSince = arg.slice('--carrier-since='.length);
+      continue;
+    }
+    if (arg === '--carrier-since') {
+      args.carrierSince = argv[++i];
+      continue;
+    }
+    if (arg.startsWith('--carrier-limit=')) {
+      args.carrierLimit = Number.parseInt(arg.slice('--carrier-limit='.length), 10);
+      continue;
+    }
+    if (arg === '--carrier-limit') {
+      args.carrierLimit = Number.parseInt(argv[++i], 10);
+      continue;
+    }
     if (arg.startsWith('--in=')) {
       args.input = arg.slice('--in='.length);
       continue;
@@ -143,17 +180,21 @@ function parseArgs(argv) {
   }
 
   if (!args.help) {
-    if (!args.input && !args.archiveDir) {
-      throw new Error('either --in or --archive-dir is required');
+    const inputModes = [args.input, args.archiveDir, args.carrierUrl].filter(Boolean).length;
+    if (inputModes === 0) {
+      throw new Error('one of --in, --archive-dir, or --carrier-url is required');
     }
-    if (args.input && args.archiveDir) {
-      throw new Error('--in and --archive-dir are mutually exclusive');
+    if (inputModes > 1) {
+      throw new Error('--in, --archive-dir, and --carrier-url are mutually exclusive');
     }
     if (!['report', 'accepted', 'canonical'].includes(args.format)) {
       throw new Error('--format must be one of: report, accepted, canonical');
     }
     if (args.protocol !== 'lingonberry') {
       throw new Error('--protocol must be lingonberry');
+    }
+    if (!Number.isInteger(args.carrierLimit) || args.carrierLimit < 0) {
+      throw new Error('--carrier-limit must be a non-negative integer');
     }
   }
 
@@ -167,6 +208,7 @@ function printHelp() {
     'Usage:',
     '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --in <raw.jsonl> [options]',
     '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --archive-dir <archive-dir> [options]',
+    '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --carrier-url <https://...> [options]',
     '',
     'Options:',
     '  --format report|accepted|canonical  output shape (default: report)',
@@ -175,10 +217,16 @@ function printHelp() {
     '  --storage-dir <dir>                 persist raw/canonical/replay logs',
     '  --source-label <label>              label persisted ingest batch',
     '  --batch-id <id>                     stable batch id for persistence',
+    '  --carrier-cursor <cursor>           cursor passed to GET /v1/objects',
+    '  --carrier-since <value>             since value passed to GET /v1/objects',
+    '  --carrier-limit <n>                 limit passed to GET /v1/objects',
     '  -h, --help                          show this help',
     '',
     'Archive mode:',
     '  Reads <archive-dir>/wire-log.jsonl and parses each record.requestJson as a Lingonberry HTTP publish request.',
+    '',
+    'Carrier mode:',
+    '  Calls GET /v1/objects and ingests the returned objects or publish requests.',
   ].join('\n'));
 }
 
@@ -207,6 +255,47 @@ async function readArchive(archiveDir) {
     }
     return JSON.parse(record.requestJson);
   });
+}
+
+function extractCarrierObjects(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('Lingonberry carrier response must be an array or object');
+  }
+
+  for (const key of ['objects', 'items', 'records']) {
+    if (Array.isArray(payload[key])) {
+      return payload[key].map(item => {
+        if (item && typeof item === 'object' && item.request) {
+          return item.request;
+        }
+        if (item && typeof item === 'object' && item.requestJson) {
+          return JSON.parse(item.requestJson);
+        }
+        if (item && typeof item === 'object' && item.object && item.publisher) {
+          return item;
+        }
+        if (item && typeof item === 'object' && item.object) {
+          return item.object;
+        }
+        return item;
+      });
+    }
+  }
+
+  throw new Error('Lingonberry carrier response missing objects array');
+}
+
+async function readCarrier(carrierUrl, options = {}) {
+  const payload = await listObjects({
+    carrierUrl,
+    cursor: options.cursor || '',
+    since: options.since || '',
+    limit: options.limit || 0,
+  });
+  return extractCarrierObjects(payload);
 }
 
 function writeResult(filePath, format, ingestResult) {
@@ -249,18 +338,26 @@ async function main() {
     return;
   }
 
-  const rawEvents = args.archiveDir
-    ? await readArchive(args.archiveDir)
-    : await readJsonl(args.input);
+  const rawEvents = args.carrierUrl
+    ? await readCarrier(args.carrierUrl, {
+      cursor: args.carrierCursor,
+      since: args.carrierSince,
+      limit: args.carrierLimit,
+    })
+    : args.archiveDir
+      ? await readArchive(args.archiveDir)
+      : await readJsonl(args.input);
   const ingestResult = ingestLingonberryEvents(rawEvents, {
     skipVerify: !args.verify,
     identityClaimSigner: args.identityClaimSigner || null,
   });
 
   if (args.storageDir) {
+    const source = args.carrierUrl ? 'carrier' : args.archiveDir ? 'archive' : 'jsonl';
+    const sourceLabel = args.sourceLabel || (args.carrierUrl || path.resolve(args.archiveDir || args.input));
     persistIngestResult(args.storageDir, ingestResult, {
-      source: args.archiveDir ? 'archive' : 'jsonl',
-      sourceLabel: args.sourceLabel || path.resolve(args.archiveDir || args.input),
+      source,
+      sourceLabel,
       batchId: args.batchId || undefined,
     });
   }
@@ -279,11 +376,13 @@ if (require.main === module) {
 }
 
 module.exports = {
+  extractCarrierObjects,
   main,
   normalizeIdentityClaimSigner,
   parseArgs,
   printHelp,
   readArchive,
+  readCarrier,
   readIdentityClaimSignerFromEnv,
   readJsonl,
   writeResult,

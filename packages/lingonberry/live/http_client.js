@@ -157,6 +157,24 @@ async function getObject(options = {}) {
   });
 }
 
+async function listObjects(options = {}) {
+  const carrierUrl = resolveCarrierUrl(options);
+  const url = new URL(`${carrierUrl}/v1/objects`);
+  if (isNonEmptyString(options.cursor)) {
+    url.searchParams.set('cursor', options.cursor.trim());
+  }
+  if (isNonEmptyString(options.since)) {
+    url.searchParams.set('since', options.since.trim());
+  }
+  if (Number.isInteger(options.limit) && options.limit > 0) {
+    url.searchParams.set('limit', String(options.limit));
+  }
+
+  return requestJson(url.toString(), {
+    method: 'GET',
+  });
+}
+
 async function getCapabilities(options = {}) {
   return requestJson(`${resolveCarrierUrl(options)}/v1/capabilities`, {
     method: 'GET',
@@ -175,6 +193,7 @@ module.exports = {
   getCapabilities,
   getObject,
   getReady,
+  listObjects,
   publishObject,
   requestJson,
   resolveCarrierUrl,

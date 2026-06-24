@@ -77,7 +77,18 @@ TOITOI_TRANSPORT_SOURCES='[
 
 ---
 
-## Batch / Archive Ingest
+## Carrier / Batch / Archive Ingest
+
+Lingonberry carrier から直接 ingest する場合:
+
+```bash
+node infra/transports/lingonberry/lingonberry_ingest_worker.js \
+  --carrier-url https://your-lingonberry.example \
+  --storage-dir /path/to/lingonberry-storage \
+  --source-label carrier
+```
+
+carrier mode は `GET /v1/objects` を呼び、返された Lingonberry knowledge object または HTTP publish request を ingest します。`--carrier-cursor` / `--carrier-since` / `--carrier-limit` を指定すると、それぞれ query parameter として carrier に渡します。
 
 JSONL から ingest する場合:
 
@@ -106,7 +117,7 @@ archive mode は `<archive-dir>/wire-log.jsonl` を読み、各行の `requestJs
 ## systemd timer ingest
 
 Nostr worker と揃えて、Lingonberry も最初の live ingest は `systemd timer` による定期回収として運用します。  
-常時接続ではなく、archive / wire log を一定間隔で読み直して append-only storage に保存する形です。
+常時接続ではなく、carrier の object collection を一定間隔で取得して append-only storage に保存する形です。
 
 `/etc/systemd/system/toitoi-lingonberry-worker.service`
 
@@ -119,9 +130,9 @@ Type=oneshot
 WorkingDirectory=/home/you/github/Toitoi
 Environment=NODE_ENV=production
 Environment=TOITOI_PROTOCOL=lingonberry
-Environment=LINGONBERRY_ARCHIVE_DIR=/var/lib/toitoi/lingonberry-archive
+Environment=LINGONBERRY_CARRIER_URL=https://your-lingonberry.example
 Environment=LINGONBERRY_STORAGE_DIR=/var/lib/toitoi/lingonberry-storage
-ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/lingonberry-transport start -- --archive-dir "$LINGONBERRY_ARCHIVE_DIR" --protocol lingonberry --storage-dir "$LINGONBERRY_STORAGE_DIR" --source-label archive'
+ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/lingonberry-transport start -- --carrier-url "$LINGONBERRY_CARRIER_URL" --protocol lingonberry --storage-dir "$LINGONBERRY_STORAGE_DIR" --source-label carrier'
 ```
 
 `/etc/systemd/system/toitoi-lingonberry-worker.timer`
@@ -167,7 +178,7 @@ journalctl -u toitoi-lingonberry-worker.service
 
 ## 現在の制約
 
-- 専用の常時接続 live relay ingest worker は未追加です。現時点では `systemd timer` で batch / archive ingest を定期実行する運用入口にします
+- 専用の常時接続 live relay ingest worker は未追加です。現時点では `systemd timer` で carrier direct ingest を定期実行する運用入口にします
 - live publish smoke は `LINGONBERRY_LIVE_SMOKE_TEST=1` で明示した場合だけ実行します
 - HTTP publish request の signature 検証は adapter にありますが、通常 replay では `skipVerify: true` を既定にします
 - source trust は publisher signature だけで完結せず、carrier / operator policy と分けて扱います

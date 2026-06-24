@@ -36,7 +36,8 @@ protocol.js
 
 - Lingonberry `0.1.0` knowledge object / HTTP publish request を対象にする
 - HTTP publish request の Ed25519 publisher signature を検証する
-- archive / batch ingest を先に対象にし、live relay ingest は後続で gated smoke として扱う
+- carrier direct ingest は `GET /v1/objects` を oneshot worker から呼び、`systemd timer` で定期実行する
+- archive / batch ingest は replay 可能な補助経路として扱う
 - `TOITOI_PROTOCOL=lingonberry` と `TOITOI_TRANSPORT_SOURCES` の replay source として Standard API に接続する
 
 ## live smoke test
