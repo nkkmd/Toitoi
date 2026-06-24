@@ -9,11 +9,11 @@
 
 ```text
 packages/
-├─ protocol/  -> shared descriptor / registry
-├─ nostr/     -> Nostr adapter / storage / converter
-├─ atproto/   -> ATProto adapter / storage / converter / live smoke
-├─ localfs/   -> LocalFS descriptor
-└─ lingonberry/ -> Lingonberry adapter / converter / descriptor
+├─ protocol/     -> shared descriptor / registry
+├─ nostr/        -> Nostr adapter / storage / converter
+├─ lingonberry/  -> Lingonberry adapter / converter / storage / live helpers
+├─ atproto/      -> ATProto adapter / storage / converter / live smoke
+└─ localfs/      -> LocalFS descriptor
 ```
 
 ## まず見るもの
@@ -27,10 +27,12 @@ packages/
 ## 役割の分け方
 
 - `protocol/`: protocol descriptor と registry の共通基盤
-- `nostr/`: Nostr の adapter / converter / storage の共有実装
-- `atproto/`: ATProto の adapter / converter / storage
+- `nostr/`: operational primary transport としての Nostr adapter / converter / storage の共有実装
+- `lingonberry/`: semantic primary transport としての Lingonberry knowledge object / HTTP publish request の adapter / converter / storage / live helper
+- `atproto/`: secondary transport としての ATProto adapter / converter / storage
 - `localfs/`: LocalFS の protocol descriptor（runtime replay は unsupported）
-- `lingonberry/`: Lingonberry knowledge object / HTTP publish request の adapter / converter / descriptor
+
+transport の立ち位置は [Transport Positioning](../docs/architecture/TRANSPORT_POSITIONING.md) を参照してください。
 
 ## 依存の原則
 

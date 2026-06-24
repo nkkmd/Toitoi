@@ -249,6 +249,7 @@ Toitoi の設計、思想、protocol、operations、concepts、roadmap を整理
 | `MULTI_TRANSPORT_IDENTITY_POLICY.md` | canonical identity / provenance の共通方針 |
 | `MULTI_PROTOCOL_INDEXER.md` | multi-protocol indexer の責務分離 |
 | `STANDARD_API_MVP.md` | Standard API の契約 |
+| `TRANSPORT_POSITIONING.md` | Nostr / Lingonberry / ATProto の立ち位置 |
 
 扱う内容:
 

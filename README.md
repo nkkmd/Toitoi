@@ -62,6 +62,7 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 
 * 📘 **[Glossary](./docs/concepts/GLOSSARY.md)**
 * 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
+* 🧭 **[Transport Positioning](./docs/architecture/TRANSPORT_POSITIONING.md)**
 * 🗺️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 🌐 **[Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)**
@@ -216,6 +217,7 @@ Toitoi は protocol-independent な canonical event、identity key / claim、pro
 
 * 📘 **[用語集](./docs/concepts/GLOSSARY.md)**
 * 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
+* 🧭 **[Transport Positioning](./docs/architecture/TRANSPORT_POSITIONING.md)**
 * 🗺️ **[ディレクトリ責務ルール](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
 * 🌐 **[Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)**
