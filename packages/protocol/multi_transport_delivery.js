@@ -111,6 +111,18 @@ function loadDefaultOutboundHandler(protocol) {
     };
   }
 
+  if (protocol === 'lingonberry') {
+    return async ({ canonicalEvent, options = {} }) => {
+      let publishCanonicalEventToLingonberry;
+      try {
+        ({ publishCanonicalEventToLingonberry } = require('@toitoi/lingonberry/live/outbound'));
+      } catch (error) {
+        ({ publishCanonicalEventToLingonberry } = require('../lingonberry/live/outbound'));
+      }
+      return publishCanonicalEventToLingonberry(canonicalEvent, options);
+    };
+  }
+
   return null;
 }
 
@@ -165,11 +177,12 @@ async function executeOutboundFanOutPlan(canonicalEvent, options = {}) {
       continue;
     }
 
-    const handlerOptions = {
-      ...(protocolOptions[entry.protocol] || {}),
-      ...(entry.protocol === 'nostr' && isPlainObject(options.nostr) ? options.nostr : {}),
-      ...(entry.protocol === 'atproto' && isPlainObject(options.atproto) ? options.atproto : {}),
-    };
+      const handlerOptions = {
+        ...(protocolOptions[entry.protocol] || {}),
+        ...(entry.protocol === 'nostr' && isPlainObject(options.nostr) ? options.nostr : {}),
+        ...(entry.protocol === 'atproto' && isPlainObject(options.atproto) ? options.atproto : {}),
+        ...(entry.protocol === 'lingonberry' && isPlainObject(options.lingonberry) ? options.lingonberry : {}),
+      };
 
     try {
       const deliveryResult = await retryOperation(({ attempt }) => handler({

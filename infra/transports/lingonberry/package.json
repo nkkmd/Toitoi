@@ -1,0 +1,13 @@
+{
+  "name": "@toitoi/lingonberry-transport",
+  "private": true,
+  "type": "commonjs",
+  "main": "lingonberry_ingest_worker.js",
+  "scripts": {
+    "test": "node ../../../scripts/run-tests.js",
+    "start": "node lingonberry_ingest_worker.js"
+  },
+  "dependencies": {
+    "@toitoi/lingonberry": "workspace:*"
+  }
+}

@@ -56,7 +56,7 @@ index.js
 
 - `protocol_descriptor.js` は共通の検証ロジックの土台です
 - `protocol_registry.js` は `protocol_descriptor.js` を使って registry を作ります
-- `protocol_catalog.js` は `packages/nostr/`、`packages/atproto/`、`packages/localfs/` の descriptor を集めます
+- `protocol_catalog.js` は `packages/nostr/`、`packages/atproto/`、`packages/localfs/`、`packages/lingonberry/` の descriptor を集めます
 
 ## テスト
 

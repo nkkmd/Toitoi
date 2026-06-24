@@ -65,6 +65,7 @@ HTTP response
 - multi-transport fan-out / fan-in の参照: `docs/roadmap/IMPLEMENTATION_PLAN.md` と `docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md`
 - テスト: `pnpm --filter @toitoi/api test`
 - 参照実装: `@toitoi/nostr/storage/` と `@toitoi/atproto/storage/`
+- `lingonberry` は registry metadata、adapter / converter、storage / replay、API runtime 接続まで対応済みです。
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 起動
@@ -185,8 +186,8 @@ registry に登録されている protocol の一覧と capability matrix を返
 ```json
 {
   "selectedProtocol": "nostr",
-  "availableProtocols": ["atproto", "localfs", "nostr"],
-  "capabilityMatrix": "| Capability | atproto | localfs | nostr | ...",
+  "availableProtocols": ["atproto", "lingonberry", "localfs", "nostr"],
+  "capabilityMatrix": "| Capability | atproto | lingonberry | localfs | nostr | ...",
   "protocols": [
     {
       "protocol": "nostr",

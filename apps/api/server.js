@@ -11,6 +11,14 @@ const {
 } = require('@toitoi/protocol');
 const { replayStorage } = require('@toitoi/nostr/storage/replay');
 
+function loadLingonberryModule(subpath = '') {
+  try {
+    return require(`@toitoi/lingonberry${subpath}`);
+  } catch (error) {
+    return require(`../../packages/lingonberry${subpath}`);
+  }
+}
+
 function loadReplayModule(protocol) {
   if (protocol === 'nostr') {
     return { replayStorage };
@@ -18,6 +26,10 @@ function loadReplayModule(protocol) {
 
   if (protocol === 'atproto') {
     return require('@toitoi/atproto/storage/replay');
+  }
+
+  if (protocol === 'lingonberry') {
+    return loadLingonberryModule('/storage/replay');
   }
 
   return null;
@@ -30,6 +42,10 @@ function loadStorageModule(protocol) {
 
   if (protocol === 'atproto') {
     return require('@toitoi/atproto/storage');
+  }
+
+  if (protocol === 'lingonberry') {
+    return loadLingonberryModule('/storage');
   }
 
   return null;

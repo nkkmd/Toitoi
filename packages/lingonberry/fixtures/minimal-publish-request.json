@@ -1,0 +1,42 @@
+{
+  "object": {
+    "id": "lb:obj:toitoi-example-0001",
+    "schemaVersion": "0.1.0",
+    "type": "inquiry",
+    "createdAt": "2026-06-17T00:00:00Z",
+    "body": {
+      "text": "What evidence supports this claim?",
+      "language": "en"
+    },
+    "contexts": {
+      "site": "field-edge"
+    },
+    "relations": [
+      {
+        "source": "observation",
+        "target": "claim"
+      }
+    ],
+    "provenance": {
+      "sources": [
+        {
+          "protocol": "lingonberry",
+          "sourceId": "draft:toitoi-example-0001",
+          "authorId": "alice",
+          "observedAt": "2026-06-17T00:00:00Z"
+        }
+      ]
+    },
+    "rawRef": {
+      "protocol": "lingonberry",
+      "sourceId": "draft:toitoi-example-0001",
+      "locator": "memory://drafts/toitoi-example-0001",
+      "payloadHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "labels": ["agroecology"]
+  },
+  "publisher": {
+    "publicKey": "307270eca005df54e3ca169c6139ffc228c4f0069c24ce1260fbf3394f51b9ac",
+    "signature": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  }
+}

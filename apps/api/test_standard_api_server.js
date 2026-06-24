@@ -11,10 +11,14 @@ const { ingestAtProtoEvents } = require('@toitoi/atproto/adapter/ingest_pipeline
 const { lookupEvent } = require('@toitoi/atproto/storage/indexer');
 const { persistIngestResult } = require('@toitoi/atproto/storage/persistence');
 const { makeAtProtoRecord } = require('@toitoi/atproto/test_fixtures');
+const lingonberryFixture = require('../../packages/lingonberry/fixtures/minimal-publish-request.json');
+const { ingestLingonberryEvents } = require('../../packages/lingonberry/adapter/ingest_pipeline');
+const { persistIngestResult: persistLingonberryIngestResult } = require('../../packages/lingonberry/storage/persistence');
 const { createProtocolStorageRuntime } = require('@toitoi/protocol');
 const { createStandardApiService } = require('./standard_api_service');
 const {
   createMultiTransportStorageRuntime,
+  describeProtocolStorage,
   loadIndexSnapshotFromOptions,
 } = require('./server');
 
@@ -90,6 +94,66 @@ const tests = [
     },
   },
   {
+    name: 'loadIndexSnapshotFromOptions resolves Lingonberry storage replay',
+    run() {
+      const storageDir = makeTempDir();
+      const ingestResult = ingestLingonberryEvents([lingonberryFixture], {
+        skipVerify: true,
+      });
+      persistLingonberryIngestResult(storageDir, ingestResult, {
+        source: 'jsonl',
+        sourceLabel: 'fixture',
+      });
+
+      const getIndexSnapshot = loadIndexSnapshotFromOptions({
+        storageDir,
+        protocol: 'lingonberry',
+      });
+      const snapshot = getIndexSnapshot();
+
+      assert.strictEqual(snapshot.total, 1);
+      assert.ok(lookupEvent(snapshot, 'draft:toitoi-example-0001'));
+
+      const service = createStandardApiService({
+        getIndexSnapshot,
+        protocol: 'lingonberry',
+        protocolStorageRuntime: createProtocolStorageRuntime({
+          protocol: 'lingonberry',
+          loadReplayModule(protocol) {
+            if (protocol === 'lingonberry') {
+              return require('../../packages/lingonberry/storage/replay');
+            }
+            return null;
+          },
+        }),
+        storageModule: require('../../packages/lingonberry/storage'),
+        describeProtocolStorage,
+      });
+      const canonicalId = lookupEvent(snapshot, 'draft:toitoi-example-0001').id;
+
+      const protocols = service.handleRequest({ method: 'GET', url: '/api/v1/protocols' });
+      assert.strictEqual(protocols.statusCode, 200);
+      assert.ok(protocols.body.availableProtocols.includes('lingonberry'));
+      const lingonberryProtocol = protocols.body.protocols.find(protocol => protocol.protocol === 'lingonberry');
+      assert.ok(lingonberryProtocol);
+      assert.strictEqual(lingonberryProtocol.provenancePolicy.semanticSource, 'canonical');
+      assert.strictEqual(lingonberryProtocol.provenancePolicy.rawRef, true);
+
+      const protocolDetail = service.handleRequest({ method: 'GET', url: '/api/v1/protocols/lingonberry' });
+      assert.strictEqual(protocolDetail.statusCode, 200);
+      assert.strictEqual(protocolDetail.body.storage.supported, true);
+
+      const lookup = service.handleRequest({ method: 'GET', url: `/api/v1/inquiries/${canonicalId}` });
+      assert.strictEqual(lookup.statusCode, 200);
+      assert.strictEqual(lookup.body.id, canonicalId);
+
+      const health = service.handleRequest({ method: 'GET', url: '/health' });
+      assert.strictEqual(health.statusCode, 200);
+      assert.strictEqual(health.body.storage.supported, true);
+      assert.strictEqual(health.body.storage.protocol, 'lingonberry');
+    },
+  },
+  {
     name: 'loadIndexSnapshotFromOptions rejects protocols without replay storage',
     run() {
       assert.throws(
@@ -106,8 +170,10 @@ const tests = [
     run() {
       const nostrStorageDir = makeTempDir();
       const atprotoStorageDir = makeTempDir();
+      const lingonberryStorageDir = makeTempDir();
       const nostrRawId = 'f'.repeat(64);
       const atprotoRawUri = 'at://did:plc:toitoi123/app.toitoi.inquiry/api-fan-in';
+      const lingonberryRawSourceId = 'draft:toitoi-example-0001';
       const sharedCanonicalId = 'tt:evt:01JVVAPIFANIN000000000000000000000';
 
       const nostrIngest = ingestNostrEvents([
@@ -142,6 +208,14 @@ const tests = [
         sourceLabel: 'atproto-fixture',
       });
 
+      const lingonberryIngest = ingestLingonberryEvents([lingonberryFixture], {
+        skipVerify: true,
+      });
+      persistLingonberryIngestResult(lingonberryStorageDir, lingonberryIngest, {
+        source: 'jsonl',
+        sourceLabel: 'lingonberry-fixture',
+      });
+
       const getIndexSnapshot = loadIndexSnapshotFromOptions({
         transportSources: [
           {
@@ -152,10 +226,15 @@ const tests = [
             protocol: 'atproto',
             storageDir: atprotoStorageDir,
           },
+          {
+            protocol: 'lingonberry',
+            storageDir: lingonberryStorageDir,
+          },
         ],
         identityMapping: {
           [nostrRawId]: sharedCanonicalId,
           [atprotoRawUri]: sharedCanonicalId,
+          [lingonberryRawSourceId]: sharedCanonicalId,
         },
       });
       const snapshot = getIndexSnapshot();
@@ -163,12 +242,14 @@ const tests = [
       assert.strictEqual(snapshot.total, 1);
       assert.ok(lookupEvent(snapshot, nostrRawId));
       assert.ok(lookupEvent(snapshot, atprotoRawUri));
+      assert.ok(lookupEvent(snapshot, lingonberryRawSourceId));
 
       const service = createStandardApiService({
         getIndexSnapshot,
         protocolStorageRuntime: createMultiTransportStorageRuntime([
           { protocol: 'nostr', storageDir: nostrStorageDir },
           { protocol: 'atproto', storageDir: atprotoStorageDir },
+          { protocol: 'lingonberry', storageDir: lingonberryStorageDir },
         ]),
         storageModule: require('@toitoi/nostr/storage'),
       });
@@ -176,13 +257,13 @@ const tests = [
       const health = service.handleRequest({ method: 'GET', url: '/health' });
       assert.strictEqual(health.statusCode, 200);
       assert.strictEqual(health.body.storage.protocol, 'multi-transport');
-      assert.strictEqual(health.body.storage.sourceCount, 2);
+      assert.strictEqual(health.body.storage.sourceCount, 3);
 
       const list = service.handleRequest({ method: 'GET', url: '/api/v1/inquiries?limit=10' });
       assert.strictEqual(list.statusCode, 200);
       assert.strictEqual(list.body.total, 1);
       assert.strictEqual(list.body.results[0].event.id, sharedCanonicalId);
-      assert.strictEqual(list.body.results[0].provenance.sourceCount, 2);
+      assert.strictEqual(list.body.results[0].provenance.sourceCount, 3);
     },
   },
 ];

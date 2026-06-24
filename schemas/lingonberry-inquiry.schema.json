@@ -1,0 +1,216 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://toitoi.cultivationdata.net/schemas/v1/lingonberry-inquiry.schema.json",
+  "title": "Toitoi Lingonberry Inquiry Object",
+  "description": "Schema for Toitoi inquiry transport projections carried as Lingonberry 0.1.0 knowledge objects or HTTP publish requests.",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/knowledgeObject"
+    },
+    {
+      "$ref": "#/definitions/httpPublishRequest"
+    }
+  ],
+  "definitions": {
+    "httpPublishRequest": {
+      "type": "object",
+      "required": ["object", "publisher"],
+      "properties": {
+        "object": {
+          "$ref": "#/definitions/knowledgeObject"
+        },
+        "publisher": {
+          "type": "object",
+          "required": ["publicKey", "signature"],
+          "properties": {
+            "publicKey": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "signature": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{128}$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "knowledgeObject": {
+      "type": "object",
+      "required": ["id", "schemaVersion", "type", "createdAt", "body", "provenance", "rawRef"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^lb:obj:[^\\s]+$"
+        },
+        "schemaVersion": {
+          "type": "string",
+          "const": "0.1.0"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["inquiry", "observation", "claim", "evidence", "annotation", "synthesis", "translation", "reference", "concept"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "body": {
+          "type": "object",
+          "required": ["text", "language"],
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1
+            },
+            "language": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "contexts": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/relation"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "active", "superseded", "deprecated", "archived"]
+        },
+        "lineage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/lineageEdge"
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["sources"],
+          "properties": {
+            "sources": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/provenanceSource"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "rawRef": {
+          "type": "object",
+          "required": ["protocol", "sourceId"],
+          "properties": {
+            "protocol": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sourceId": {
+              "type": "string",
+              "minLength": 1
+            },
+            "locator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "payloadHash": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "identityClaims": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "meta": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "relation": {
+      "type": "object",
+      "required": ["source", "target"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "lineageEdge": {
+      "type": "object",
+      "required": ["type", "target"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["derived_from", "revises", "supersedes", "translates", "synthesizes"]
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "provenanceSource": {
+      "type": "object",
+      "required": ["protocol", "sourceId"],
+      "properties": {
+        "protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

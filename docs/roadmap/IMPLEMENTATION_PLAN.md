@@ -355,15 +355,15 @@ API では必要最小限の trust 情報だけを露出し、それ以外は pr
 
 | Capability | Nostr | ATProto | LocalFS | Lingonberry |
 |---|---|---|---|---|
-| rawAcquisition | yes | unknown | yes | unknown |
-| identityVerification | yes | unknown | no | unknown |
-| ordering | yes | partial | partial | unknown |
-| deleteSemantics | partial | partial | partial | unknown |
-| replaceSemantics | partial | partial | partial | unknown |
-| replayability | yes | partial | yes | unknown |
-| provenanceFidelity | yes | yes | partial | unknown |
-| storageSnapshot | yes | partial | yes | unknown |
-| sourceTrust | partial | partial | partial | unknown |
+| rawAcquisition | yes | unknown | yes | yes |
+| identityVerification | yes | unknown | no | yes |
+| ordering | yes | partial | partial | partial |
+| deleteSemantics | partial | partial | partial | no |
+| replaceSemantics | partial | partial | partial | partial |
+| replayability | yes | partial | yes | yes |
+| provenanceFidelity | yes | yes | partial | yes |
+| storageSnapshot | yes | partial | yes | yes |
+| sourceTrust | partial | partial | partial | partial |
 
 読み方:
 
@@ -840,6 +840,40 @@ Phase 14 で整えた multi-transport の枠組みと、Phase 15/16 で固めた
 - Toitoi の `inquiry` を Lingonberry 上でどう表現するかを、Canonical Event からの projection として定義する
 - Lingonberry 側に署名、検証、content address、append-only 性のいずれがあるかを確認し、capability matrix の `unknown` を更新する
 
+### 一次情報確認メモ
+
+2026-06-24 時点で `nkkmd/lingonberry` の `main` / `0.1.0` は `8116a73ffb1e17d8a1d2e6ab0bd2d5cc1b4abaf0` を指している。ライセンスは `Apache-2.0`。
+
+Lingonberry は、protocol-native な `knowledge object` を中心に置く設計で、HTTP / archive / relay は同じ object を運ぶ carrier として扱う。Toitoi に取り込む際は、Lingonberry の `knowledge object` を Toitoi の内部中心モデルにはせず、Canonical Event からの transport projection / ingest source として扱う。
+
+確認した最小 wire object は次の性質を持つ。
+
+- object schema version は `0.1.0`
+- `id` は `lb:obj:<...>` 形式
+- `type` は `inquiry` を含む knowledge object type
+- `createdAt` は UTC date-time
+- `body.text` と `body.language` を持つ
+- `provenance.sources[]` と `rawRef` が必須
+- `identityClaims` は任意
+
+HTTP publish は `object` と `publisher` を持つ request envelope として定義される。`publisher.publicKey` は 32 byte Ed25519 public key の lowercase hex、`publisher.signature` は `publisher.signature` を除いた canonicalized request payload への Ed25519 signature として検証される。
+
+identity key は `lb.identity.key.v1` で、`type` / `createdAt` / `body` / `contexts` / `relations` / `status` / `lineage` / `attachments` / `labels` から canonical JSON を作り、`fnv1a64` で `lb:key:lb.identity.key.v1:fnv1a64:<hex>` を導出する。`id` / `provenance` / `rawRef` / `identityClaims` / `meta` は basis に含めない。
+
+storage は append-only を前提に、raw request log と canonical catalog を分けて保持する。archive export は `manifest.json`、`wire-log.jsonl`、`canonical-catalog.jsonl` を出力し、import は `wire-log.jsonl` の `requestJson` から validate / finalize / append を再実行する。
+
+capability matrix の Lingonberry 列は次の根拠で更新した。
+
+- `rawAcquisition`: HTTP publish request、relay CLI、archive import/export があるため `yes`
+- `identityVerification`: HTTP publish request の Ed25519 signature 検証があるため `yes`
+- `ordering`: append-only log の保存順はあるが、global ordering ではないため `partial`
+- `deleteSemantics`: protocol-native な削除 semantic は確認できないため `no`
+- `replaceSemantics`: `status` と `lineage` で supersede / revise を表せるが、mutation としての replace ではないため `partial`
+- `replayability`: archive / raw log から replay できるため `yes`
+- `provenanceFidelity`: `provenance.sources[]` と `rawRef` が必須のため `yes`
+- `storageSnapshot`: raw log / catalog / archive export があるため `yes`
+- `sourceTrust`: publisher signature は検証できるが、運用上の source trust は carrier / operator policy に残るため `partial`
+
 ### 作業
 
 #### Documentation / schema
@@ -892,9 +926,23 @@ Phase 14 で整えた multi-transport の枠組みと、Phase 15/16 で固めた
 
 ### 完了メモ
 
-- まだ着手前
+- 2026-06-24 時点で Lingonberry の一次情報確認と capability matrix 更新まで完了
+- `docs/protocols/LINGONBERRY_TRANSPORT.md` と `docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md` を追加した
+- `schemas/lingonberry-inquiry.schema.json` を追加した
+- `packages/lingonberry/` に descriptor / adapter / converter / ingest pipeline の最小実装を追加した
+- `packages/lingonberry/storage/` に raw / canonical append-only 保存、replay、derived index、Standard API view の入口を追加した
+- `packages/protocol/protocol_catalog.js` から Lingonberry descriptor を参照できるようにした
+- `apps/api/server.js` の replay module / storage module 解決に `lingonberry` を追加した
+- `TOITOI_PROTOCOL=lingonberry` と `TOITOI_TRANSPORT_SOURCES` で Lingonberry storage を API に流せることをテストで確認した
+- `docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md` を追加した
+- `infra/transports/lingonberry/lingonberry_ingest_worker.js` を追加し、JSONL と Lingonberry archive の batch ingest 入口を用意した
+- `packages/lingonberry/live/` に HTTP carrier client と outbound publish helper を追加した
+- `packages/lingonberry/test_smoke.js` を追加し、`LINGONBERRY_LIVE_SMOKE_TEST=1` でだけ live publish / fetch を確認する形にした
+- `packages/protocol/multi_transport_delivery.js` の default outbound handler から Lingonberry publish helper を呼べるようにした
+- `packages/lingonberry/test_protocol.js`、`packages/lingonberry/test_inquiry_schema.js`、`packages/lingonberry/live/test_*`、`packages/lingonberry/storage/test_*`、`infra/transports/lingonberry/test_lingonberry_ingest_worker.js`、`packages/protocol/test_*`、`apps/api/test_standard_api_server.js` で初期 contract を確認した
+- live relay ingest worker は未着手
 - 対象 transport は `nkkmd/lingonberry` とする
-- 着手時はまず Lingonberry の一次情報を確認し、capability matrix の `unknown` を更新する
+- 次は実 Lingonberry carrier に対する手元 smoke と、必要に応じた relay ingest worker の詳細化を行う
 
 ---
 

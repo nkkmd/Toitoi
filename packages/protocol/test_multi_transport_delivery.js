@@ -3,6 +3,7 @@
 const assert = require('assert');
 const {
   executeOutboundFanOutPlan,
+  resolveOutboundHandler,
 } = require('./index');
 
 const tests = [
@@ -63,6 +64,12 @@ const tests = [
       assert.strictEqual(result.skipped.length, 0);
       assert.deepStrictEqual(calls.map(call => call.protocol).sort(), ['atproto', 'nostr']);
       assert.strictEqual(result.results[0].status, 'delivered');
+    },
+  },
+  {
+    name: 'resolveOutboundHandler exposes the Lingonberry live publisher',
+    run() {
+      assert.strictEqual(typeof resolveOutboundHandler('lingonberry'), 'function');
     },
   },
   {

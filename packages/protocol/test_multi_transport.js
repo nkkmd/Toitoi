@@ -130,19 +130,23 @@ const tests = [
       const plan = buildOutboundFanOutPlan(canonicalEvent);
 
       assert.strictEqual(plan.sourceEventId, canonicalEvent.id);
-      assert.strictEqual(plan.ready.length, 2);
+      assert.strictEqual(plan.ready.length, 3);
       assert.strictEqual(plan.quarantined.length, 1);
       assert.strictEqual(plan.skipped.length, 0);
 
       const readyProtocols = plan.ready.map(entry => entry.protocol).sort();
-      assert.deepStrictEqual(readyProtocols, ['atproto', 'nostr']);
+      assert.deepStrictEqual(readyProtocols, ['atproto', 'lingonberry', 'nostr']);
 
       const nostrEntry = plan.ready.find(entry => entry.protocol === 'nostr');
       const atprotoEntry = plan.ready.find(entry => entry.protocol === 'atproto');
+      const lingonberryEntry = plan.ready.find(entry => entry.protocol === 'lingonberry');
       assert.ok(nostrEntry);
       assert.ok(atprotoEntry);
+      assert.ok(lingonberryEntry);
       assert.strictEqual(nostrEntry.transport.kind, 1042);
       assert.strictEqual(atprotoEntry.transport.collection, 'app.toitoi.inquiry');
+      assert.strictEqual(lingonberryEntry.transport.schemaVersion, '0.1.0');
+      assert.strictEqual(lingonberryEntry.transport.type, 'inquiry');
 
       const quarantinedProtocols = plan.quarantined.map(entry => entry.protocol);
       assert.deepStrictEqual(quarantinedProtocols, ['localfs']);

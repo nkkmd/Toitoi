@@ -1,0 +1,24 @@
+{
+  "name": "@toitoi/lingonberry",
+  "private": true,
+  "type": "commonjs",
+  "main": "protocol.js",
+  "exports": {
+    ".": "./protocol.js",
+    "./protocol": "./protocol.js",
+    "./adapter/*": "./adapter/*.js",
+    "./converter/*": "./converter/*.js",
+    "./fixtures/*": "./fixtures/*.json",
+    "./live/*": "./live/*.js",
+    "./storage": "./storage/index.js",
+    "./storage/*": "./storage/*.js",
+    "./test_protocol": "./test_protocol.js",
+    "./test_smoke": "./test_smoke.js"
+  },
+  "scripts": {
+    "test": "node ../../scripts/run-tests.js"
+  },
+  "dependencies": {
+    "@toitoi/protocol": "workspace:*"
+  }
+}

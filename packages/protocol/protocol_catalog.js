@@ -9,11 +9,13 @@ function loadDefaultProtocolDescriptors() {
   const { nostrProtocolDescriptor } = require('../nostr/protocol');
   const { atprotoProtocolDescriptor } = require('../atproto/protocol');
   const { localFsProtocolDescriptor } = require('../localfs/protocol');
+  const { lingonberryProtocolDescriptor } = require('../lingonberry/protocol');
 
   return [
     nostrProtocolDescriptor,
     atprotoProtocolDescriptor,
     localFsProtocolDescriptor,
+    lingonberryProtocolDescriptor,
   ];
 }
 

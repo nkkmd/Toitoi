@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE_POLICY.md)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC_BY--SA_4.0-lightgrey.svg)](./LICENSE_POLICY.md)
 
-**Digital Agroecology Commons powered by Nostr Protocol**
+**Digital Agroecology Commons powered by protocol-independent canonical events**
 
 *[日本語は下に続きます]*
 
@@ -42,7 +42,7 @@ Toitoi completely overturns this structure:
 
 ## ⚙️ System Architecture
 
-Toitoi is a "nested commons" composed of 3 modules connected through a common protocol based on Nostr.
+Toitoi is a "nested commons" composed of 3 modules connected through protocol-specific transports and a protocol-independent canonical event layer.
 
 * **[Edge Layer] Local AI**: Conceals raw data, generates "inquiries", cryptographically signs them, and publishes them.
 * **[Infrastructure Layer] Commons Relay**: A decentralized relay network that permanently archives only "inquiries".
@@ -50,7 +50,7 @@ Toitoi is a "nested commons" composed of 3 modules connected through a common pr
 
 Toitoi preserves knowledge archives through a protocol-independent canonical event, identity key / claim, and provenance structure.
 
-Nostr is currently the first operational transport layer.
+The current primary transports are Nostr and Lingonberry. Nostr provides the relay-oriented operational path, while Lingonberry provides the knowledge-object transport projection / ingest path. Both are wired into schema, adapter, converter, raw/canonical storage, replay, Standard API access, and outbound publishing. ATProto is maintained as a secondary transport implementation for multi-protocol compatibility, ingest/replay verification, and future federation work.
 
 ## 📚 Documentation
 
@@ -64,6 +64,9 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 * 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
 * 🗺️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
+* 🌐 **[Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)**
+* 🍒 **[Lingonberry Transport](./docs/protocols/LINGONBERRY_TRANSPORT.md)**
+* 🍒 **[Lingonberry Inquiry Schema](./docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
 * 📖 **[Standard Vocabulary List](./docs/concepts/TOITOI_VOCABULARY.md)**
 * ⚖️ **[License Policy](./LICENSE_POLICY.md)**
@@ -74,13 +77,14 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 
 ### Module Setup & Design
 
-* 🌐 **Commons Relay Layer**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
+* 🌐 **Nostr Transport Operations**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
+* 🍒 **Lingonberry Transport Operations**: **[`docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md`](./docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md)** / **[`infra/transports/lingonberry/README.md`](./infra/transports/lingonberry/README.md)**
 * 🤖 **Local AI Edge Layer Hub**: **[`apps/edge-ai/README.md`](./apps/edge-ai/README.md)**
 * 🪶 **Local AI Low-Resource Profile**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
 * 🧭 **Standard API Layer**: **[`apps/api/README.md`](./apps/api/README.md)**
 * 🧠 **AI System Overview**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **Indexer Architecture**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
-* 🧩 **Current Indexer MVP**: `packages/protocol/`, `packages/nostr/`, and protocol-specific `storage/` implementations
+* 🧩 **Current Indexer MVP**: `packages/protocol/`, primary transport packages `packages/nostr/` and `packages/lingonberry/`, secondary `packages/atproto/`, and protocol-specific `storage/` implementations
 * 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
 * 📱 **Frontend UI Layer**: **[`apps/frontend/README.md`](./apps/frontend/README.md)**
 * 🛠️ **pnpm Workspace Guide**: **[`docs/operations/PNPM_WORKSPACE_GUIDE.md`](./docs/operations/PNPM_WORKSPACE_GUIDE.md)**
@@ -95,8 +99,8 @@ If you're not sure where to start, begin here.
 | Indexer operators | [`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md) / [`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md) | Entry point for architecture policy and the protocol-aware indexer setup. [`apps/api/README.md`](./apps/api/README.md), `packages/protocol/`, and `packages/<protocol>/storage/` are the core implementation references. |
 | Edge AI operators | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | Use this for the 4GB / Ubuntu 24.04 LTS minimal stack, queueing, retry, and local model runtime decisions. `apps/edge-ai/README.md` is the entry hub. |
 | API consumers | [`apps/api/README.md`](./apps/api/README.md) | Use this for HTTP API verification, local startup, and client implementation. `server.js` and `standard_api_service.js` are the main implementation files. |
-| Conversion and ingestion implementers | `packages/<protocol>/adapter/` | Handles relay ingest, JSONL ingest, and validation logic. For Nostr, start with `relay_ingest.js`, `ingest_pipeline.js`, and `nostr_adapter.js`. |
-| Persistence, replay, and search implementers | `packages/<protocol>/storage/` | Used for raw/canonical storage, replay, index rebuilds, and search verification. For Nostr, the main files are `replay.js`, `indexer.js`, and `replay_cli.js`. |
+| Conversion and ingestion implementers | `packages/<protocol>/adapter/` | Handles relay ingest, JSONL ingest, and validation logic. For Nostr, start with `relay_ingest.js`, `ingest_pipeline.js`, and `nostr_adapter.js`. For Lingonberry, start with `packages/lingonberry/adapter/` and `infra/transports/lingonberry/`. |
+| Persistence, replay, and search implementers | `packages/<protocol>/storage/` | Used for raw/canonical storage, replay, index rebuilds, and search verification. For Nostr, the main files are `replay.js`, `indexer.js`, and `replay_cli.js`. For Lingonberry, start with `packages/lingonberry/storage/` and `docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md`. |
 | Frontend implementers | [`apps/frontend/README.md`](./apps/frontend/README.md) | Use this for UI design, screen implementation, and display-spec checks. `apps/frontend/` is the implementation entry point. |
 
 ### Directory Boundaries
@@ -144,7 +148,7 @@ Please see [LICENSE_POLICY.md](./LICENSE_POLICY.md) for details.
 
 # Toitoi 🌱
 
-**Digital Agroecology Commons powered by Nostr Protocol**
+**Digital Agroecology Commons powered by protocol-independent canonical events**
 
 Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、アグロエコロジーの知を共有・進化させるための **分散型プロトコル・プラットフォーム（デジタル・コモンズ）** です。
 
@@ -192,7 +196,7 @@ Toitoiは、この構造を根底から覆します。
 
 ## ⚙️ システム・アーキテクチャ
 
-Toitoiは、Nostrを基盤とした共通プロトコルによって接続される3つのモジュールから構成される「入れ子構造のコモンズ」です。
+Toitoiは、protocol-specific transport と protocol-independent な canonical event layer によって接続される3つのモジュールから構成される「入れ子構造のコモンズ」です。
 
 * **[エッジ層] ローカルAI**: 生データを秘匿し、「問い」を生成・暗号署名して送信する。
 * **[インフラ層] コモンズ・リレー**: 「問い」だけを永続的にアーカイブする分散リレー網。
@@ -200,7 +204,7 @@ Toitoiは、Nostrを基盤とした共通プロトコルによって接続され
 
 Toitoi は protocol-independent な canonical event、identity key / claim、provenance の構造を通じて、知識アーカイブを保存します。
 
-現在、Nostr は最初の operational transport layer として扱われています。
+現在の primary transport は Nostr と Lingonberry です。Nostr は relay-oriented な運用経路、Lingonberry は knowledge-object の transport projection / ingest 経路を担います。どちらも schema、adapter、converter、raw/canonical storage、replay、Standard API 接続、outbound publish まで整備しています。ATProto は multi-protocol 互換性、ingest/replay 検証、将来の federation に備える secondary transport implementation として維持しています。
 
 ## 📚 ドキュメント (Documentation)
 
@@ -214,6 +218,9 @@ Toitoi は protocol-independent な canonical event、identity key / claim、pro
 * 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
 * 🗺️ **[ディレクトリ責務ルール](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
 * 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
+* 🌐 **[Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)**
+* 🍒 **[Lingonberry Transport](./docs/protocols/LINGONBERRY_TRANSPORT.md)**
+* 🍒 **[Lingonberry Inquiry Schema](./docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
 * 📖 **[標準語彙リスト](./docs/concepts/TOITOI_VOCABULARY.md)**
 * ⚖️ **[ライセンス・ポリシー](./LICENSE_POLICY.md)**
@@ -224,12 +231,13 @@ Toitoi は protocol-independent な canonical event、identity key / claim、pro
 
 ### モジュール別セットアップ・設計書 (Modules)
 
-* 🌐 **コモンズ・リレー層**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
+* 🌐 **Nostr Transport 運用**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
+* 🍒 **Lingonberry Transport 運用**: **[`docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md`](./docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md)** / **[`infra/transports/lingonberry/README.md`](./infra/transports/lingonberry/README.md)**
 * 🤖 **ローカルAI・エッジ層ハブ**: **[`apps/edge-ai/README.md`](./apps/edge-ai/README.md)**
 * 🪶 **ローカルAI最小構成**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
 * 🧠 **AIシステム概要**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
 * ⚙️ **インデクサー・API層**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
-* 🧩 **現行インデクサーMVP**: `packages/protocol/`、`packages/nostr/`、および protocol ごとの `storage/` 実装
+* 🧩 **現行インデクサーMVP**: `packages/protocol/`、primary transport の `packages/nostr/` と `packages/lingonberry/`、secondary の `packages/atproto/`、および protocol ごとの `storage/` 実装
 * 📱 **フロントエンド・UI層**: **[`apps/frontend/README.md`](./apps/frontend/README.md)**
 
 ### 目的別の入口
@@ -242,8 +250,8 @@ Toitoi は protocol-independent な canonical event、identity key / claim、pro
 | インデクサー運用者 | [`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md) / [`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md) | アーキテクチャ方針と protocol-aware な初回構築・再構築・構成見直しの入口です。[`apps/api/README.md`](./apps/api/README.md)、`packages/protocol/`、`packages/<protocol>/storage/` が実装の中心です。 |
 | エッジAI運用者 | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | 4GB / Ubuntu 24.04 LTS の最小構成、キュー、リトライ、ローカルモデルの運用判断に使います。入口は `apps/edge-ai/README.md` です。 |
 | API 利用者 | [`apps/api/README.md`](./apps/api/README.md) | HTTP API の利用確認、ローカル起動、クライアント実装の入口です。`server.js` と `standard_api_service.js` が実装本体です。 |
-| 変換・取り込みの実装担当 | `packages/<protocol>/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。Nostr では `relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js` を見ます。 |
-| 永続化・再生・検索の実装担当 | `packages/<protocol>/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。Nostr では `replay.js`、`indexer.js`、`replay_cli.js` が中心です。 |
+| 変換・取り込みの実装担当 | `packages/<protocol>/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。Nostr では `relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js`、Lingonberry では `packages/lingonberry/adapter/` と `infra/transports/lingonberry/` を見ます。 |
+| 永続化・再生・検索の実装担当 | `packages/<protocol>/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。Nostr では `replay.js`、`indexer.js`、`replay_cli.js`、Lingonberry では `packages/lingonberry/storage/` と `docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md` が中心です。 |
 | フロントエンド実装担当 | [`apps/frontend/README.md`](./apps/frontend/README.md) | UI 設計、画面実装、表示仕様の確認に使います。`apps/frontend/` が実装の入口です。 |
 
 ### ディレクトリ責務 (Directory Boundaries)

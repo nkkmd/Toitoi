@@ -12,7 +12,8 @@ packages/
 ├─ protocol/  -> shared descriptor / registry
 ├─ nostr/     -> Nostr adapter / storage / converter
 ├─ atproto/   -> ATProto adapter / storage / converter / live smoke
-└─ localfs/   -> LocalFS descriptor
+├─ localfs/   -> LocalFS descriptor
+└─ lingonberry/ -> Lingonberry adapter / converter / descriptor
 ```
 
 ## まず見るもの
@@ -21,6 +22,7 @@ packages/
 - [nostr/README.md](./nostr/README.md)
 - [atproto/README.md](./atproto/README.md)
 - [localfs/README.md](./localfs/README.md)
+- [lingonberry/README.md](./lingonberry/README.md)
 
 ## 役割の分け方
 
@@ -28,6 +30,7 @@ packages/
 - `nostr/`: Nostr の adapter / converter / storage の共有実装
 - `atproto/`: ATProto の adapter / converter / storage
 - `localfs/`: LocalFS の protocol descriptor（runtime replay は unsupported）
+- `lingonberry/`: Lingonberry knowledge object / HTTP publish request の adapter / converter / descriptor
 
 ## 依存の原則
 
