@@ -1,6 +1,6 @@
 # Toitoi AI System Overview
 
-**Status: evolving** | **Last updated: 2026-06-07**
+**Status: evolving** | **Last updated: 2026-06-24**
 
 ## 概要
 
@@ -57,7 +57,7 @@ New Inquiry
 ## AI と Canonical Event
 
 採用アーキテクチャにおいて、AI が直接合わせるべき中心モデルは
-Nostr transport schema ではなく Canonical Event です。
+Nostr / Lingonberry / ATProto などの transport schema ではなく Canonical Event です。
 
 基本フロー:
 
@@ -196,7 +196,7 @@ Target transport event
 
 ## 読み込み時の AI 利用
 
-読み込み側では、AI は raw Nostr event に直接依存しません。
+読み込み側では、AI は raw transport event に直接依存しません。
 
 AI が扱うべき入力は、原則として
 

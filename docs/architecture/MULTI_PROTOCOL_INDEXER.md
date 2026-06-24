@@ -1,12 +1,12 @@
 # Multi-Protocol Indexer Architecture
 
-**Status: evolving** | **Last updated: 2026-06-07**
+**Status: evolving** | **Last updated: 2026-06-24**
 
 ## 目的
 
 Toitoi の indexer を、特定 protocol 専用の実装の寄せ集めではなく、canonical event を共通入力とする multi-protocol 対応の層として整理します。
 
-Phase 14 以降は、Nostr / ATProto をまたいだ multi-transport replay と provenance 集約もこの indexer layer の前提に含めます。  
+Phase 17 以降は、Nostr / Lingonberry / ATProto をまたいだ multi-transport replay と provenance 集約もこの indexer layer の前提に含めます。  
 source 跨ぎの identity mapping は、API / replay / ops が協調して扱い、indexer は canonical view を壊さないことを優先します。
 
 この文書は、次の判断基準を固定するためのものです。
@@ -51,22 +51,22 @@ protocol ごとの差分は、既存の protocol package に残します。
 
 `infra/indexers/` は、実装本体ではなく運用入口として扱います。
 
-- 現時点では共通の multi-protocol 入口と、Nostr 固有の wrapper を分けて置いている
-- Phase 14 以降は、multi-transport replay と outbound fan-out の最小入口が追加済みである
+- 現時点では共通の multi-protocol 入口と、transport 固有の運用入口を分けて置いている
+- Phase 17 以降は、Nostr / Lingonberry / ATProto の replay と outbound fan-out の最小入口が追加済みである
 - protocol-aware な起動、復旧、再構築は `infra/indexers/` 直下に寄せる
-- Nostr 固有の作業は `infra/transports/nostr/` に閉じる
+- transport 固有の ingest / relay / carrier 作業は `infra/transports/<protocol>/` に閉じる
 
 ## 現在の扱い
 
 現時点の `infra/indexers/` は、protocol-aware な reference / operator entrypoint です。  
-Nostr 固有の運用手順は `infra/transports/nostr/` に置きます。
+Nostr 固有の relay 運用手順は `infra/transports/nostr/` に、Lingonberry 固有の carrier / archive ingest 運用手順は `infra/transports/lingonberry/` と `docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md` に置きます。ATProto 固有の ingest 運用手順は `infra/transports/atproto/` に置きます。
 
 したがって、今後 protocol が増えても次の方針を守ります。
 
 - protocol ごとに専用の indexer 実装を増やさない
 - 共通 indexer の役割を拡張する
 - ops ドキュメントは必要に応じて protocol 別に残す
-- deployment topology が共通化できた時点で Nostr 固有の運用資料をさらに縮小する
+- deployment topology が共通化できた時点で transport 固有の運用資料をさらに縮小する
 
 ## 将来の整理案
 
@@ -81,7 +81,12 @@ Nostr 固有の運用手順は `infra/transports/nostr/` に置きます。
 - `infra/transports/nostr/`
   - Nostr 固有の補助手順
   - transport ingest / relay 運用の入口
-- 必要なら protocol ごとの補助手順を `infra/indexers/` 直下に追加する
+- `infra/transports/lingonberry/`
+  - Lingonberry 固有の補助手順
+  - archive / wire log / carrier ingest 運用の入口
+- `infra/transports/atproto/`
+  - ATProto 固有の補助手順
+  - Jetstream / PDS 由来の ingest 運用の入口
 
 この整理に切り替える条件は、少なくとも次を満たしたときです。
 
@@ -89,7 +94,7 @@ Nostr 固有の運用手順は `infra/transports/nostr/` に置きます。
 - 追加 protocol の運用差分が wrapper に閉じる
 - README と setup guide が protocol 横断で参照しやすい
 
-Nostr 固有の作業が必要でも、共通入口から逸れずに wrapper に閉じるのが基本です。
+transport 固有の作業が必要でも、共通入口から逸れずに wrapper に閉じるのが基本です。
 
 ## 判断基準
 

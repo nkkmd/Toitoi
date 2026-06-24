@@ -1,13 +1,13 @@
 # Standard API
 
-**Version: 0.3.5** | **Status: current** | **Last updated: 2026-06-06**
+**Version: 0.3.6** | **Status: current** | **Last updated: 2026-06-24**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
 Canonical Event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。  
 この README は、API 利用者向けの単一の入口として、従来の詳細仕様を吸収しています。
 
-Phase 15 完了後の前提として、API は Nostr と ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
+Phase 17 完了後の前提として、API は Nostr / Lingonberry / ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
 同一性は「明示的に同一といえる場合」にだけ merge し、曖昧な case は別 event のまま返します。canonical identity と provenance の役割分担は Phase 15 の contract に合わせて固定しています。
 
 Phase 16 以降は、identity key / claim / third-party verification の結果も canonical view の一部として扱います。  
@@ -55,17 +55,17 @@ HTTP response
 - canonical view の契約を確認したいとき
 - identity summary や claim metadata を含む third-party verifiable view を扱いたいとき
 - Nostr の storage / replay から入る場合は [docs/operations/NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
+- Lingonberry の storage / replay から入る場合は [docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md](../../docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
 - ATProto の storage / replay から入る場合は [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](../../docs/operations/ATPROTO_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
 
 ## pnpm 入口
 
 - 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
-- protocol 選択: `TOITOI_PROTOCOL=atproto TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
-- multi-transport fan-in: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/a"},{"protocol":"atproto","storageDir":"/path/b"}]' pnpm --filter @toitoi/api start`
+- protocol 選択: `TOITOI_PROTOCOL=lingonberry TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
+- multi-transport fan-in: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/nostr"},{"protocol":"lingonberry","storageDir":"/path/lingonberry"},{"protocol":"atproto","storageDir":"/path/atproto"}]' pnpm --filter @toitoi/api start`
 - multi-transport fan-out / fan-in の参照: `docs/roadmap/IMPLEMENTATION_PLAN.md` と `docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md`
 - テスト: `pnpm --filter @toitoi/api test`
-- 参照実装: `@toitoi/nostr/storage/` と `@toitoi/atproto/storage/`
-- `lingonberry` は registry metadata、adapter / converter、storage / replay、API runtime 接続まで対応済みです。
+- 参照実装: `@toitoi/nostr/storage/`、`@toitoi/lingonberry/storage/`、`@toitoi/atproto/storage/`
 - `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
 ## 起動
@@ -90,7 +90,7 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 ## 実装状態
 
 現在の API は、protocol ごとの `storage/indexer.js` と `storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。  
-デフォルトの参照実装は Nostr ですが、`TOITOI_PROTOCOL` に応じて `atproto` へ切り替えられます。
+デフォルトの参照実装は Nostr ですが、`TOITOI_PROTOCOL` に応じて `lingonberry` / `atproto` へ切り替えられます。
 
 Phase 15 以降は、必要に応じて `TOITOI_TRANSPORT_SOURCES` から複数 transport を合成した canonical view を返します。  
 Phase 16 以降は、identity claim registry がある場合に `identity.claim` の summary を解決し、embedded claim があればそのまま返します。
@@ -512,4 +512,4 @@ def fetch_inquiries(q=None, soil_type=None, phase=None, limit=20, offset=0):
 - HTTP エントリポイント: [server.js](./server.js)
 - ルーティングと投影: [standard_api_service.js](./standard_api_service.js)
 - テスト: [test_standard_api_service.js](./test_standard_api_service.js)
-- 派生 index の元データ: [`@toitoi/nostr/storage/`](../../packages/nostr/storage/)
+- 派生 index の元データ: [`@toitoi/nostr/storage/`](../../packages/nostr/storage/) / [`@toitoi/lingonberry/storage/`](../../packages/lingonberry/storage/) / [`@toitoi/atproto/storage/`](../../packages/atproto/storage/)
