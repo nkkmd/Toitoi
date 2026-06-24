@@ -13,6 +13,9 @@ importers:
       '@toitoi/atproto':
         specifier: workspace:*
         version: link:../../packages/atproto
+      '@toitoi/lingonberry':
+        specifier: workspace:*
+        version: link:../../packages/lingonberry
       '@toitoi/nostr':
         specifier: workspace:*
         version: link:../../packages/nostr
@@ -23,6 +26,21 @@ importers:
   apps/edge-ai: {}
 
   apps/frontend: {}
+
+  infra/transports/atproto:
+    dependencies:
+      '@toitoi/atproto':
+        specifier: workspace:*
+        version: link:../../../packages/atproto
+      ws:
+        specifier: ^8.18.3
+        version: 8.21.0
+
+  infra/transports/lingonberry:
+    dependencies:
+      '@toitoi/lingonberry':
+        specifier: workspace:*
+        version: link:../../../packages/lingonberry
 
   infra/transports/nostr:
     dependencies:
@@ -36,16 +54,13 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/protocol
 
-  infra/transports/atproto:
-    dependencies:
-      '@toitoi/atproto':
-        specifier: workspace:*
-        version: link:../../../packages/atproto
-      ws:
-        specifier: ^8.18.3
-        version: 8.21.0
-
   packages/atproto:
+    dependencies:
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
+  packages/lingonberry:
     dependencies:
       '@toitoi/protocol':
         specifier: workspace:*
