@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の multi-protocol インデクサーAPI
 
-**Version: 0.6.8** | **Status: evolving** | **Last updated: 2026-06-24**
+**Version: 0.6.8** | **Status: evolving** | **Last updated: 2026-06-25**
 
 このガイドは、Canonical Event を共通入力にした indexer / API の構築・復旧・再構築手順をまとめたものです。
 
@@ -243,7 +243,7 @@ curl "http://127.0.0.1:3000/api/v1/protocols"
 
 | 項目 | 役割 | 起動・常駐方法 | 主な対象 | 補足 |
 |---|---|---|---|---|
-| PM2 | API と ATProto live ingest を常駐化 | `pm2 start` / `pm2 save` / `pm2 startup` | `toitoi-api` / `toitoi-atproto-worker` | Nostr は対象外 |
+| PM2 | API と ATProto live ingest を常駐化 | `pm2 start` / `pm2 save` / `pm2 startup` | `toitoi-api` / `toitoi-atproto-worker` | Nostr / Lingonberry は対象外 |
 | Caddy | HTTPS と reverse proxy を担当 | `systemctl restart caddy` | `localhost:3000` の API | 公開前段に置く |
 | systemd timer | Nostr / Lingonberry worker を定期起動 | `systemctl enable --now toitoi-nostr-worker.timer` | `toitoi-nostr-worker.service` / `toitoi-lingonberry-worker.service` | 定期回収用 |
 
