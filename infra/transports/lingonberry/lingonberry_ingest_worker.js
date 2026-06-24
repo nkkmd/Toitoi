@@ -149,9 +149,6 @@ function parseArgs(argv) {
     if (args.input && args.archiveDir) {
       throw new Error('--in and --archive-dir are mutually exclusive');
     }
-    if (!args.output) {
-      throw new Error('--out is required');
-    }
     if (!['report', 'accepted', 'canonical'].includes(args.format)) {
       throw new Error('--format must be one of: report, accepted, canonical');
     }
@@ -168,11 +165,12 @@ function printHelp() {
     'Lingonberry ingest runner',
     '',
     'Usage:',
-    '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --in <raw.jsonl> --out <result.json> [options]',
-    '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --archive-dir <archive-dir> --out <result.json> [options]',
+    '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --in <raw.jsonl> [options]',
+    '  node infra/transports/lingonberry/lingonberry_ingest_worker.js --archive-dir <archive-dir> [options]',
     '',
     'Options:',
     '  --format report|accepted|canonical  output shape (default: report)',
+    '  --out <path>                        optional output file path',
     '  --verify                            verify HTTP publish signatures',
     '  --storage-dir <dir>                 persist raw/canonical/replay logs',
     '  --source-label <label>              label persisted ingest batch',
@@ -212,6 +210,10 @@ async function readArchive(archiveDir) {
 }
 
 function writeResult(filePath, format, ingestResult) {
+  if (!filePath) {
+    return;
+  }
+
   const outPath = path.resolve(filePath);
   if (format === 'report') {
     const report = {
@@ -265,7 +267,7 @@ async function main() {
 
   writeResult(args.output, args.format, ingestResult);
   process.stderr.write(
-    `[DONE] ingest=${rawEvents.length} accepted=${ingestResult.accepted.length} invalid=${ingestResult.invalid.length} duplicates=${ingestResult.duplicates.length} unverified=${ingestResult.unverified.length} out=${path.resolve(args.output)}\n`
+    `[DONE] ingest=${rawEvents.length} accepted=${ingestResult.accepted.length} invalid=${ingestResult.invalid.length} duplicates=${ingestResult.duplicates.length} unverified=${ingestResult.unverified.length}${args.output ? ` out=${path.resolve(args.output)}` : ''}\n`
   );
 }
 

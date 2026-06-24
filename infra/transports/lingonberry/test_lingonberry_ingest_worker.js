@@ -46,6 +46,23 @@ const tests = [
     },
   },
   {
+    name: 'parseArgs allows storage-only systemd runs without output',
+    run() {
+      const args = parseArgs([
+        'node',
+        'script',
+        '--archive-dir',
+        '/var/lib/toitoi/lingonberry-archive',
+        '--storage-dir',
+        '/var/lib/toitoi/lingonberry-storage',
+      ]);
+
+      assert.strictEqual(args.archiveDir, '/var/lib/toitoi/lingonberry-archive');
+      assert.strictEqual(args.storageDir, '/var/lib/toitoi/lingonberry-storage');
+      assert.strictEqual(args.output, '');
+    },
+  },
+  {
     name: 'parseArgs ignores a pnpm-style separator',
     run() {
       const args = parseArgs([
@@ -114,13 +131,14 @@ const tests = [
     },
   },
   {
-    name: 'writeResult emits report and canonical formats',
+    name: 'writeResult emits report and canonical formats and ignores empty output',
     run() {
       const dir = makeTempDir();
       const reportFile = path.join(dir, 'report.json');
       const canonicalFile = path.join(dir, 'canonical.jsonl');
       const result = makeResult();
 
+      writeResult('', 'report', result);
       writeResult(reportFile, 'report', result);
       writeResult(canonicalFile, 'canonical', result);
 

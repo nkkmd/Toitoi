@@ -38,3 +38,35 @@ node infra/transports/lingonberry/lingonberry_ingest_worker.js \
 ## live smoke
 
 live publish は `packages/lingonberry/test_smoke.js` を使います。通常の worker は batch / archive ingest に限定し、live publish は明示的な smoke gate の中だけで扱います。
+
+## systemd timer
+
+Nostr worker と同じく、Lingonberry の最初の live ingest は `systemd timer` で定期回収します。  
+常時接続ではなく、archive / wire log を一定間隔で読み直す storage-only の運用です。
+
+```ini
+[Unit]
+Description=Toitoi Lingonberry ingest worker
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/you/github/Toitoi
+Environment=NODE_ENV=production
+Environment=TOITOI_PROTOCOL=lingonberry
+Environment=LINGONBERRY_ARCHIVE_DIR=/var/lib/toitoi/lingonberry-archive
+Environment=LINGONBERRY_STORAGE_DIR=/var/lib/toitoi/lingonberry-storage
+ExecStart=/usr/bin/env bash -lc 'pnpm --filter @toitoi/lingonberry-transport start -- --archive-dir "$LINGONBERRY_ARCHIVE_DIR" --protocol lingonberry --storage-dir "$LINGONBERRY_STORAGE_DIR" --source-label archive'
+```
+
+```ini
+[Unit]
+Description=Run Toitoi Lingonberry ingest worker every 10 minutes
+
+[Timer]
+OnCalendar=*:0/10
+Persistent=true
+Unit=toitoi-lingonberry-worker.service
+
+[Install]
+WantedBy=timers.target
+```

@@ -107,6 +107,23 @@ function summarizeReplayResult(result) {
   };
 }
 
+function loadReplayModuleForProtocol(protocol) {
+  if (protocol === 'nostr') {
+    return { replayStorage };
+  }
+  if (protocol === 'atproto') {
+    return require('@toitoi/atproto/storage/replay');
+  }
+  if (protocol === 'lingonberry') {
+    try {
+      return require('@toitoi/lingonberry/storage/replay');
+    } catch (error) {
+      return require('../../lingonberry/storage/replay');
+    }
+  }
+  return null;
+}
+
 async function main() {
   const args = parseArgs(process.argv);
   if (args.help) {
@@ -117,15 +134,7 @@ async function main() {
   const protocolRuntime = createProtocolRuntime({ protocol: args.protocol });
   const protocolStorageRuntime = createProtocolStorageRuntime({
     protocol: args.protocol,
-    loadReplayModule(protocol) {
-      if (protocol === 'nostr') {
-        return { replayStorage };
-      }
-      if (protocol === 'atproto') {
-        return require('@toitoi/atproto/storage/replay');
-      }
-      return null;
-    },
+    loadReplayModule: loadReplayModuleForProtocol,
   });
   const replayFn = protocolStorageRuntime.resolveReplayStorage();
   process.stderr.write(
@@ -155,4 +164,5 @@ module.exports = {
   parseArgs,
   printHelp,
   summarizeReplayResult,
+  loadReplayModuleForProtocol,
 };

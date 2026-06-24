@@ -6,7 +6,7 @@ const os = require('os');
 const path = require('path');
 const { ingestNostrEvents } = require('../adapter/ingest_pipeline');
 const { persistIngestResult } = require('./persistence');
-const { parseArgs, summarizeReplayResult } = require('./replay_cli');
+const { loadReplayModuleForProtocol, parseArgs, summarizeReplayResult } = require('./replay_cli');
 const { replayStorage } = require('./replay');
 const { createProtocolStorageRuntime } = require('@toitoi/protocol');
 
@@ -70,10 +70,18 @@ const tests = [
         '--storage-dir',
         '/tmp/example',
         '--protocol',
-        'atproto',
+        'lingonberry',
       ]);
 
-      assert.strictEqual(args.protocol, 'atproto');
+      assert.strictEqual(args.protocol, 'lingonberry');
+    },
+  },
+  {
+    name: 'loadReplayModuleForProtocol resolves Lingonberry replay',
+    run() {
+      const module = loadReplayModuleForProtocol('lingonberry');
+
+      assert.strictEqual(typeof module.replayStorage, 'function');
     },
   },
   {
