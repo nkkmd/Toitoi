@@ -1,6 +1,6 @@
 # Lingonberry Inquiry Schema
 
-**Version: 0.1.0** | **Status: draft** | **Last updated: 2026-06-24**
+**Status: draft** | **Last updated: 2026-06-24**
 
 ## 目的
 

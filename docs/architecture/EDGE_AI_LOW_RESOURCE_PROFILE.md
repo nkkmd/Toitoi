@@ -1,6 +1,6 @@
 # Toitoi Edge AI Low-Resource Profile
 
-**Version: 0.1.7** | **Status: evolving** | **Last updated: 2026-06-06**
+**Status: evolving** | **Last updated: 2026-06-06**
 
 この文書は、`RAM 4GB / Ubuntu 24.04 LTS` のエッジ端末で Toitoi の AI 要約・タグ付けを安定運用するための**参考用の最小構成例**です。
 

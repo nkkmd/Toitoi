@@ -1,6 +1,6 @@
 # Standard API
 
-**Version: 0.3.6** | **Status: current** | **Last updated: 2026-06-24**
+**Status: current** | **Last updated: 2026-06-24**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 

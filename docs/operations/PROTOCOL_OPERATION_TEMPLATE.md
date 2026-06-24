@@ -1,6 +1,6 @@
 # Protocol Operation Template
 
-**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 この文書は、Toitoi で新しい protocol を追加するときの運用テンプレートです。  
 `backup / restore / replay`、`retry / alert / health check`、`fixture / sample archive / migration script` を、protocol ごとに同じ見出しで揃えるために使います。

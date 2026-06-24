@@ -1,6 +1,6 @@
 # 運用ガイド：multi-transport outbound delivery
 
-**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-06-04**
+**Status: evolving** | **Last updated: 2026-06-04**
 
 この文書は、Toitoi で canonical event を複数 transport へ送るときの outbound fan-out と delivery の運用手順です。  
 Phase 14 で導入した plan / delivery / retry / quarantine の分担を、運用者目線でまとめます。

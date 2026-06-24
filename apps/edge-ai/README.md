@@ -1,6 +1,6 @@
 # Toitoi Edge AI Hub
 
-**Version: 0.6.5** | **Status: current** | **Last updated: 2026-06-24**
+**Status: current** | **Last updated: 2026-06-24**
 
 この文書は、`apps/edge-ai/` に置くエッジ AI 関連文書の案内ハブです。
 

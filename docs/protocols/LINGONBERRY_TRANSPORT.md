@@ -1,6 +1,6 @@
 # Lingonberry Transport
 
-**Version: 0.1.1** | **Status: draft** | **Last updated: 2026-06-24**
+**Status: draft** | **Last updated: 2026-06-24**
 
 ## 目的
 

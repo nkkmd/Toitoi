@@ -1,6 +1,6 @@
 # Toitoi フロントエンド README
 
-**Version: 0.3.3** | **Status: current** | **Last updated: 2026-06-24**
+**Status: current** | **Last updated: 2026-06-24**
 
 この README は、`apps/frontend/` に置くフロントエンド設計と実装方針の入口です。
 

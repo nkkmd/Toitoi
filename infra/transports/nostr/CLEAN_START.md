@@ -1,6 +1,6 @@
 # 運用ガイド: Nostr リレーのクリーンスタート
 
-**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Nostream リレー側の PostgreSQL データを破棄して、リレーをクリーンな状態から再構築するための手順です。
 

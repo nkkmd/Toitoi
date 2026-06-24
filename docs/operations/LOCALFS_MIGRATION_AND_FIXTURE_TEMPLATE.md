@@ -1,6 +1,6 @@
 # LocalFS Migration / Fixture Template
 
-**Version: 0.2.0** | **Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 この文書は、LocalFS を将来対応させるときの最小テンプレートです。  
 現時点で runtime replay は unsupported ですが、file/archive-backed な ingest や migration を追加する余地は残しています。

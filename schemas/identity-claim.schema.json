@@ -17,7 +17,7 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "const": "1"
+      "const": "0.1.0"
     },
     "claimType": {
       "type": "string",

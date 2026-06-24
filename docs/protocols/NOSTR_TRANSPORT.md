@@ -1,6 +1,6 @@
 # Nostr Transport
 
-**Version: 0.2.1** | **Status: evolving** | **Last updated: 2026-06-05**
+**Status: evolving** | **Last updated: 2026-06-05**
 
 ## 概要
 

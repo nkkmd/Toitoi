@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の Nostr リレー立ち上げ方
 
-**Version: 0.4.3** | **Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Toitoi の Canonical Event を Nostr transport projection として受け取る専用リレーサーバーを構築するための公式ガイドです。
 

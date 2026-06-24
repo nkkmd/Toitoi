@@ -1,6 +1,6 @@
 # 運用ガイド：Ingest Failure の再試行ポリシー
 
-**Version: 0.1.0** | **Status: evolving** | **Last updated: 2026-05-22**
+**Status: evolving** | **Last updated: 2026-05-22**
 
 本ドキュメントは、Toitoi の Nostr relay ingest における再試行方針を定義します。
 

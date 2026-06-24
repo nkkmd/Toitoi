@@ -1,6 +1,6 @@
 # 運用ガイド：サーバー負荷監視・自動回復システムの導入
 
-**Version: 0.1.1** | **Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-05-31**
 
 本ドキュメントは、Toitoi の Canonical Event 中心の運用基盤に、**負荷監視と自動回復の仕組み**を導入するための手順書です。
 

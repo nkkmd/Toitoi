@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://toitoi.cultivationdata.net/schemas/v1/lingonberry-inquiry.schema.json",
   "title": "Toitoi Lingonberry Inquiry Object",
-  "description": "Schema for Toitoi inquiry transport projections carried as Lingonberry 0.1.0 knowledge objects or HTTP publish requests.",
+  "description": "Schema for Toitoi inquiry transport projections carried as Lingonberry knowledge objects or HTTP publish requests.",
   "oneOf": [
     {
       "$ref": "#/definitions/knowledgeObject"

@@ -1,6 +1,6 @@
 # ATProto Inquiry Schema
 
-**Version: 0.1.1** | **Status: evolving** | **Last updated: 2026-06-05**
+**Status: evolving** | **Last updated: 2026-06-05**
 
 ## 目的
 

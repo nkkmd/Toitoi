@@ -1,6 +1,6 @@
 # クリーンスタートについて
 
-**Version: 0.6.3** | **Status: current** | **Last updated: 2026-06-08**
+**Status: current** | **Last updated: 2026-06-08**
 
 `infra/indexers/` のクリーンスタート手順です。  
 ここでいうクリーンスタートは、**API の参照先になっている storage / snapshot を初期化し、必要なら replay で再構築してから再起動すること**を意味します。

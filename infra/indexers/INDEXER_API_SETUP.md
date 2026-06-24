@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の multi-protocol インデクサーAPI
 
-**Version: 0.6.8** | **Status: evolving** | **Last updated: 2026-06-25**
+**Status: evolving** | **Last updated: 2026-06-25**
 
 このガイドは、Canonical Event を共通入力にした indexer / API の構築・復旧・再構築手順をまとめたものです。
 

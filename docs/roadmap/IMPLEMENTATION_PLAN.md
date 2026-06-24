@@ -27,7 +27,7 @@ AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP
 - 読み込み側では Adapter / Normalizer を経由してから Indexer に渡す
 - Standard API は protocol ではなく意味論に基づくアクセス面として設計する
 - Indexer は canonical semantics を変形せず、検索・参照のために補助構造を作る
-- 文書の版管理は [DOCUMENTATION_VERSION_POLICY.md](../architecture/DOCUMENTATION_VERSION_POLICY.md) に従う
+- 文書の更新情報管理は [DOCUMENTATION_UPDATE_POLICY.md](../architecture/DOCUMENTATION_UPDATE_POLICY.md) に従う
 
 一方で、以下は固定しません。
 
@@ -123,7 +123,7 @@ AI 導入の段階設計と問い生成の最低仕様は、[AI_ADOPTION_ROADMAP
 
 ### 完了メモ
 
-- `schemaVersion` は `0.3.1` に更新済み
+- `schemaVersion` は `0.1.0` に更新済み
 - `rawRef` を専用フィールドとして追加済み
 - `sample-nostr-archive.jsonl` で意味的な往復確認を実施済み
 - `e` は `dsl:*` より前に出力するよう固定済み

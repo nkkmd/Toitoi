@@ -1,6 +1,6 @@
 # Canonical Event
 
-**Version: 0.3.2** | **Status: stable** | **Last updated: 2026-06-05**
+**Status: stable** | **Last updated: 2026-06-05**
 
 ## 目的
 
@@ -151,7 +151,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 ```json
 {
   "id": "tt:evt:550e8400e29b41d4a716446655440000",
-  "schemaVersion": "0.3.1",
+  "schemaVersion": "0.1.0",
   "type": "inquiry",
   "createdAt": "2026-05-19T00:00:00Z",
   "body": {
