@@ -29,7 +29,7 @@ const tests = [
           'verification',
         ],
       );
-      assert.strictEqual(schema.properties.schemaVersion.const, '1');
+      assert.strictEqual(schema.properties.schemaVersion.const, '0.1.0');
       assert.strictEqual(schema.properties.claimType.const, 'identity');
       assert.strictEqual(schema.properties.identityKey.pattern, '^tt:key:[^\\s]+$');
       assert.strictEqual(schema.properties.canonicalId.pattern, '^tt:evt:[^\\s]+$');
