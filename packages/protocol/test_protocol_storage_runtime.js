@@ -28,6 +28,8 @@ const tests = [
 
       assert.strictEqual(typeof runtime.resolveReplayStorage(), 'function');
       assert.strictEqual(runtime.describe().supported, true);
+      assert.strictEqual(runtime.describe().selectionSource, 'protocol');
+      assert.ok(runtime.describe().availableProtocols.includes('nostr'));
     },
   },
   {
@@ -42,7 +44,22 @@ const tests = [
 
       assert.strictEqual(runtime.protocol, 'localfs');
       assert.strictEqual(runtime.isSupported, false);
-      assert.throws(() => runtime.resolveReplayStorage(), /does not expose a replayStorage implementation/);
+      assert.strictEqual(runtime.describe().unsupportedReason, 'replayStorage not implemented');
+      assert.throws(() => runtime.resolveReplayStorage(), /registered, but does not expose a replayStorage implementation/);
+    },
+  },
+  {
+    name: 'createProtocolStorageRuntime rejects unknown protocol names before replay resolution',
+    run() {
+      assert.throws(
+        () => createProtocolStorageRuntime({
+          protocol: 'unknown-protocol',
+          loadReplayModule() {
+            return null;
+          },
+        }),
+        /Unknown protocol: unknown-protocol/
+      );
     },
   },
 ];

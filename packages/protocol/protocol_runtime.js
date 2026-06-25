@@ -84,12 +84,15 @@ function resolveProtocolDescriptor(registry, protocolName, options = {}) {
 
 function createProtocolRuntime(options = {}) {
   const registry = options.registry || loadProtocolCatalog().createDefaultProtocolRegistry();
+  const explicitProtocol = normalizeProtocolName(options.protocol);
+  const fallbackProtocol = normalizeProtocolName(options.defaultProtocol) || 'nostr';
   const selectedDescriptor = resolveProtocolDescriptor(registry, options.protocol, {
     defaultProtocol: options.defaultProtocol,
     allowUnresolved: true,
   });
 
   const selectedProtocol = selectedDescriptor ? selectedDescriptor.protocol : null;
+  const selectionSource = explicitProtocol ? 'explicit' : `default:${fallbackProtocol}`;
 
   function getProtocol(protocolName) {
     return registry.get(normalizeProtocolName(protocolName));
@@ -107,6 +110,7 @@ function createProtocolRuntime(options = {}) {
     registry,
     selectedProtocol,
     selectedDescriptor,
+    selectionSource,
     availableProtocols: registry.list().map(descriptor => descriptor.protocol),
     capabilityRows: registry.capabilityRows(),
     capabilityMatrixMarkdown: renderCapabilityMatrixMarkdown(registry.list()),
@@ -127,6 +131,7 @@ function createProtocolRuntime(options = {}) {
     toJSON() {
       return {
         selectedProtocol,
+        selectionSource,
         availableProtocols: registry.list().map(descriptor => descriptor.protocol),
       };
     },
@@ -137,6 +142,7 @@ function buildProtocolIntrospectionPayload(runtime) {
   const protocolRuntime = runtime || createProtocolRuntime();
   return {
     selectedProtocol: protocolRuntime.selectedProtocol,
+    selectionSource: protocolRuntime.selectionSource,
     availableProtocols: protocolRuntime.availableProtocols,
     capabilityMatrix: protocolRuntime.capabilityMatrixMarkdown,
     protocols: protocolRuntime.listProtocols().map(describeProtocolDescriptor),

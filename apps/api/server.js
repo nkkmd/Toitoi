@@ -106,6 +106,7 @@ function createMultiTransportStorageRuntime(transportSources = []) {
   const sources = Array.isArray(transportSources) ? transportSources.slice() : [];
   return {
     protocol: 'multi-transport',
+    selectionSource: 'TOITOI_TRANSPORT_SOURCES',
     replayModule: null,
     isSupported: true,
     resolveReplayStorage() {
@@ -116,6 +117,7 @@ function createMultiTransportStorageRuntime(transportSources = []) {
         protocol: 'multi-transport',
         supported: true,
         moduleName: 'multi-replay',
+        selectionSource: 'TOITOI_TRANSPORT_SOURCES',
         sourceCount: sources.length,
         sourceProtocols: sources.map(source => source.protocol),
       };
@@ -126,6 +128,7 @@ function createMultiTransportStorageRuntime(transportSources = []) {
 function describeProtocolStorage(protocol) {
   const protocolStorageRuntime = createProtocolStorageRuntime({
     protocol,
+    selectionSource: 'protocol-detail',
     loadReplayModule,
   });
 
@@ -161,6 +164,8 @@ function loadIndexSnapshotFromOptions(options = {}) {
     const protocolStorageRuntime = options.protocolStorageRuntime
       || createProtocolStorageRuntime({
         protocol: options.protocolRuntime?.selectedProtocol || options.protocol,
+        registry: options.protocolRuntime?.registry || options.protocolRegistry,
+        selectionSource: options.protocolRuntime?.selectionSource || 'default',
         loadReplayModule,
       });
     const replayStorage = protocolStorageRuntime.resolveReplayStorage();
@@ -188,6 +193,8 @@ function createStandardApiServer(options = {}) {
     ? createMultiTransportStorageRuntime(transportSources)
     : createProtocolStorageRuntime({
       protocol: protocolRuntime.selectedProtocol || options.protocol,
+      registry: protocolRuntime.registry,
+      selectionSource: protocolRuntime.selectionSource,
       loadReplayModule,
     }));
   const storageModule = options.storageModule || loadStorageModule(protocolRuntime.selectedProtocol || options.protocol) || loadStorageModule('nostr');
@@ -228,6 +235,8 @@ function startServer(options = {}) {
     ? createMultiTransportStorageRuntime(transportSources)
     : createProtocolStorageRuntime({
       protocol: protocolRuntime.selectedProtocol || options.protocol,
+      registry: protocolRuntime.registry,
+      selectionSource: protocolRuntime.selectionSource,
       loadReplayModule,
     }));
   const server = createStandardApiServer({

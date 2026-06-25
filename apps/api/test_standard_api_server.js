@@ -77,6 +77,9 @@ const tests = [
       const protocols = service.handleRequest({ method: 'GET', url: '/api/v1/protocols' });
       assert.strictEqual(protocols.statusCode, 200);
       assert.strictEqual(protocols.body.selectedProtocol, 'atproto');
+      assert.strictEqual(protocols.body.selectionSource, 'explicit');
+      assert.strictEqual(protocols.body.storage.protocol, 'atproto');
+      assert.strictEqual(protocols.body.storage.selectionSource, 'protocol');
       assert.ok(protocols.body.availableProtocols.includes('atproto'));
       const atprotoProtocol = protocols.body.protocols.find(protocol => protocol.protocol === 'atproto');
       assert.ok(atprotoProtocol);
@@ -91,6 +94,7 @@ const tests = [
       assert.strictEqual(health.statusCode, 200);
       assert.strictEqual(health.body.storage.supported, true);
       assert.strictEqual(health.body.storage.protocol, 'atproto');
+      assert.strictEqual(health.body.storage.selectionSource, 'protocol');
     },
   },
   {
@@ -134,6 +138,8 @@ const tests = [
       const protocols = service.handleRequest({ method: 'GET', url: '/api/v1/protocols' });
       assert.strictEqual(protocols.statusCode, 200);
       assert.ok(protocols.body.availableProtocols.includes('lingonberry'));
+      assert.strictEqual(protocols.body.storage.protocol, 'lingonberry');
+      assert.strictEqual(protocols.body.storage.supported, true);
       const lingonberryProtocol = protocols.body.protocols.find(protocol => protocol.protocol === 'lingonberry');
       assert.ok(lingonberryProtocol);
       assert.strictEqual(lingonberryProtocol.provenancePolicy.semanticSource, 'canonical');
@@ -161,7 +167,19 @@ const tests = [
           storageDir: makeTempDir(),
           protocol: 'localfs',
         }),
-        /does not expose a replayStorage implementation/
+        /registered, but does not expose a replayStorage implementation/
+      );
+    },
+  },
+  {
+    name: 'loadIndexSnapshotFromOptions rejects unknown protocols separately from unsupported storage',
+    run() {
+      assert.throws(
+        () => loadIndexSnapshotFromOptions({
+          storageDir: makeTempDir(),
+          protocol: 'missing-protocol',
+        }),
+        /Unknown protocol: missing-protocol/
       );
     },
   },
@@ -257,7 +275,13 @@ const tests = [
       const health = service.handleRequest({ method: 'GET', url: '/health' });
       assert.strictEqual(health.statusCode, 200);
       assert.strictEqual(health.body.storage.protocol, 'multi-transport');
+      assert.strictEqual(health.body.storage.selectionSource, 'TOITOI_TRANSPORT_SOURCES');
       assert.strictEqual(health.body.storage.sourceCount, 3);
+
+      const protocols = service.handleRequest({ method: 'GET', url: '/api/v1/protocols' });
+      assert.strictEqual(protocols.statusCode, 200);
+      assert.strictEqual(protocols.body.storage.protocol, 'multi-transport');
+      assert.strictEqual(protocols.body.storage.sourceCount, 3);
 
       const list = service.handleRequest({ method: 'GET', url: '/api/v1/inquiries?limit=10' });
       assert.strictEqual(list.statusCode, 200);

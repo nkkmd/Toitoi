@@ -1,11 +1,12 @@
 # クリーンスタートについて
 
-**Status: current** | **Last updated: 2026-06-08**
+**Status: current** | **Last updated: 2026-06-25**
 
 `infra/indexers/` のクリーンスタート手順です。  
 ここでいうクリーンスタートは、**API の参照先になっている storage / snapshot を初期化し、必要なら replay で再構築してから再起動すること**を意味します。
 
 現行仕様では、単一 protocol の運用でも multi-transport の運用でも、まず `TOITOI_PROTOCOL` か `TOITOI_TRANSPORT_SOURCES` に対応する storage を空にします。  
+`TOITOI_TRANSPORT_SOURCES` がある場合は multi-transport mode が優先されます。単一 protocol mode では `TOITOI_PROTOCOL` を使い、未指定なら default protocol として `nostr` を使います。
 Nostr relay が複数ある場合は、relay ごとに storage を分けて個別に初期化します。
 
 ## 手順
@@ -62,8 +63,14 @@ node packages/nostr/storage/replay_cli.js --protocol atproto --storage-dir /path
 ```
 
 ```bash
+# Lingonberry の場合
+TOITOI_PROTOCOL=lingonberry TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
+node packages/nostr/storage/replay_cli.js --protocol lingonberry --storage-dir /path/to/storage --verify
+```
+
+```bash
 # multi-transport の場合
-TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]' pnpm --filter @toitoi/api start
+TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/to/nostr-storage"},{"protocol":"lingonberry","storageDir":"/path/to/lingonberry-storage"},{"protocol":"atproto","storageDir":"/path/to/atproto-storage"}]' pnpm --filter @toitoi/api start
 ```
 
 `TOITOI_TRANSPORT_SOURCES` で起動していた場合は、再開時も同じ source 配列を指定します。  

@@ -383,7 +383,10 @@ function createStandardApiService(options = {}) {
   }
 
   function handleProtocols() {
-    return buildJsonResponse(200, buildProtocolIntrospectionPayload(protocolRuntime));
+    return buildJsonResponse(200, {
+      ...buildProtocolIntrospectionPayload(protocolRuntime),
+      storage: describeSelectedStorage(),
+    });
   }
 
   function handleProtocolDetail(protocolName) {
@@ -400,7 +403,18 @@ function createStandardApiService(options = {}) {
       name: descriptor.name,
       capabilities: descriptor.capabilities,
       provenance: descriptor.provenance,
-      provenancePolicy: descriptor.provenancePolicy || null,
+      provenancePolicy: {
+        rawRef: Boolean(descriptor.provenance && descriptor.provenance.rawRef),
+        replayable: Boolean(descriptor.provenance && descriptor.provenance.replayable),
+        semanticSource: isNonEmptyString(descriptor.provenance && descriptor.provenance.semanticSource)
+          ? descriptor.provenance.semanticSource
+          : 'canonical',
+        exposedFields: [
+          'rawRef',
+          'sourceId',
+          'sourceProtocol',
+        ],
+      },
       storage: describeProtocolStorage ? describeProtocolStorage(protocolName) : null,
       notes: Array.isArray(descriptor.notes) ? descriptor.notes : [],
       adapter: typeof descriptor.adapter?.describe === 'function' ? descriptor.adapter.describe() : null,

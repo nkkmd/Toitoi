@@ -1,6 +1,6 @@
 # Standard API
 
-**Status: current** | **Last updated: 2026-06-24**
+**Status: current** | **Last updated: 2026-06-25**
 
 `apps/api/` は、Toitoi の Standard API reference implementation です。
 
@@ -78,8 +78,18 @@ TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
 `TOITOI_STORAGE_DIR` が設定されている場合は、選択した protocol に replay module が必要です。replay module が無い protocol は起動時に明示エラーになります。
 `TOITOI_TRANSPORT_SOURCES` が設定されている場合は、複数 transport の replay をまとめて canonical view に反映します。`/health` の `storage.protocol` は `multi-transport` になります。
 
+起動時の選択優先順位は次の通りです。
+
+1. `TOITOI_TRANSPORT_SOURCES` があれば multi-transport mode として扱う
+2. それ以外は `TOITOI_PROTOCOL` で単一 protocol を選ぶ
+3. `TOITOI_PROTOCOL` が未指定なら default protocol として `nostr` を使う
+4. 単一 protocol mode で `TOITOI_STORAGE_DIR` がある場合は、その protocol の replay module を使う
+
+`localfs` のように registry には登録されているが runtime replay が未対応の protocol は、metadata と capability は表示しますが、storage 付き起動では明示エラーになります。未知の protocol 名は registry 解決時点で `Unknown protocol` として扱います。
+
 `/health` には、選択中 protocol の replay 可否を示す `storage` が含まれます。  
-`/api/v1/protocols/:protocol` には、`provenance` に加えて `provenancePolicy` と `storage` が含まれ、protocol ごとの差分を見分けやすくしています。
+`/api/v1/protocols` には registry 一覧に加えて、現在選択されている `storage` runtime が含まれます。  
+`/api/v1/protocols/:protocol` には、`provenance` に加えて `provenancePolicy` とその protocol の `storage` 対応状況が含まれ、protocol ごとの差分を見分けやすくしています。
 
 ## どこで使うか
 
@@ -186,8 +196,15 @@ registry に登録されている protocol の一覧と capability matrix を返
 ```json
 {
   "selectedProtocol": "nostr",
-  "availableProtocols": ["atproto", "lingonberry", "localfs", "nostr"],
-  "capabilityMatrix": "| Capability | atproto | lingonberry | localfs | nostr | ...",
+  "selectionSource": "default:nostr",
+  "availableProtocols": ["nostr", "atproto", "localfs", "lingonberry"],
+  "capabilityMatrix": "| Capability | Nostr | ATProto | LocalFS | Lingonberry | ...",
+  "storage": {
+    "protocol": "nostr",
+    "supported": true,
+    "moduleName": "replay",
+    "selectionSource": "default:nostr"
+  },
   "protocols": [
     {
       "protocol": "nostr",

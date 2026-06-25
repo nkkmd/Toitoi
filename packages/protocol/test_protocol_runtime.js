@@ -14,6 +14,7 @@ const tests = [
       const runtime = createProtocolRuntime();
 
       assert.strictEqual(runtime.selectedProtocol, 'nostr');
+      assert.strictEqual(runtime.selectionSource, 'default:nostr');
       assert.ok(Array.isArray(runtime.availableProtocols));
       assert.ok(runtime.availableProtocols.includes('nostr'));
       assert.ok(runtime.capabilityMatrixMarkdown.includes('| Capability |'));
@@ -27,6 +28,7 @@ const tests = [
       const runtime = createProtocolRuntime({ protocol: 'atproto' });
 
       assert.strictEqual(runtime.selectedProtocol, 'atproto');
+      assert.strictEqual(runtime.selectionSource, 'explicit');
       assert.strictEqual(runtime.describeSelectedProtocol().protocol, 'atproto');
       assert.strictEqual(runtime.getProtocol('localfs').protocol, 'localfs');
     },
@@ -37,6 +39,7 @@ const tests = [
       const payload = buildProtocolIntrospectionPayload(createProtocolRuntime());
 
       assert.strictEqual(payload.selectedProtocol, 'nostr');
+      assert.strictEqual(payload.selectionSource, 'default:nostr');
       assert.ok(Array.isArray(payload.availableProtocols));
       assert.ok(Array.isArray(payload.protocols));
       assert.ok(payload.protocols.some(protocol => protocol.protocol === 'nostr'));
