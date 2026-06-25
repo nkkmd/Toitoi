@@ -70,6 +70,7 @@ If you haven't cloned the repo yet, grab it first and then run `corepack pnpm in
 * 🍒 **[Lingonberry Inquiry Schema](./docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
 * 📖 **[Standard Vocabulary List](./docs/concepts/TOITOI_VOCABULARY.md)**
+* 📝 **[Release Notes](./docs/roadmap/RELEASE_NOTES.md)**
 * ⚖️ **[License Policy](./LICENSE_POLICY.md)**
 
 ### Essays & Background
@@ -225,6 +226,7 @@ Toitoi は protocol-independent な canonical event、identity key / claim、pro
 * 🍒 **[Lingonberry Inquiry Schema](./docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md)**
 * 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
 * 📖 **[標準語彙リスト](./docs/concepts/TOITOI_VOCABULARY.md)**
+* 📝 **[Release Notes](./docs/roadmap/RELEASE_NOTES.md)**
 * ⚖️ **[ライセンス・ポリシー](./LICENSE_POLICY.md)**
 
 ### 論考・背景思想 (Essays & Background)
