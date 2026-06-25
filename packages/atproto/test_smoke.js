@@ -14,7 +14,7 @@ function isEnabled() {
 function makeSmokeCanonical() {
   return {
     id: 'tt:evt:01H8JQK7YB0B4Z1K0P0W0M0N0P',
-    schemaVersion: '0.3.1',
+    schemaVersion: '0.1.0',
     type: 'inquiry',
     createdAt: new Date().toISOString(),
     body: {

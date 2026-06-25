@@ -302,7 +302,7 @@ function canonicalizeLingonberryEvent(rawEvent, options = {}) {
   const sourceId = sourceIdForEvent(normalizedEvent) ?? object.id;
   const canonicalEvent = {
     id: resolveCanonicalEventId(sourceId, options),
-    schemaVersion: '0.3.1',
+    schemaVersion: '0.1.0',
     type: object.type,
     createdAt: object.createdAt,
     body: {

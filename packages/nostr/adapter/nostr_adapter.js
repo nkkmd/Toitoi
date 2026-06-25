@@ -354,7 +354,7 @@ function canonicalizeNostrEvent(event, options = {}) {
 
   const canonicalEvent = {
     id: resolveCanonicalEventId(normalizedEvent.id, options),
-    schemaVersion: '0.3.1',
+    schemaVersion: '0.1.0',
     type: options.type ?? 'inquiry',
     createdAt: new Date(normalizedEvent.created_at * 1000).toISOString(),
     body: {

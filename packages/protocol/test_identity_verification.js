@@ -14,7 +14,7 @@ const {
 
 const canonicalEvent = {
   id: 'tt:evt:01JVVIDENTITY000000000000000000000',
-  schemaVersion: '0.3.1',
+  schemaVersion: '0.1.0',
   type: 'inquiry',
   createdAt: '2026-06-06T00:00:00.000Z',
   body: {

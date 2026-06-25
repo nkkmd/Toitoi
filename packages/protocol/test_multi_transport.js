@@ -101,7 +101,7 @@ const tests = [
     run() {
       const canonicalEvent = {
         id: 'tt:evt:01JVVOUTBOUNDPLAN00000000000000000',
-        schemaVersion: '0.3.1',
+        schemaVersion: '0.1.0',
         type: 'inquiry',
         createdAt: '2026-05-28T00:00:00.000Z',
         body: {

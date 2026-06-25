@@ -20,7 +20,7 @@ const tests = [
         schema.required,
         ['id', 'schemaVersion', 'type', 'createdAt', 'body', 'provenance'],
       );
-      assert.strictEqual(schema.properties.schemaVersion.const, '0.3.1');
+      assert.strictEqual(schema.properties.schemaVersion.const, '0.1.0');
       assert.strictEqual(schema.properties.id.pattern, '^tt:evt:[^\\s]+$');
       assert.deepStrictEqual(schema.properties.body.required, ['text', 'language']);
       assert.deepStrictEqual(schema.properties.provenance.required, ['sources']);

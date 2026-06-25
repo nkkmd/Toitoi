@@ -368,7 +368,7 @@ function canonicalizeAtProtoRecord(event, options = {}) {
 
   const canonicalEvent = {
     id: resolveCanonicalEventId(normalizedEvent.uri || normalizedEvent.cid || normalizedEvent.rkey, options),
-    schemaVersion: '0.3.1',
+    schemaVersion: '0.1.0',
     type: options.type ?? record.type ?? 'inquiry',
     createdAt,
     body: {

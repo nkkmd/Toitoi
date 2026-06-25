@@ -1,6 +1,6 @@
 # Canonical Event
 
-**Status: stable** | **Last updated: 2026-06-05**
+**Status: stable** | **Last updated: 2026-06-25**
 
 ## 目的
 
@@ -158,41 +158,19 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
     "text": "雑草の生え方が場所によって違うのはなぜ？",
     "language": "ja"
   },
-  "contexts": {
-    "climate_zone": "warm-temperate",
-    "soil_type": "volcanic_ash"
-  },
-  "relationships": [
-    {
-      "source": "microclimate",
-      "target": "weed_flora"
-    }
-  ],
-  "phase": "intermediate",
-  "lineage": [
-    {
-      "type": "derived_from",
-      "target": "tt:evt:550e8400e29b41d4a716446655440000"
-    }
-  ],
   "provenance": {
     "sources": [
       {
-        "protocol": "nostr",
-        "sourceId": "<nostr_event_id>"
+        "protocol": "lingonberry",
+        "sourceId": "draft:toitoi-example-0001"
       }
     ]
-  },
-  "rawRef": {
-    "protocol": "nostr",
-    "sourceId": "<nostr_event_id>",
-    "relay": "wss://relay.example",
-    "storage": "append-log",
-    "storageId": "log-000123",
-    "payloadHash": "<raw_payload_hash>"
   }
 }
 ```
+
+この例は Lingonberry の source を使った最小構造です。
+この例は `schemas/canonical-event.schema.json` の `required` に合わせた最小構造です。
 
 ## スキーマ補足
 
@@ -213,6 +191,29 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 `identityClaims` は canonical event に対応する third-party verifiable claim を保持する任意フィールドです。
 `id` は opaque な `tt:evt:<opaque-id>` を使います。
 
+### schema の並び
+
+`schemas/canonical-event.schema.json` の `properties` に合わせると、Canonical Event の補足は次の順で読むと整理しやすくなります。
+
+1. `id`
+2. `schemaVersion`
+3. `type`
+4. `createdAt`
+5. `body`
+6. `contexts`
+7. `relationships`
+8. `phase`
+9. `trigger`
+10. `dsl`
+11. `lineage`
+12. `provenance`
+13. `identityClaims`
+14. `rawRef`
+15. `labels`
+16. `meta`
+
+この順番は実装の入力順を強制するものではなく、仕様の読み順を schema と揃えるためのものです。
+
 ---
 
 ## フィールド方針
@@ -223,6 +224,12 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 - protocol を跨いでも安定すること
 - event hash や URI に直接従属しないこと
 
+### `schemaVersion`
+
+- Canonical Event の schema 契約の版を示す
+- 現行の最小構造では `0.1.0` を使う
+- Markdown の版番号ではなく、JSON Schema の契約値として扱う
+
 ### `type`
 
 代表例:
@@ -232,6 +239,12 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 - `annotation`
 - `response`
 - `synthesis`
+
+### `createdAt`
+
+- ISO 8601 の UTC timestamp
+- event が生成された時点を示す
+- 後からの replay や一覧表示の基準になる
 
 ### `body`
 
@@ -246,6 +259,21 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 
 - semantic relation の最小構造
 - transport pair をそのままコピーするのではなく、意味的に正規化された形を優先する
+
+### `phase`
+
+- 到達段階や熟達度の補助情報
+- 必須ではなく、必要な event にだけ付与する
+
+### `trigger`
+
+- event が立ち上がった契機を補助的に表す
+- `category` と `value` の最小構造で保持する
+
+### `dsl`
+
+- 補助的な説明モデル
+- `models` 配列を持ち、必要なときだけ付与する
 
 ### `lineage`
 
@@ -269,6 +297,11 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 
 必要に応じて `relay` や `kind` を補助情報として持てます。
 
+### `identityClaims`
+
+- canonical event に対応する third-party verifiable claim
+- 必要なときだけ追加する任意フィールド
+
 ### `rawRef`
 
 - raw event または raw payload への参照
@@ -286,6 +319,16 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 - `storage`
 - `storageId`
 - `payloadHash`
+
+### `labels`
+
+- transport projection で使う補助ラベル
+- 必須ではなく、検索や表示の補助として扱う
+
+### `meta`
+
+- 非 semantic な実装メタデータ
+- 保存や運用のための補足情報を入れる
 
 ---
 

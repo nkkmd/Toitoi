@@ -23,7 +23,7 @@ const tests = [
       try {
         const result = await publishCanonicalEventToLingonberry({
           id: 'tt:evt:example',
-          schemaVersion: '0.3.1',
+          schemaVersion: '0.1.0',
           type: 'inquiry',
           createdAt: '2026-06-17T00:00:00Z',
           body: {

@@ -106,7 +106,7 @@ const tests = [
       assert.strictEqual(result.ok, true);
       assert.ok(result.canonicalEvent);
       assert.match(result.canonicalEvent.id, /^tt:evt:/);
-      assert.strictEqual(result.canonicalEvent.schemaVersion, '0.3.1');
+      assert.strictEqual(result.canonicalEvent.schemaVersion, '0.1.0');
       assert.strictEqual(result.canonicalEvent.type, 'inquiry');
       assert.strictEqual(result.canonicalEvent.body.text, '雑草の生え方が場所によって違うのはなぜ？');
       assert.strictEqual(result.canonicalEvent.body.language, 'und');

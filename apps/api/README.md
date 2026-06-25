@@ -249,7 +249,7 @@ curl https://api.your-domain.com/health
     {
       "event": {
         "id": "tt:evt:01JV7Y8K7Y4Y2M4Q7W8J9R0ABC",
-        "schemaVersion": "0.3.1",
+        "schemaVersion": "0.1.0",
         "type": "inquiry",
         "createdAt": "2026-05-19T00:00:00Z",
         "body": {
