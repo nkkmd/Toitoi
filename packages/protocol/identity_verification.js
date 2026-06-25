@@ -123,7 +123,7 @@ function extractIdentityKeySource(event, options = {}) {
 
 function buildIdentityKeyPayload(event, options = {}) {
   return {
-    schemaVersion: '1',
+    schemaVersion: '0.1.0',
     ruleVersion: isNonEmptyString(options.ruleVersion) ? options.ruleVersion.trim() : 'identity-key-v1',
     fields: normalizeIdentityKeyFields(options.fields),
     source: extractIdentityKeySource(event, options),
@@ -249,7 +249,7 @@ function createIdentityClaim(input = {}, options = {}) {
   const verification = normalizeVerification(input.verification);
 
   const claim = {
-    schemaVersion: isNonEmptyString(input.schemaVersion) ? input.schemaVersion.trim() : '1',
+    schemaVersion: isNonEmptyString(input.schemaVersion) ? input.schemaVersion.trim() : '0.1.0',
     claimType: 'identity',
     ruleVersion,
     identityKey,

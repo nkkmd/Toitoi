@@ -138,7 +138,7 @@ const tests = [
         },
       });
 
-      assert.strictEqual(claim.schemaVersion, '1');
+      assert.strictEqual(claim.schemaVersion, '0.1.0');
       assert.strictEqual(claim.claimType, 'identity');
       assert.strictEqual(claim.identityKey, identityKey);
       assert.strictEqual(claim.canonicalId, canonicalEvent.id);
