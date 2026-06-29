@@ -1,6 +1,6 @@
 # 構築ガイド：Canonical Event 中心の Nostr リレー立ち上げ方
 
-**Status: evolving** | **Last updated: 2026-05-31**
+**Status: evolving** | **Last updated: 2026-06-29**
 
 本ドキュメントは、Toitoi の Canonical Event を Nostr transport projection として受け取る専用リレーサーバーを構築するための公式ガイドです。
 
@@ -590,6 +590,14 @@ cd ~/nostr-archive/agroecology-commons
 git remote add origin git@github.com:your-username/agroecology-commons-archive.git
 git push -u origin main
 ```
+
+以後の push も自動化する場合は、Step 6.5 の cron を次のようにして、差分アーカイブの完了後に push します。
+
+```cron
+0 3 * * * /bin/bash $HOME/nostr-archive/archive_diff.sh && git -C $HOME/nostr-archive/agroecology-commons push origin main >> $HOME/nostr-archive/archive_diff.log 2>&1
+```
+
+`archive_diff.sh` は新規イベントがあれば `git add` と `git commit` まで行います。上記は SSH 鍵による GitHub 認証が、cron を実行するユーザーで利用できることを前提とします。
 
 ### Step 6.7: transport archive からの復元
 
