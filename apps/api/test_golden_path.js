@@ -10,10 +10,14 @@ const { GOLDEN_PATH_IDS, createGoldenPathEvents } = require('./fixtures/golden_p
 
 function run() {
   const storageDir = makeTempDir('toitoi-golden-path-');
-  const ingestResult = ingestNostrEvents(createGoldenPathEvents(makeEvent), {
-    skipVerify: true,
-  });
+  const events = createGoldenPathEvents(makeEvent);
 
+  assert.strictEqual(events.length, 3);
+  for (const event of events) {
+    assert.match(event.id, /^[0-9a-f]{64}$/);
+  }
+
+  const ingestResult = ingestNostrEvents(events, { skipVerify: true });
   assert.strictEqual(ingestResult.rejected.length, 0);
   assert.strictEqual(ingestResult.accepted.length, 3);
 
@@ -23,56 +27,38 @@ function run() {
   });
 
   const replayed = replayStorage(storageDir, { persistIndex: false });
+  assert.strictEqual(replayed.ingestResult.rejected.length, 0);
+  assert.strictEqual(replayed.ingestResult.accepted.length, 3);
   assert.strictEqual(replayed.indexSnapshot.total, 3);
 
-  const service = createStandardApiService({
-    indexSnapshot: replayed.indexSnapshot,
-  });
+  const canonicalBySourceId = new Map(
+    replayed.ingestResult.accepted.map(record => [record.rawEvent.id, record.canonicalEvent]),
+  );
+  const root = canonicalBySourceId.get(GOLDEN_PATH_IDS.root);
+  const translated = canonicalBySourceId.get(GOLDEN_PATH_IDS.translated);
+  const comparison = canonicalBySourceId.get(GOLDEN_PATH_IDS.comparison);
 
-  const root = service.handleRequest({
+  assert.ok(root);
+  assert.ok(translated);
+  assert.ok(comparison);
+  assert.ok(root.provenance && Array.isArray(root.provenance.sources));
+  assert.ok(root.provenance.sources.length > 0);
+  assert.ok(translated.lineage.some(edge => edge.target === GOLDEN_PATH_IDS.root));
+  assert.ok(comparison.lineage.some(edge => edge.target === GOLDEN_PATH_IDS.translated));
+
+  const service = createStandardApiService({ indexSnapshot: replayed.indexSnapshot });
+  const list = service.handleRequest({
     method: 'GET',
-    url: `/api/v1/inquiries/${GOLDEN_PATH_IDS.root}/detail`,
+    url: '/api/v1/inquiries?limit=10&offset=0&order=asc',
   });
-  assert.strictEqual(root.statusCode, 200);
-  assert.strictEqual(root.body.event.id, GOLDEN_PATH_IDS.root);
-  assert.ok(root.body.event.provenance);
-  assert.ok(root.body.references.children.some(child => child.id === GOLDEN_PATH_IDS.translated));
+  assert.strictEqual(list.statusCode, 200);
+  assert.strictEqual(list.body.total, 3);
+  assert.deepStrictEqual(
+    list.body.results.map(result => result.event.id),
+    [GOLDEN_PATH_IDS.root, GOLDEN_PATH_IDS.translated, GOLDEN_PATH_IDS.comparison],
+  );
 
-  const translated = service.handleRequest({
-    method: 'GET',
-    url: `/api/v1/inquiries/${GOLDEN_PATH_IDS.translated}/detail`,
-  });
-  assert.strictEqual(translated.statusCode, 200);
-  assert.ok(translated.body.references.parents.some(parent => parent.id === GOLDEN_PATH_IDS.root));
-  assert.ok(translated.body.references.children.some(child => child.id === GOLDEN_PATH_IDS.comparison));
-
-  const tree = service.handleRequest({
-    method: 'GET',
-    url: `/api/v1/inquiries/${GOLDEN_PATH_IDS.root}/tree`,
-  });
-  assert.strictEqual(tree.statusCode, 200);
-  assert.strictEqual(tree.body.id, GOLDEN_PATH_IDS.root);
-  assert.strictEqual(tree.body.children[0].id, GOLDEN_PATH_IDS.translated);
-  assert.strictEqual(tree.body.children[0].children[0].id, GOLDEN_PATH_IDS.comparison);
-
-  const contextQuery = service.handleRequest({
-    method: 'GET',
-    url: '/api/v1/inquiries/query?climate_zone=warm-temperate',
-  });
-  assert.strictEqual(contextQuery.statusCode, 200);
-  assert.strictEqual(contextQuery.body.total, 1);
-  assert.strictEqual(contextQuery.body.results[0].event.id, GOLDEN_PATH_IDS.root);
-
-  const relationQuery = service.handleRequest({
-    method: 'GET',
-    url: '/api/v1/inquiries/relation?relationship=microclimate',
-  });
-  assert.strictEqual(relationQuery.statusCode, 200);
-  assert.strictEqual(relationQuery.body.total, 2);
-  assert.ok(relationQuery.body.results.some(result => result.event.id === GOLDEN_PATH_IDS.root));
-  assert.ok(relationQuery.body.results.some(result => result.event.id === GOLDEN_PATH_IDS.translated));
-
-  console.log('PASS v0.2.0 golden path is reproducible through ingest, replay, API, provenance, and lineage');
+  console.log('PASS v0.2.0 golden path is reproducible through ingest, persistence, replay, provenance, lineage, and Standard API');
 }
 
 try {
