@@ -6,6 +6,8 @@ const GOLDEN_PATH_IDS = Object.freeze({
   comparison: '0000000000000000000000000000000000000000000000000000000000000003',
 });
 
+const GOLDEN_PATH_RELAY = 'wss://relay.example.com';
+
 function createGoldenPathEvents(makeEvent) {
   if (typeof makeEvent !== 'function') {
     throw new TypeError('makeEvent must be a function');
@@ -34,7 +36,7 @@ function createGoldenPathEvents(makeEvent) {
         ['context', 'climate_zone', 'cool-temperate'],
         ['relationship', 'translated_from', GOLDEN_PATH_IDS.root],
         ['relationship', 'microclimate', 'weed_flora'],
-        ['e', GOLDEN_PATH_IDS.root, 'reply'],
+        ['e', GOLDEN_PATH_IDS.root, GOLDEN_PATH_RELAY, 'reply'],
         ['phase', 'intermediate'],
       ],
     }),
@@ -46,7 +48,7 @@ function createGoldenPathEvents(makeEvent) {
         ['t', 'agroecology'],
         ['relationship', 'observed_alongside', GOLDEN_PATH_IDS.root],
         ['relationship', 'observed_alongside', GOLDEN_PATH_IDS.translated],
-        ['e', GOLDEN_PATH_IDS.translated, 'reply'],
+        ['e', GOLDEN_PATH_IDS.translated, GOLDEN_PATH_RELAY, 'reply'],
         ['phase', 'expert'],
       ],
     }),
@@ -55,5 +57,6 @@ function createGoldenPathEvents(makeEvent) {
 
 module.exports = {
   GOLDEN_PATH_IDS,
+  GOLDEN_PATH_RELAY,
   createGoldenPathEvents,
 };
