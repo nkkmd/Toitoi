@@ -1,7 +1,6 @@
 'use strict';
 
 const assert = require('assert');
-const { generateSecretKey } = require('nostr-tools');
 const { ingestNostrEvents } = require('../nostr/adapter/ingest_pipeline');
 const { publishCanonicalEventToNostrRelay } = require('../nostr/live/outbound');
 const { ingestLingonberryEvents } = require('../lingonberry/adapter/ingest_pipeline');
@@ -22,10 +21,14 @@ function makeCanonicalEvent() {
   };
 }
 
+function makeNostrSecretKey() {
+  return new Uint8Array(32).fill(1);
+}
+
 async function testNostrRoundTrip(canonicalEvent) {
   let relayEvent = null;
   const published = await publishCanonicalEventToNostrRelay(canonicalEvent, {
-    secretKey: generateSecretKey(),
+    secretKey: makeNostrSecretKey(),
     relayUrl: 'wss://operational-smoke.invalid',
     publish(event) {
       relayEvent = JSON.parse(JSON.stringify(event));
