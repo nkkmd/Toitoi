@@ -23,6 +23,8 @@ function run() {
   });
 
   const replayed = replayStorage(storageDir, { persistIndex: false });
+  assert.strictEqual(replayed.indexSnapshot.total, 3);
+
   const service = createStandardApiService({
     indexSnapshot: replayed.indexSnapshot,
   });
@@ -63,11 +65,12 @@ function run() {
 
   const relationQuery = service.handleRequest({
     method: 'GET',
-    url: '/api/v1/inquiries/relation?relationship=translated_from',
+    url: '/api/v1/inquiries/relation?relationship=microclimate',
   });
   assert.strictEqual(relationQuery.statusCode, 200);
-  assert.strictEqual(relationQuery.body.total, 1);
-  assert.strictEqual(relationQuery.body.results[0].event.id, GOLDEN_PATH_IDS.translated);
+  assert.strictEqual(relationQuery.body.total, 2);
+  assert.ok(relationQuery.body.results.some(result => result.event.id === GOLDEN_PATH_IDS.root));
+  assert.ok(relationQuery.body.results.some(result => result.event.id === GOLDEN_PATH_IDS.translated));
 
   console.log('PASS v0.2.0 golden path is reproducible through ingest, replay, API, provenance, and lineage');
 }
