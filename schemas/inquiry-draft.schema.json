@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://toitoi.cultivationdata.net/schemas/v1/inquiry-draft.schema.json",
+  "title": "Toitoi Inquiry Draft",
+  "description": "Pre-publication inquiry candidate requiring an explicit human review decision before publication.",
+  "type": "object",
+  "required": ["id", "schemaVersion", "status", "createdAt", "updatedAt", "candidate"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^tt:draft:[^\\s]+$"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.1.0"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "in_review", "approved", "rejected"]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "submittedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["type", "body"],
+      "properties": {
+        "type": { "const": "inquiry" },
+        "body": {
+          "type": "object",
+          "required": ["text", "language"],
+          "properties": {
+            "text": { "type": "string", "minLength": 1 },
+            "language": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "contexts": { "type": "object", "additionalProperties": true },
+        "relationships": { "type": "array" },
+        "phase": { "type": "string" },
+        "trigger": { "type": "object" },
+        "dsl": { "type": "object" },
+        "lineage": { "type": "array" },
+        "labels": { "type": "array" },
+        "meta": { "type": "object" }
+      },
+      "not": {
+        "anyOf": [
+          { "required": ["id"] },
+          { "required": ["createdAt"] },
+          { "required": ["provenance"] }
+        ]
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "required": ["decision", "reviewerId", "reviewedAt"],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": ["approved", "rejected"]
+        },
+        "reviewerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "in_review" } } },
+      "then": { "required": ["submittedAt"] }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["approved", "rejected"] } } },
+      "then": { "required": ["submittedAt", "review"] }
+    }
+  ],
+  "additionalProperties": false
+}
