@@ -55,10 +55,11 @@ function run() {
 
   const contextQuery = service.handleRequest({
     method: 'GET',
-    url: '/api/v1/inquiries/query?field_zone=east',
+    url: '/api/v1/inquiries/query?climate_zone=warm-temperate',
   });
   assert.strictEqual(contextQuery.statusCode, 200);
-  assert.strictEqual(contextQuery.body.total, 2);
+  assert.strictEqual(contextQuery.body.total, 1);
+  assert.strictEqual(contextQuery.body.results[0].event.id, GOLDEN_PATH_IDS.root);
 
   const relationQuery = service.handleRequest({
     method: 'GET',
