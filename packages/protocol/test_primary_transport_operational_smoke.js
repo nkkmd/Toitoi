@@ -10,7 +10,7 @@ const { publishCanonicalEventToLingonberry } = require('../lingonberry/live/outb
 
 function makeCanonicalEvent() {
   return {
-    id: 'tt:evt:01JVVPRIMARYTRANSPORTSMOKE00000000',
+    id: 'tt:evt:01H8JQK7YB0B4Z1K0P0W0M0N1L',
     schemaVersion: '0.1.0',
     type: 'inquiry',
     createdAt: '2026-07-13T00:00:00.000Z',
@@ -19,25 +19,6 @@ function makeCanonicalEvent() {
       language: 'ja',
     },
     labels: ['agroecology'],
-    contexts: {
-      climate_zone: 'warm-temperate',
-      field_zone: 'east-side',
-    },
-    relationships: [
-      {
-        source: 'microclimate',
-        target: 'weed_flora',
-        type: 'related_to',
-      },
-    ],
-    provenance: {
-      sources: [
-        {
-          protocol: 'local',
-          sourceId: 'v0.2.0-operational-smoke',
-        },
-      ],
-    },
   };
 }
 
