@@ -1,10 +1,10 @@
 'use strict';
 
 const assert = require('assert');
-const { ingestNostrEvents } = require('@toitoi/nostr/adapter/ingest_pipeline');
-const { persistIngestResult } = require('@toitoi/nostr/storage/persistence');
-const { replayStorage } = require('@toitoi/nostr/storage/replay');
-const { makeEvent, makeTempDir } = require('@toitoi/nostr/storage/test_fixtures');
+const { ingestNostrEvents } = require('../../packages/nostr/adapter/ingest_pipeline');
+const { persistIngestResult } = require('../../packages/nostr/storage/persistence');
+const { replayStorage } = require('../../packages/nostr/storage/replay');
+const { makeEvent, makeTempDir } = require('../../packages/nostr/storage/test_fixtures');
 const { createStandardApiService } = require('../api/standard_api_service');
 const { GOLDEN_PATH_IDS, createGoldenPathEvents } = require('../api/fixtures/golden_path');
 const {
@@ -21,13 +21,13 @@ function buildService() {
   const storageDir = makeTempDir('toitoi-frontend-golden-path-');
   persistIngestResult(storageDir, ingestResult, {
     source: 'jsonl',
-    sourceLabel: 'v0.2.0-frontend-contract',
+    sourceLabel: 'v0.3.0-lineage-contract',
   });
   const replayed = replayStorage(storageDir, { persistIndex: false });
   return createStandardApiService({ indexSnapshot: replayed.indexSnapshot });
 }
 
-function run() {
+function testGoldenPath() {
   const service = buildService();
   const detailResponse = service.handleRequest({
     method: 'GET',
@@ -52,11 +52,50 @@ function run() {
   });
   assert.strictEqual(treeResponse.statusCode, 200);
 
-  const treeModel = createLineageTreeModel(treeResponse.body);
+  const selectedCanonicalId = detailModel.inquiry.id;
+  const treeModel = createLineageTreeModel(treeResponse.body, { selectedId: selectedCanonicalId });
   assert.strictEqual(treeModel.state, VIEW_STATES.READY);
   assert.strictEqual(treeModel.tree.depth, 0);
+  assert.strictEqual(treeModel.tree.role, 'root');
   assert.strictEqual(treeModel.tree.children[0].depth, 1);
+  assert.strictEqual(treeModel.tree.children[0].role, 'branch');
   assert.strictEqual(treeModel.tree.children[0].children[0].depth, 2);
+  assert.strictEqual(treeModel.tree.children[0].children[0].role, 'leaf');
+  assert.strictEqual(treeModel.nodes.length, 3);
+  assert.strictEqual(treeModel.nodes.filter(node => node.selected).length, 1);
+  assert.strictEqual(treeModel.warnings.length, 0);
+}
+
+function testCycleAndMissingReferenceProtection() {
+  const root = {
+    id: 'tt:evt:root',
+    body: { text: 'root' },
+    provenance: { sourceCount: 1, sourceProtocols: ['nostr'], sourceIds: ['raw-root'] },
+    children: [],
+  };
+  const child = {
+    id: 'tt:evt:child',
+    body: { text: 'child' },
+    relationships: [{ source: 'translated_from', target: root.id }],
+    children: [],
+  };
+  root.children.push(child, null);
+  child.children.push(root);
+
+  const model = createLineageTreeModel(root, { selectedId: child.id });
+  assert.strictEqual(model.state, VIEW_STATES.READY);
+  assert.strictEqual(model.selectedId, child.id);
+  assert.strictEqual(model.nodes.filter(node => node.selected).length, 1);
+  assert.strictEqual(model.tree.children[0].relationToParent, 'translated_from');
+  assert.strictEqual(model.tree.children[0].children[0].status, 'cycle');
+  assert.strictEqual(model.tree.children[1].status, 'missing');
+  assert.ok(model.warnings.some(warning => warning.type === 'cycle'));
+  assert.ok(model.warnings.some(warning => warning.type === 'missing-reference'));
+}
+
+function run() {
+  testGoldenPath();
+  testCycleAndMissingReferenceProtection();
 
   assert.strictEqual(createLoadingModel().state, VIEW_STATES.LOADING);
   assert.strictEqual(createInquiryDetailModel(null).state, VIEW_STATES.EMPTY);
@@ -67,7 +106,7 @@ function run() {
     error: 'network failed',
   });
 
-  console.log('PASS frontend view models expose Golden Path detail, provenance, references, and lineage');
+  console.log('PASS frontend lineage model exposes selection, node roles, relation types, and resilient tree states');
 }
 
 try {
