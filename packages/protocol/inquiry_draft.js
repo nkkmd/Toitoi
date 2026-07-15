@@ -47,6 +47,32 @@ function validateCandidate(candidate) {
   return errors;
 }
 
+function validateDerivation(derivation) {
+  const errors = [];
+  if (derivation == null) {
+    return errors;
+  }
+  if (typeof derivation !== 'object' || Array.isArray(derivation)) {
+    return ['derivation must be an object'];
+  }
+  if (!isNonEmptyString(derivation.sourceInquiryId)
+    || !/^tt:evt:[^\s]+$/.test(derivation.sourceInquiryId)) {
+    errors.push('derivation.sourceInquiryId must use the tt:evt:<opaque-id> form');
+  }
+  if (!isNonEmptyString(derivation.relationType)) {
+    errors.push('derivation.relationType is required');
+  }
+  if (Object.prototype.hasOwnProperty.call(derivation, 'authorId')
+    && !isNonEmptyString(derivation.authorId)) {
+    errors.push('derivation.authorId must be a non-empty string');
+  }
+  if (Object.prototype.hasOwnProperty.call(derivation, 'ai')
+    && (!derivation.ai || typeof derivation.ai !== 'object' || Array.isArray(derivation.ai))) {
+    errors.push('derivation.ai must be an object');
+  }
+  return errors;
+}
+
 function validateInquiryDraft(draft) {
   const errors = [];
   if (!draft || typeof draft !== 'object' || Array.isArray(draft)) {
@@ -67,6 +93,7 @@ function validateInquiryDraft(draft) {
     }
   }
   errors.push(...validateCandidate(draft.candidate));
+  errors.push(...validateDerivation(draft.derivation));
 
   if (draft.status === 'in_review' && !isNonEmptyString(draft.submittedAt)) {
     errors.push('submittedAt is required while in_review');
