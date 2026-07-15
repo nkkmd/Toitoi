@@ -10,19 +10,14 @@ It does not fetch data, own transport details, or prescribe a UI framework. It c
 
 - `GET /api/v1/inquiries/:id/detail`
 - `GET /api/v1/inquiries/:id/tree`
+- `GET /api/v1/inquiries/query?climate_zone=...`
+- `GET /api/v1/inquiries/query?soil_type=...`
+- `GET /api/v1/inquiries/query?farming_context=...`
+- `GET /api/v1/inquiries/query?crop_family=...`
 
 ## Detail model
 
-`createInquiryDetailModel()` exposes:
-
-- inquiry text and language
-- canonical ID and semantic type
-- contexts as ordered key/value items
-- relationships as source/target items
-- trigger and phase
-- provenance protocol names and source IDs
-- parent and child inquiry references
-- canonical identity summary
+`createInquiryDetailModel()` exposes inquiry text and language, canonical ID, contexts, relationships, trigger, phase, provenance, parent/child references, and canonical identity summary.
 
 The model deliberately uses the Standard API canonical view. It does not expose Nostr tags, Lingonberry carrier fields, or any other transport-specific projection.
 
@@ -30,73 +25,71 @@ The model deliberately uses the Standard API canonical view. It does not expose 
 
 `createLineageTreeModel(treeResponse, options)` recursively converts the Standard API lineage tree into a render-oriented tree and a flat node index.
 
-Each node contains:
+Each node contains `id`, `parentId`, text, type, timestamp, depth, role, relation to parent, provenance, selection state, availability status, and children. Roles are `root`, `branch`, `leaf`, `cycle`, or `missing`.
 
-- `id` and `parentId`
-- `text`, `type`, and `createdAt`
-- `depth`
-- `role`: `root`, `branch`, `leaf`, `cycle`, or `missing`
-- `relationToParent`
-- provenance summary
-- `selected`
-- `status`: `available`, `cycle`, or `missing`
-- `children`
+The returned model also exposes flattened nodes, the selected canonical ID, and cycle/missing-reference warnings. Cycle detection is path-local and invalid child references are contained instead of breaking the entire tree.
 
-The returned model also exposes:
+## Lineage browser renderer
 
-- `nodes`: flattened nodes for navigation and detail-panel lookup
-- `selectedId`: the canonical ID selected by the user
-- `warnings`: cycle and missing-reference diagnostics
+`lineage_tree_renderer.js` converts a lineage model into escaped, browser-ready HTML with semantic `tree` / `treeitem` roles, keyboard-reachable detail links, relation/provenance labels, and explicit loading, empty, ready, and error states.
 
-Selection is controlled with `{ selectedId }`. If the requested ID is absent, the root becomes selected.
+## Context exploration model
 
-Cycle detection is path-local. A repeated event in a different legitimate branch can still be rendered, while a recursive reference within the same path is terminated as a `cycle` node. Invalid child references become `missing` nodes instead of breaking the entire tree.
+`context_exploration_model.js` converts a Standard API query response into a comparison-oriented model.
 
-## Browser renderer
+Supported first-class context criteria are:
 
-`lineage_tree_renderer.js` converts a lineage model into escaped, browser-ready HTML.
+- `climate_zone`
+- `soil_type`
+- `farming_context`
+- `crop_family`
 
-The renderer provides:
+The model exposes:
 
-- semantic `tree` / `treeitem` roles
-- `aria-level` and `aria-selected`
-- `aria-current` on the selected inquiry
-- keyboard-reachable inquiry detail links
-- relation type, role, provenance, and warning labels
-- explicit loading, empty, ready, and error output
-- HTML escaping for inquiry text and errors
+- the criteria currently selected by the user
+- result count and canonical inquiry results
+- matched criteria per inquiry
+- context values that differ between results
+- relationship and provenance summaries
+- comparison columns shared by the result set
+- explicit loading, empty, ready, and error states
 
-The renderer remains framework-independent. A later React, Vue, SVG, or canvas implementation may consume the same model without changing the Standard API boundary.
+At least one context criterion is required. Related inquiries are never treated as the same canonical event merely because contexts overlap. The model declares `identityMerge: false` and `interpretation: related-by-context` to keep discovery separate from identity resolution.
+
+## Context exploration renderer
+
+`context_exploration_renderer.js` produces escaped, browser-ready HTML containing:
+
+- selected context filters
+- an accessible, keyboard-scrollable comparison table
+- links from each result to its inquiry detail
+- provenance protocol summaries
+- an explicit notice that context similarity does not imply canonical identity
+- loading, empty, ready, and invalid/error output
 
 ## UI states
 
-The module defines four explicit states:
+The frontend contracts use four explicit states:
 
 - `loading`
 - `empty`
 - `ready`
 - `error`
 
-Network code should create a loading model before a request, use the detail/tree adapters for successful responses, and use `createErrorModel()` for failures.
-
 ## Validation
 
-`test_inquiry_view_model.js` builds the Golden Path through Nostr ingest, persistence, replay, and the Standard API, then verifies:
+`test_inquiry_view_model.js` verifies detail, provenance, references, lineage depth, node roles, selection, relation types, and malformed-reference containment.
 
-- detail data becomes a ready render model
-- provenance includes the Nostr source protocol and source event ID
-- parent and child references survive the frontend boundary
-- the three-level lineage tree preserves depth and node roles
-- one selected canonical inquiry is maintained
-- relation type is exposed when present
-- cycle and missing references are contained and reported
+`test_lineage_tree_renderer.js` verifies accessible tree markup, selected-node navigation, relation/provenance display, UI states, and HTML escaping.
 
-`test_lineage_tree_renderer.js` verifies:
+`test_context_exploration.js` builds the Golden Path through ingest, persistence, replay, and Standard API query handling, then verifies:
 
-- accessible tree markup
-- selected-node navigation
-- relation and provenance display
-- loading, empty, ready, and error output
-- escaping of inquiry text and error messages
+- one or more context filters return canonical inquiry results
+- selected filters remain visible in the render model
+- differing context values can be compared
+- no-result and invalid-condition states are explicit
+- inquiry detail navigation is present
+- related results are not automatically identity-merged
+- user-controlled text is HTML-escaped
 
-Both tests run through the `@toitoi/frontend` workspace `test` script and therefore participate in the root workspace test command.
+All tests run through the `@toitoi/frontend` workspace `test` script and participate in the root workspace test command.
