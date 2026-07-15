@@ -145,7 +145,7 @@ Default CIにはAPI contractsに加えて、frontend lineage、context explorati
 ## Limitations
 
 - authentication / authorization / rate limitingは未実装
--全文検索はtoken containmentベースの最小実装
+- 全文検索はtoken containmentベースの最小実装
 - embeddings必須のsemantic searchとgraph inferenceは非対象
 - live external relay / carrier availabilityはdeterministic CIの保証範囲外
 
