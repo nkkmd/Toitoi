@@ -37,10 +37,26 @@ function toReferenceItems(events) {
 
 function toProvenanceModel(provenance) {
   const source = normalizeRecord(provenance);
+  const rawSources = normalizeArray(source.sources);
+  const protocols = normalizeArray(source.sourceProtocols).slice();
+  const sourceIds = normalizeArray(source.sourceIds).slice();
+
+  for (const item of rawSources) {
+    if (!item || typeof item !== 'object') {
+      continue;
+    }
+    if (typeof item.protocol === 'string' && !protocols.includes(item.protocol)) {
+      protocols.push(item.protocol);
+    }
+    if (typeof item.sourceId === 'string' && !sourceIds.includes(item.sourceId)) {
+      sourceIds.push(item.sourceId);
+    }
+  }
+
   return {
-    sourceCount: Number.isInteger(source.sourceCount) ? source.sourceCount : 0,
-    protocols: normalizeArray(source.sourceProtocols).slice(),
-    sourceIds: normalizeArray(source.sourceIds).slice(),
+    sourceCount: Number.isInteger(source.sourceCount) ? source.sourceCount : rawSources.length,
+    protocols,
+    sourceIds,
     rawRef: source.rawRef || null,
   };
 }
@@ -74,13 +90,33 @@ function createInquiryDetailModel(detailResponse) {
   };
 }
 
-function inferRelationToParent(node, parentId) {
-  if (!parentId) {
+function collectEventIdentifiers(event) {
+  const identifiers = new Set();
+  if (event && typeof event.id === 'string' && event.id) {
+    identifiers.add(event.id);
+  }
+  const provenance = toProvenanceModel(event && event.provenance);
+  for (const sourceId of provenance.sourceIds) {
+    identifiers.add(sourceId);
+  }
+  return identifiers;
+}
+
+function inferRelationToParent(node, parentNode) {
+  if (!parentNode) {
     return null;
   }
 
+  const parentIdentifiers = collectEventIdentifiers(parentNode);
+  const lineageEdge = normalizeArray(node && node.lineage).find(edge => (
+    edge && typeof edge.target === 'string' && parentIdentifiers.has(edge.target)
+  ));
+  if (lineageEdge && typeof lineageEdge.type === 'string' && lineageEdge.type) {
+    return lineageEdge.type;
+  }
+
   const relation = toRelationshipItems(node && node.relationships)
-    .find(item => item.target === parentId);
+    .find(item => parentIdentifiers.has(item.target));
   return relation ? relation.source || null : null;
 }
 
@@ -93,7 +129,8 @@ function createLineageTreeModel(treeResponse, options = {}) {
   const warnings = [];
   const flatNodes = [];
 
-  function visit(node, depth, parentId, path) {
+  function visit(node, depth, parentNode, path) {
+    const parentId = parentNode && typeof parentNode.id === 'string' ? parentNode.id : null;
     if (!node || typeof node !== 'object' || typeof node.id !== 'string' || !node.id) {
       const missing = {
         id: null,
@@ -120,7 +157,7 @@ function createLineageTreeModel(treeResponse, options = {}) {
         parentId,
         depth,
         role: 'cycle',
-        relationToParent: inferRelationToParent(node, parentId),
+        relationToParent: inferRelationToParent(node, parentNode),
         text: node.body && node.body.text ? node.body.text : '',
         type: node.type || 'inquiry',
         createdAt: node.createdAt || null,
@@ -142,7 +179,7 @@ function createLineageTreeModel(treeResponse, options = {}) {
       parentId,
       depth,
       role: depth === 0 ? 'root' : children.length > 0 ? 'branch' : 'leaf',
-      relationToParent: inferRelationToParent(node, parentId),
+      relationToParent: inferRelationToParent(node, parentNode),
       text: node.body && node.body.text ? node.body.text : '',
       type: node.type || 'inquiry',
       createdAt: node.createdAt || null,
@@ -152,7 +189,7 @@ function createLineageTreeModel(treeResponse, options = {}) {
       children: [],
     };
     flatNodes.push(model);
-    model.children = children.map(child => visit(child, depth + 1, node.id, nextPath));
+    model.children = children.map(child => visit(child, depth + 1, node, nextPath));
     return model;
   }
 
