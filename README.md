@@ -1,4 +1,5 @@
 # Toitoi 🌱
+
 [![Open Source Love](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](./LICENSE_POLICY.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE_POLICY.md)
@@ -6,297 +7,208 @@
 
 **Digital Agroecology Commons powered by protocol-independent canonical events**
 
+**Current release line: v0.3.0 release candidate**
+
 *[日本語は下に続きます]*
 
-Toitoi is a **decentralized protocol platform (digital commons)** designed to share and evolve agroecological knowledge, based on the philosophy of "[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)".
+Toitoi is a decentralized protocol platform and digital commons for sharing and evolving agroecological knowledge through **inquiries** rather than universal answers.
 
-Instead of depending on specific companies or centralized servers, it circulates farmers' "ecological intuition (tacit knowledge)" across the network in the form of "inquiries" that can be translated and adapted by others. In this repository, `inquiry` is the term used for protocol and implementation layers, while `question` is kept as a general-language translation.
+It is based on the philosophy of [Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md). Local observations remain grounded in their own context, while transport-independent Canonical Events allow inquiries to be translated, compared, derived, and replayed across distributed systems.
 
-> **Note:** Toitoi is an experimental project that aims to implement the "inquiry circulation system" conceived within the essay *[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)* as open-source software. It is as much a living proof-of-concept for the ideas in that text as it is a piece of software.
+## v0.3.0: A knowledge space where inquiries grow
 
-## 💡 Project Philosophy: Why Toitoi?
+v0.3.0 advances the v0.2.0 Golden Path from a readable reference implementation into the first integrated knowledge-space workflow:
 
-### Toitoi as "Librarian" and "Mycelium"
+```text
+inquiry detail
+  → lineage tree
+  → context exploration
+  → reviewed derived inquiry
+  → Canonical Event publication
+  → transport projection / re-ingest / replay
+  → updated lineage tree
+```
 
-Toitoi does not treat AI as an authority that delivers universal agricultural answers.
+Implemented release-candidate capabilities:
 
-Instead, the AI inside Toitoi behaves more like:
+- inquiry detail backed by the Standard API canonical view
+- lineage tree with root / branch / leaf roles, relation types, provenance summaries, missing-reference handling, and cycle protection
+- context exploration using `climate_zone`, `soil_type`, `farming_context`, and `crop_family`
+- conservative identity semantics: contextual similarity never causes automatic canonical identity merging
+- reviewed derived inquiry creation using the Inquiry Draft workflow
+- supported derivation types: `derived_from`, `translated_from`, `annotates`, `reframes`, `revises`, and `synthesizes`
+- publication guard: only an explicitly human-approved draft can become a Canonical Event
+- Nostr lineage projection and deterministic re-ingest / persistence / replay validation
+- Lingonberry lineage and publication metadata projection validation
+- cross-feature Golden Path validation in the default workspace CI
 
-- a librarian connecting contexts and inquiries
-- a mycelial network linking distributed observations underground
+## Architecture
 
-Rather than replacing farmers' judgment, Toitoi aims to amplify human observation and ecological curiosity.
+Toitoi separates semantic meaning from transport representation.
 
-The system is designed not as a centralized optimization platform, but as a living public library of unresolved ecological questions.
+```text
+Edge / local observation
+  → Inquiry Draft
+  → human review
+  → Canonical Event
+  → protocol converter
+  → Nostr / Lingonberry / ATProto transport
+  → raw + canonical storage
+  → replay / derived index
+  → Standard API
+  → frontend view models
+```
 
-Modern smart agriculture predominantly relies on centralized models that gather raw data into the cloud and deliver "universal prescriptions" to farmers. However, this model eliminates the inherent complexity of local farmlands, deprives farmers of their autonomy, and leads to the "enclosure of knowledge" by platform capitalism.
+The current primary transports are Nostr and Lingonberry. ATProto remains a secondary implementation for multi-protocol compatibility and future federation work.
 
-Toitoi completely overturns this structure:
+## Project philosophy
 
-1. **Circulating "Questions" instead of "Answers"**
-   Raw, location-specific data is never exposed to the outside world. The local AI extracts only "inquiries into ecological relationships" (e.g., the relationship between microclimate and weed flora) from the data and releases only those inquiries into the network.
-2. **Overcoming the Dilemma of Locality**
-   Through a common format defined as a [boundary object](./docs/concepts/GLOSSARY.md#boundary-object), farmers in different regions with different climates and soils can connect through "weak ties" without destroying each other's context.
-3. **Visualizing the Evolutionary Tree**
-   The process of "translational co-evolution" (Actor-Network Theory)—where an inquiry is translated to another farmland and synthesized with different inquiries—is recorded and visualized as a graphical evolutionary tree.
+Toitoi treats AI as a **librarian** or **mycelium**, not as an authority that issues universal agricultural prescriptions.
 
-## ⚙️ System Architecture
+- It connects inquiries and contexts.
+- It helps surface relationships without erasing locality.
+- It keeps human judgment at the publication boundary.
+- It records how inquiries are translated, revised, annotated, and synthesized.
 
-Toitoi is a "nested commons" composed of 3 modules connected through protocol-specific transports and a protocol-independent canonical event layer.
+## Quick start
 
-* **[Edge Layer] Local AI**: Conceals raw data, generates "inquiries", cryptographically signs them, and publishes them.
-* **[Infrastructure Layer] Commons Relay**: A decentralized relay network that permanently archives only "inquiries".
-* **[Viewer Layer] Indexer & UI**: Collects distributed inquiries and visualizes them as a mind map.
+```bash
+git clone https://github.com/nkkmd/Toitoi.git
+cd Toitoi
+corepack pnpm install
+corepack pnpm test
+```
 
-Toitoi preserves knowledge archives through a protocol-independent canonical event, identity key / claim, and provenance structure.
+Start the Standard API:
 
-The current primary transports are Nostr and Lingonberry. Nostr provides the relay-oriented operational path, while Lingonberry provides the knowledge-object transport projection / ingest path. Both are wired into schema, adapter, converter, raw/canonical storage, replay, Standard API access, and outbound publishing. ATProto is maintained as a secondary transport implementation for multi-protocol compatibility, ingest/replay verification, and future federation work.
+```bash
+TOITOI_STORAGE_DIR=/path/to/storage corepack pnpm start:api
+```
 
-## 📚 Documentation
+## Documentation
 
-For the project overview, specifications, and setup guides for each module, see the following directories. *(Note: Most detailed docs are currently written in Japanese.)*
+### Release and current implementation
 
-If you haven't cloned the repo yet, grab it first and then run `corepack pnpm install` at the workspace root before working with the project.
+- [v0.3.0 Release Plan](./docs/roadmap/V0.3.0_RELEASE_PLAN.md)
+- [v0.3.0 Release Runbook](./docs/roadmap/V0.3.0_RELEASE_RUNBOOK.md)
+- [v0.3.0 GitHub Release Content](./docs/roadmap/V0.3.0_GITHUB_RELEASE.md)
+- [Release Notes](./docs/roadmap/RELEASE_NOTES.md)
+- [Frontend v0.3.0 User Journey](./apps/frontend/V0.3.0_USER_JOURNEY.md)
 
-### Core Documents
+### Core contracts
 
-* 📘 **[Glossary](./docs/concepts/GLOSSARY.md)**
-* 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
-* 🧭 **[Transport Positioning](./docs/architecture/TRANSPORT_POSITIONING.md)**
-* 🗺️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
-* 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
-* 🌐 **[Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)**
-* 🍒 **[Lingonberry Transport](./docs/protocols/LINGONBERRY_TRANSPORT.md)**
-* 🍒 **[Lingonberry Inquiry Schema](./docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md)**
-* 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
-* 📖 **[Standard Vocabulary List](./docs/concepts/TOITOI_VOCABULARY.md)**
-* 📝 **[Release Notes](./docs/roadmap/RELEASE_NOTES.md)**
-* ⚖️ **[License Policy](./LICENSE_POLICY.md)**
+- [Canonical Event](./docs/protocols/CANONICAL_EVENT.md)
+- [Inquiry Draft](./docs/protocols/INQUIRY_DRAFT.md)
+- [Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)
+- [Provenance](./docs/concepts/PROVENANCE.md)
+- [Glossary](./docs/concepts/GLOSSARY.md)
+- [Transport Positioning](./docs/architecture/TRANSPORT_POSITIONING.md)
+- [Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)
 
-### Essays & Background
+### Implementation entry points
 
-* 🌱 **[Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md)**
+- [Standard API](./apps/api/README.md)
+- [Frontend](./apps/frontend/README.md)
+- [Edge AI](./apps/edge-ai/README.md)
+- [Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)
+- [Lingonberry Transport](./docs/protocols/LINGONBERRY_TRANSPORT.md)
+- [pnpm Workspace Guide](./docs/operations/PNPM_WORKSPACE_GUIDE.md)
 
-### Module Setup & Design
+## Live endpoints
 
-* 🌐 **Nostr Transport Operations**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
-* 🍒 **Lingonberry Transport Operations**: **[`docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md`](./docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md)** / **[`infra/transports/lingonberry/README.md`](./infra/transports/lingonberry/README.md)**
-* 🤖 **Local AI Edge Layer Hub**: **[`apps/edge-ai/README.md`](./apps/edge-ai/README.md)**
-* 🪶 **Local AI Low-Resource Profile**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
-* 🧭 **Standard API Layer**: **[`apps/api/README.md`](./apps/api/README.md)**
-* 🧠 **AI System Overview**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
-* ⚙️ **Indexer Architecture**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
-* 🧩 **Current Indexer MVP**: `packages/protocol/`, primary transport packages `packages/nostr/` and `packages/lingonberry/`, secondary `packages/atproto/`, and protocol-specific `storage/` implementations
-* 🧪 **Standard API Contract Tests**: `apps/api/test_standard_api_service.js`
-* 📱 **Frontend UI Layer**: **[`apps/frontend/README.md`](./apps/frontend/README.md)**
-* 🛠️ **pnpm Workspace Guide**: **[`docs/operations/PNPM_WORKSPACE_GUIDE.md`](./docs/operations/PNPM_WORKSPACE_GUIDE.md)**
+- Relay: `wss://relay.toitoi.cultivationdata.net`
+- API: `https://api.toitoi.cultivationdata.net`
 
-### Entry Points by Purpose
+These endpoints are operational project infrastructure. The release-candidate tests are deterministic local checks and do not guarantee external service availability.
 
-If you're not sure where to start, begin here.
+## Scope and limitations
 
-| Target | First File to Read | Main Usage |
-|---|---|---|
-| Relay operators | [`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md) | Entry point for initial setup, rebuilds, and configuration review. Use it together with `PREREQUISITE_INSTALLATION.md`, `MONITOR_SETUP.md`, and `BACKUP_AND_RESTORE.md`. |
-| Indexer operators | [`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md) / [`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md) | Entry point for architecture policy and the protocol-aware indexer setup. [`apps/api/README.md`](./apps/api/README.md), `packages/protocol/`, and `packages/<protocol>/storage/` are the core implementation references. |
-| Edge AI operators | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | Use this for the 4GB / Ubuntu 24.04 LTS minimal stack, queueing, retry, and local model runtime decisions. `apps/edge-ai/README.md` is the entry hub. |
-| API consumers | [`apps/api/README.md`](./apps/api/README.md) | Use this for HTTP API verification, local startup, and client implementation. `server.js` and `standard_api_service.js` are the main implementation files. |
-| Conversion and ingestion implementers | `packages/<protocol>/adapter/` | Handles relay ingest, JSONL ingest, and validation logic. For Nostr, start with `relay_ingest.js`, `ingest_pipeline.js`, and `nostr_adapter.js`. For Lingonberry, start with `packages/lingonberry/adapter/` and `infra/transports/lingonberry/`. |
-| Persistence, replay, and search implementers | `packages/<protocol>/storage/` | Used for raw/canonical storage, replay, index rebuilds, and search verification. For Nostr, the main files are `replay.js`, `indexer.js`, and `replay_cli.js`. For Lingonberry, start with `packages/lingonberry/storage/` and `docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md`. |
-| Frontend implementers | [`apps/frontend/README.md`](./apps/frontend/README.md) | Use this for UI design, screen implementation, and display-spec checks. `apps/frontend/` is the implementation entry point. |
+v0.3.0 is an experimental reference release, not a production-grade hosted product. It does not include production authentication, authorization, rate limiting, embeddings-required semantic search, graph inference, full offline synchronization, a vocabulary-management UI, or unattended AI publication.
 
-### Directory Boundaries
+## Contributing and licensing
 
-For the overall repository layout and directory responsibilities, see:
+See [CONTRIBUTING.md](./CONTRIBUTING.md) and [LICENSE_POLICY.md](./LICENSE_POLICY.md).
 
-* 🗂️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
-
-This document explains:
-
-- repository organization
-- module responsibilities
-- documentation structure
-- protocol / concept / architecture separation
-- long-term extensibility strategy
-
-## 🟢 Live Endpoints
-
-* **Relay server**: `wss://relay.toitoi.cultivationdata.net`
-* **API**: `https://api.toitoi.cultivationdata.net`
-
-> These endpoints are currently live. Additional relay and API instances will be updated and added over time as the commons grows.
-
-## 🤝 Contribution & Community
-
-Toitoi is not just software; it is a "protocol" and a "commons."
-
-We welcome all forms of participation: proposing new relationship tags (TIPs), hosting a relay server, improving local AI prompts, or developing the frontend.
-
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for details.
-
-> *"Using technology to let go of technology. Bringing theory as the foundation of muddy practice to farmlands worldwide."*
-
-## ⚖️ License
-
-To balance the defense of the commons with the expansion of the ecosystem, the Toitoi project adopts different open-source licenses for different modules.
-
-Please see [LICENSE_POLICY.md](./LICENSE_POLICY.md) for details.
-
-* **Relay & Indexer (Infrastructure):** [GNU AGPLv3](./LICENSE-AGPL)
-* **Frontend & Edge Client:** [MIT License](./LICENSE-MIT)
-* **Protocol Schema & Docs:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+- Relay and indexer infrastructure: GNU AGPLv3
+- Frontend and edge client: MIT License
+- Protocol schemas and documentation: CC BY-SA 4.0
 
 ---
 
 # Toitoi 🌱
 
-**Digital Agroecology Commons powered by protocol-independent canonical events**
+**プロトコル非依存のCanonical Eventを基盤とする、デジタル・アグロエコロジー・コモンズ**
 
-Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、アグロエコロジーの知を共有・進化させるための **分散型プロトコル・プラットフォーム（デジタル・コモンズ）** です。
+**現在のリリース系列: v0.3.0 release candidate**
 
-特定の企業や中央サーバーに依存せず、農家の「生態学的直感（暗黙知）」を、他者が翻訳可能な『問いの形式』としてネットワーク上で循環させます。なお、本リポジトリでは `inquiry` をプロトコル／実装層の用語として使い、`question` は一般語の訳語としてのみ使います。
+Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、普遍的な「答え」ではなく、地域固有の観察から生まれる**問い**を共有・翻訳・派生させる分散型プロトコル・プラットフォームです。
 
-> **本プロジェクトについて：** Toitoiは、論考『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』のなかで構想した「問いの循環システム」を、実際のOSSとして実装することを目指した実験的プロジェクトです。ソフトウェアであると同時に、あの論考で提示した思想の「泥臭い実証」そのものでもあります。
+## v0.3.0で実現したこと
 
-## 💡 プロジェクトの思想：なぜToitoiなのか？
+v0.3.0では、v0.2.0で固定した「問いの一生」のGolden Pathを、問いを発見・比較・派生できる最初の知識空間へ拡張しました。
 
-### Toitoi は「司書」もしくは「菌糸」である
+```text
+問いの詳細
+  → 系統樹
+  → 文脈探索
+  → 人間確認を伴う派生問い
+  → Canonical Eventとして公開
+  → transportへの投影・再取り込み・replay
+  → 更新された系統樹
+```
 
-Toitoi は、AIを「普遍的な答えを与える権威」として扱いません。
+主な機能:
 
-Toitoi のAIは：
+- Standard APIのcanonical viewを使った問いの詳細表示
+- root / branch / leaf、relation type、provenanceを扱う系統樹
+- `climate_zone`、`soil_type`、`farming_context`、`crop_family`による文脈探索と比較
+- 文脈上の類似とcanonical identityを混同しない保守的な同一性契約
+- Inquiry Draftとhuman reviewを再利用した派生問い作成
+- `derived_from`、`translated_from`、`annotates`、`reframes`、`revises`、`synthesizes`の6種類の派生関係
+- `approved`以外を公開させないpublication guard
+- Nostrへのlineage投影と再取り込み・永続化・replayの横断検証
+- Lingonberryへのlineage／publication metadata投影検証
+- default CIに組み込まれたv0.3.0横断Golden Path
 
-- 文脈と問いを接続する「司書」
-- 分散した観察知を地下で結びつける「菌糸」
+## Toitoiは「司書」もしくは「菌糸」である
 
-として振る舞います。
+ToitoiはAIを、普遍的な正解を与える権威として扱いません。AIは文脈と問いを接続する司書、分散した観察を結びつける菌糸として働きます。問いの採用・修正・公開は、人間の確認を経て行われます。
 
-Toitoi が目指すのは、農家の判断を置き換えることではなく、
+## セットアップ
 
-> 人間の観察力と探究心を増幅すること
+```bash
+git clone https://github.com/nkkmd/Toitoi.git
+cd Toitoi
+corepack pnpm install
+corepack pnpm test
+```
 
-です。
+Standard APIの起動:
 
-Toitoi は、中央集権的な農業最適化プラットフォームではなく、
+```bash
+TOITOI_STORAGE_DIR=/path/to/storage corepack pnpm start:api
+```
 
-> 「未解決の生態学的問い」が循環する公共図書館
+## まず読む文書
 
-として設計されています。
+- [v0.3.0リリース計画](./docs/roadmap/V0.3.0_RELEASE_PLAN.md)
+- [v0.3.0リリース手順](./docs/roadmap/V0.3.0_RELEASE_RUNBOOK.md)
+- [v0.3.0 GitHub Release本文](./docs/roadmap/V0.3.0_GITHUB_RELEASE.md)
+- [リリースノート](./docs/roadmap/RELEASE_NOTES.md)
+- [Frontend v0.3.0 User Journey](./apps/frontend/V0.3.0_USER_JOURNEY.md)
+- [Standard API](./apps/api/README.md)
+- [Frontend](./apps/frontend/README.md)
+- [Canonical Event](./docs/protocols/CANONICAL_EVENT.md)
+- [Inquiry Draft](./docs/protocols/INQUIRY_DRAFT.md)
 
-現代のスマート農業は、生データをクラウドに集め、農家に「普遍的な処方箋」を下ろす中央集権的なモデルが主流です。しかし、このモデルは農地固有の複雑性を排除し、農家の自律を奪い、プラットフォーム資本による「知識の囲い込み」を生み出します。
+## 既知の制約
 
-Toitoiは、この構造を根底から覆します。
+v0.3.0は実験的なreference releaseです。production-gradeの認証・認可・rate limiting、embeddings必須の意味検索、graph inference、本格的なオフライン同期、語彙管理UI、AIによる無人公開は対象外です。
 
-1. **「答え」ではなく「問い」を循環させる**
-   農地に固有の生データは絶対に外部に出しません。ローカルAIがデータから「生態学的関係性への問い（例：微気候と雑草相の関係）」を抽出し、それのみをネットワークに放ちます。
+## ライセンス
 
-2. **属地性のジレンマの克服**
-   「バウンダリー・オブジェクト（境界対象）」として定義された共通フォーマットにより、気候や土壌が異なる他地域の農家同士が、互いの文脈を破壊することなく「弱い連帯」で結びつきます。
+詳細は[LICENSE_POLICY.md](./LICENSE_POLICY.md)を参照してください。
 
-3. **進化の系統樹の可視化**
-   ある問いが他の農地に翻訳され、別の問いと結びつく「翻訳的共進化（アクター・ネットワーク）」の過程を、グラフィカルな系統樹として記録・可視化します。
-
-## ⚙️ システム・アーキテクチャ
-
-Toitoiは、protocol-specific transport と protocol-independent な canonical event layer によって接続される3つのモジュールから構成される「入れ子構造のコモンズ」です。
-
-* **[エッジ層] ローカルAI**: 生データを秘匿し、「問い」を生成・暗号署名して送信する。
-* **[インフラ層] コモンズ・リレー**: 「問い」だけを永続的にアーカイブする分散リレー網。
-* **[ビューア層] インデクサー＆UI**: 分散する問いを収集し、マインドマップとして可視化する。
-
-Toitoi は protocol-independent な canonical event、identity key / claim、provenance の構造を通じて、知識アーカイブを保存します。
-
-現在の primary transport は Nostr と Lingonberry です。Nostr は relay-oriented な運用経路、Lingonberry は knowledge-object の transport projection / ingest 経路を担います。どちらも schema、adapter、converter、raw/canonical storage、replay、Standard API 接続、outbound publish まで整備しています。ATProto は multi-protocol 互換性、ingest/replay 検証、将来の federation に備える secondary transport implementation として維持しています。
-
-## 📚 ドキュメント (Documentation)
-
-本プロジェクトの全体像と、各モジュールの仕様書・構築ガイドは以下のディレクトリを参照してください。
-
-このリポジトリをまだ取得していない場合は、先に `git clone` してから、ワークスペースのルートで `corepack pnpm install` を実行してください。
-
-### コア・ドキュメント (Core Documents)
-
-* 📘 **[用語集](./docs/concepts/GLOSSARY.md)**
-* 🧩 **[Canonical Identity and Provenance](./docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)**
-* 🧭 **[Transport Positioning](./docs/architecture/TRANSPORT_POSITIONING.md)**
-* 🗺️ **[ディレクトリ責務ルール](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
-* 📦 **[Canonical Event](./docs/protocols/CANONICAL_EVENT.md)**
-* 🌐 **[Nostr Transport](./docs/protocols/NOSTR_TRANSPORT.md)**
-* 🍒 **[Lingonberry Transport](./docs/protocols/LINGONBERRY_TRANSPORT.md)**
-* 🍒 **[Lingonberry Inquiry Schema](./docs/protocols/LINGONBERRY_INQUIRY_SCHEMA.md)**
-* 🧭 **[Provenance](./docs/concepts/PROVENANCE.md)**
-* 📖 **[標準語彙リスト](./docs/concepts/TOITOI_VOCABULARY.md)**
-* 📝 **[Release Notes](./docs/roadmap/RELEASE_NOTES.md)**
-* ⚖️ **[ライセンス・ポリシー](./LICENSE_POLICY.md)**
-
-### 論考・背景思想 (Essays & Background)
-
-* 🌱 **[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)**
-
-### モジュール別セットアップ・設計書 (Modules)
-
-* 🌐 **Nostr Transport 運用**: **[`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md)**
-* 🍒 **Lingonberry Transport 運用**: **[`docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md`](./docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md)** / **[`infra/transports/lingonberry/README.md`](./infra/transports/lingonberry/README.md)**
-* 🤖 **ローカルAI・エッジ層ハブ**: **[`apps/edge-ai/README.md`](./apps/edge-ai/README.md)**
-* 🪶 **ローカルAI最小構成**: **[`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md)**
-* 🧠 **AIシステム概要**: **[`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md)**
-* ⚙️ **インデクサー・API層**: **[`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md)** / **[`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md)**
-* 🧩 **現行インデクサーMVP**: `packages/protocol/`、primary transport の `packages/nostr/` と `packages/lingonberry/`、secondary の `packages/atproto/`、および protocol ごとの `storage/` 実装
-* 📱 **フロントエンド・UI層**: **[`apps/frontend/README.md`](./apps/frontend/README.md)**
-
-### 目的別の入口
-
-迷ったら、まずは次の入口から見てください。
-
-| 対象 | まず見るファイル | 主な使用箇所 |
-|---|---|---|
-| リレー運用者 | [`infra/transports/nostr/NOSTR_RELAY_SETUP.md`](./infra/transports/nostr/NOSTR_RELAY_SETUP.md) | 初回構築、再構築、設定見直しの入口です。`PREREQUISITE_INSTALLATION.md`、`MONITOR_SETUP.md`、`BACKUP_AND_RESTORE.md` を併用します。 |
-| インデクサー運用者 | [`docs/architecture/MULTI_PROTOCOL_INDEXER.md`](./docs/architecture/MULTI_PROTOCOL_INDEXER.md) / [`infra/indexers/INDEXER_API_SETUP.md`](./infra/indexers/INDEXER_API_SETUP.md) | アーキテクチャ方針と protocol-aware な初回構築・再構築・構成見直しの入口です。[`apps/api/README.md`](./apps/api/README.md)、`packages/protocol/`、`packages/<protocol>/storage/` が実装の中心です。 |
-| エッジAI運用者 | [`docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md`](./docs/architecture/EDGE_AI_LOW_RESOURCE_PROFILE.md) / [`docs/architecture/AI_SYSTEM_OVERVIEW.md`](./docs/architecture/AI_SYSTEM_OVERVIEW.md) | 4GB / Ubuntu 24.04 LTS の最小構成、キュー、リトライ、ローカルモデルの運用判断に使います。入口は `apps/edge-ai/README.md` です。 |
-| API 利用者 | [`apps/api/README.md`](./apps/api/README.md) | HTTP API の利用確認、ローカル起動、クライアント実装の入口です。`server.js` と `standard_api_service.js` が実装本体です。 |
-| 変換・取り込みの実装担当 | `packages/<protocol>/adapter/` | relay ingest、JSONL ingest、検証ロジックを扱います。Nostr では `relay_ingest.js`、`ingest_pipeline.js`、`nostr_adapter.js`、Lingonberry では `packages/lingonberry/adapter/` と `infra/transports/lingonberry/` を見ます。 |
-| 永続化・再生・検索の実装担当 | `packages/<protocol>/storage/` | raw/canonical の保存、replay、index 再構築、検索の確認に使います。Nostr では `replay.js`、`indexer.js`、`replay_cli.js`、Lingonberry では `packages/lingonberry/storage/` と `docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md` が中心です。 |
-| フロントエンド実装担当 | [`apps/frontend/README.md`](./apps/frontend/README.md) | UI 設計、画面実装、表示仕様の確認に使います。`apps/frontend/` が実装の入口です。 |
-
-### ディレクトリ責務 (Directory Boundaries)
-
-リポジトリ全体の構造と、各ディレクトリの責務については以下を参照してください。
-
-* 🗂️ **[Directory Boundaries](./docs/architecture/DIRECTORY_BOUNDARIES.md)**
-
-このドキュメントでは：
-
-- repository 全体構成
-- モジュール責務
-- documentation structure
-- protocol / concept / architecture の分離
-- 将来的な拡張方針
-
-を整理しています。
-
-## 🟢 現在稼働中のサーバー
-
-* **リレーサーバー**: `wss://relay.toitoi.cultivationdata.net`
-* **API**: `https://api.toitoi.cultivationdata.net`
-
-> これらは現在稼働中のエンドポイントです。今後もコモンズの成長に合わせて、リレーとAPIのインスタンスを順次更新・追加していく予定です。
-
-## 🤝 コントリビューションとコミュニティ
-
-Toitoiは、単なるソフトウェアではなく「プロトコル」であり「コモンズ」です。
-
-新しい関係性タグの提案（TIPs）、リレーサーバーの立ち上げ、ローカルAI用プロンプトの改善、フロントエンドの開発など、あらゆる形での参加を歓迎します。
-
-詳細は [`CONTRIBUTING.md`](./CONTRIBUTING.md) を参照してください。
-
-> *"テクノロジーを使って、テクノロジーを手放す。泥臭い実践の土台としての理論を、世界中の農地へ。"*
-
-## ⚖️ License
-
-Toitoiプロジェクトは、コモンズの防衛とエコシステムの拡大を両立させるため、モジュールごとに異なるオープンソースライセンスを採用しています。
-
-詳細は [LICENSE_POLICY.md](./LICENSE_POLICY.md) を確認してください。
-
-* **Relay & Indexer (Infrastructure):** [GNU AGPLv3](./LICENSE-AGPL)
-* **Frontend & Edge Client:** [MIT License](./LICENSE-MIT)
-* **Protocol Schema & Docs:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
+- Relay／Indexer基盤: GNU AGPLv3
+- Frontend／Edge Client: MIT License
+- Protocol Schema／文書: CC BY-SA 4.0
