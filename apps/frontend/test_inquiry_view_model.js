@@ -1,10 +1,10 @@
 'use strict';
 
 const assert = require('assert');
-const { ingestNostrEvents } = require('@toitoi/nostr/adapter/ingest_pipeline');
-const { persistIngestResult } = require('@toitoi/nostr/storage/persistence');
-const { replayStorage } = require('@toitoi/nostr/storage/replay');
-const { makeEvent, makeTempDir } = require('@toitoi/nostr/storage/test_fixtures');
+const { ingestNostrEvents } = require('../../packages/nostr/adapter/ingest_pipeline');
+const { persistIngestResult } = require('../../packages/nostr/storage/persistence');
+const { replayStorage } = require('../../packages/nostr/storage/replay');
+const { makeEvent, makeTempDir } = require('../../packages/nostr/storage/test_fixtures');
 const { createStandardApiService } = require('../api/standard_api_service');
 const { GOLDEN_PATH_IDS, createGoldenPathEvents } = require('../api/fixtures/golden_path');
 const {
