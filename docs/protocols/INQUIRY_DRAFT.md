@@ -1,6 +1,6 @@
 # Inquiry Draft Contract
 
-**Status: experimental** | **Schema version: 0.1.0** | **Target: v0.2.0**
+**Status: current** | **Schema version: 0.1.0** | **Target: v0.3.0**
 
 ## Purpose
 
@@ -10,18 +10,12 @@ It is intentionally separate from the Canonical Event contract:
 
 - an Inquiry Draft represents editable workflow state;
 - a Canonical Event represents a published, transport-independent record;
-- review status must not be embedded into a published event as if it were part of the inquiry's semantic content;
+- review status must not be embedded into the inquiry's semantic body;
 - only an approved draft may cross the publication boundary.
 
 ## Identifier
 
-Draft identifiers use the following form:
-
-```text
- tt:draft:<opaque-id>
-```
-
-The identifier is local to the draft workflow and must not be reused as the published Canonical Event ID.
+Draft identifiers use `tt:draft:<opaque-id>`. The identifier is local to the draft workflow and must not be reused as the published Canonical Event ID.
 
 ## States
 
@@ -42,28 +36,31 @@ The identifier is local to the draft workflow and must not be reused as the publ
 - optional `relationships`
 - optional `phase`, `trigger`, `dsl`, `lineage`, `labels`, and `meta`
 
-The candidate must not contain published-record fields:
-
-- Canonical Event `id`
-- Canonical Event `createdAt`
-- `provenance`
-
-These fields are assigned or derived when the approved draft is published through a transport workflow.
+The candidate must not contain published-record fields: Canonical Event `id`, Canonical Event `createdAt`, or `provenance`. These are assigned when an approved draft is published.
 
 ## Human review record
 
-An approval or rejection contains:
+An approval or rejection records `decision`, opaque `reviewerId`, `reviewedAt`, and an optional note. Authentication and reviewer authorization remain outside this contract, but an implementation must record the human identity presented by its trust boundary.
 
-```json
-{
-  "decision": "approved",
-  "reviewerId": "human:nkkmd",
-  "reviewedAt": "2026-07-13T08:10:00.000Z",
-  "note": "Observation and wording confirmed."
-}
-```
+## Derived inquiry draft
 
-`reviewerId` is deliberately opaque. Authentication and reviewer authorization are outside the v0.2.0 contract, but implementations must record the human identity presented by their trust boundary.
+`createDerivedInquiryDraft()` creates an Inquiry Draft connected to an existing Canonical Event. It requires:
+
+- `sourceInquiryId` using the `tt:evt:<opaque-id>` form
+- one fixed `relationType`
+- the editable inquiry candidate
+- optional author and AI involvement metadata
+
+The v0.3.0 derivation types are:
+
+- `derived_from`
+- `translated_from`
+- `annotates`
+- `reframes`
+- `revises`
+- `synthesizes`
+
+The function appends the semantic edge to `candidate.lineage` as `{ "type": relationType, "target": sourceInquiryId }`. Workflow metadata is kept separately under `draft.derivation` and does not replace the Canonical Event lineage edge.
 
 ## Publication boundary
 
@@ -71,17 +68,30 @@ An approval or rejection contains:
 
 > Only an `approved` Inquiry Draft can provide a candidate payload for publication.
 
-Approval does not itself publish an event. A later publisher is responsible for:
+`publishApprovedDerivedInquiry()` additionally requires a Canonical Event ID, publisher identity, and publication timestamp. It produces a Canonical Event that contains:
 
-1. assigning the Canonical Event identity and timestamp;
-2. adding provenance;
-3. projecting the event into Nostr, Lingonberry, ATProto, or another transport;
-4. recording delivery outcomes.
+- the reviewed candidate fields
+- canonical `id`, `schemaVersion`, and `createdAt`
+- the lineage edge to the source inquiry
+- a replayable provenance source
+- `meta.publication` with draft ID, publisher, source inquiry, relation type, author, AI involvement, and the human review record
+
+Review metadata remains operational provenance, not semantic inquiry content. Approval does not itself deliver the event to a transport.
+
+## Transport projection
+
+After publication:
+
+1. Nostr projection resolves the Canonical Event lineage target through a lineage map and emits an `e` tag whose marker is the relation type.
+2. Lingonberry projection copies the canonical lineage and publication metadata.
+3. Retrieval and re-ingest must preserve the semantic lineage edge; transport delivery outcomes are recorded separately.
 
 ## Files
 
 | Contract | Path |
 |---|---|
 | JSON Schema | `schemas/inquiry-draft.schema.json` |
-| Runtime utility | `packages/protocol/inquiry_draft.js` |
-| Contract tests | `packages/protocol/test_inquiry_draft.js` |
+| Draft runtime | `packages/protocol/inquiry_draft.js` |
+| Derived inquiry runtime | `packages/protocol/derived_inquiry.js` |
+| Draft tests | `packages/protocol/test_inquiry_draft.js` |
+| Derived inquiry tests | `packages/protocol/test_derived_inquiry.js` |
