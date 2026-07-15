@@ -3,6 +3,6 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "test": "node test_inquiry_view_model.js && node test_lineage_tree_renderer.js"
+    "test": "node test_inquiry_view_model.js && node test_lineage_tree_renderer.js && node test_context_exploration.js"
   }
 }
