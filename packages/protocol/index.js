@@ -11,6 +11,7 @@ const protocolStorageRuntime = require('./protocol_storage_runtime');
 const canonicalIdentity = require('./canonical_identity');
 const identityVerification = require('./identity_verification');
 const inquiryDraft = require('./inquiry_draft');
+const derivedInquiry = require('./derived_inquiry');
 
 module.exports = {
   ...protocolDescriptor,
@@ -24,4 +25,5 @@ module.exports = {
   ...canonicalIdentity,
   ...identityVerification,
   ...inquiryDraft,
+  ...derivedInquiry,
 };
