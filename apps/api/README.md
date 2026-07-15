@@ -1,148 +1,47 @@
-# Standard API
+# Toitoi Standard API
 
-**Status: current** | **Last updated: 2026-06-25**
+**Status: v0.3.0 release candidate** | **Last updated: 2026-07-15**
 
-`apps/api/` は、Toitoi の Standard API reference implementation です。
+`apps/api/` は、protocol固有のraw eventやstorage indexを直接公開せず、transport-independentなcanonical viewを返すStandard API reference implementationです。
 
-Canonical Event と derived index をそのまま外に出すのではなく、薄い service layer を経由して canonical view を返します。  
-この README は、API 利用者向けの単一の入口として、従来の詳細仕様を吸収しています。
+## v0.3.0で利用する主なendpoint
 
-Phase 17 完了後の前提として、API は Nostr / Lingonberry / ATProto を現在の対象 transport としつつ、将来の protocol 追加にも耐える canonical view を返します。  
-同一性は「明示的に同一といえる場合」にだけ merge し、曖昧な case は別 event のまま返します。canonical identity と provenance の役割分担は Phase 15 の contract に合わせて固定しています。
-
-Phase 16 以降は、identity key / claim / third-party verification の結果も canonical view の一部として扱います。  
-API は raw signature blob を前面に出さず、identity summary と claim metadata を中心に返します。
-
-`TOITOI_TRANSPORT_SOURCES` が設定されている場合は、複数 transport の replay をまとめて canonical view に反映します。
-
-このリポジトリをまだ取っていない場合は、先に `git clone` してから読んでもらうのがいちばん自然です。
-
-## 全体像
-
-```text
-storage snapshot
-      |
-      v
-server.js
-      |
-      v
-standard_api_service.js
-      |
-      v
-HTTP response
-```
-
-## まず見るもの
-
-- API の使い方: このファイル
-- HTTP エントリポイント: [server.js](./server.js)
-- ルーティングと view 投影: [standard_api_service.js](./standard_api_service.js)
-- テスト: [test_standard_api_service.js](./test_standard_api_service.js)
-- データの元: protocol ごとの `storage/` replay module
-
-## 呼び出し関係
-
-- `server.js` が `standard_api_service.js` を呼びます
-- `server.js` が protocol に応じた `storage/replay.js` を使って storage snapshot を読みます
-- `standard_api_service.js` が protocol に応じた `storage/indexer.js` と `storage/standard_api_views.js` を使います
-- `test_standard_api_service.js` が service layer の契約を確認します
-- `infra/transports/nostr/test_operational_e2e.js` が API 層との通し確認で参照します
-
-## どこで使うか
-
-- HTTP API を外に公開するとき
-- replay 由来の snapshot を API に載せたいとき
-- canonical view の契約を確認したいとき
-- identity summary や claim metadata を含む third-party verifiable view を扱いたいとき
-- Nostr の storage / replay から入る場合は [docs/operations/NOSTR_STORAGE_AND_REPLAY.md](../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
-- Lingonberry の storage / replay から入る場合は [docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md](../../docs/operations/LINGONBERRY_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
-- ATProto の storage / replay から入る場合は [docs/operations/ATPROTO_STORAGE_AND_REPLAY.md](../../docs/operations/ATPROTO_STORAGE_AND_REPLAY.md) を先に読むと流れがつかみやすい
-
-## pnpm 入口
-
-- 起動: `TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
-- protocol 選択: `TOITOI_PROTOCOL=lingonberry TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start`
-- multi-transport fan-in: `TOITOI_TRANSPORT_SOURCES='[{"protocol":"nostr","storageDir":"/path/nostr"},{"protocol":"lingonberry","storageDir":"/path/lingonberry"},{"protocol":"atproto","storageDir":"/path/atproto"}]' pnpm --filter @toitoi/api start`
-- multi-transport fan-out / fan-in の参照: `docs/roadmap/IMPLEMENTATION_PLAN.md` と `docs/operations/MULTI_TRANSPORT_OUTBOUND_AND_DELIVERY.md`
-- テスト: `pnpm --filter @toitoi/api test`
-- 参照実装: `@toitoi/nostr/storage/`、`@toitoi/lingonberry/storage/`、`@toitoi/atproto/storage/`
-- `pnpm` に不慣れなら: [pnpm Workspace 早見表](../../docs/operations/PNPM_WORKSPACE_GUIDE.md)
-
-## 起動
-
-```bash
-TOITOI_STORAGE_DIR=/path/to/storage pnpm --filter @toitoi/api start
-```
-
-`TOITOI_STORAGE_DIR` が未設定の場合は、空の index snapshot で起動します。  
-`TOITOI_STORAGE_DIR` が設定されている場合は、選択した protocol に replay module が必要です。replay module が無い protocol は起動時に明示エラーになります。
-`TOITOI_TRANSPORT_SOURCES` が設定されている場合は、複数 transport の replay をまとめて canonical view に反映します。`/health` の `storage.protocol` は `multi-transport` になります。
-
-起動時の選択優先順位は次の通りです。
-
-1. `TOITOI_TRANSPORT_SOURCES` があれば multi-transport mode として扱う
-2. それ以外は `TOITOI_PROTOCOL` で単一 protocol を選ぶ
-3. `TOITOI_PROTOCOL` が未指定なら default protocol として `nostr` を使う
-4. 単一 protocol mode で `TOITOI_STORAGE_DIR` がある場合は、その protocol の replay module を使う
-
-`localfs` のように registry には登録されているが runtime replay が未対応の protocol は、metadata と capability は表示しますが、storage 付き起動では明示エラーになります。未知の protocol 名は registry 解決時点で `Unknown protocol` として扱います。
-
-`/health` には、選択中 protocol の replay 可否を示す `storage` が含まれます。  
-`/api/v1/protocols` には registry 一覧に加えて、現在選択されている `storage` runtime が含まれます。  
-`/api/v1/protocols/:protocol` には、`provenance` に加えて `provenancePolicy` とその protocol の `storage` 対応状況が含まれ、protocol ごとの差分を見分けやすくしています。
-
-## どこで使うか
-
-- 対象: API 利用者、フロントエンド開発者、連携先実装者
-- 使用場面: エンドポイント確認、検索条件確認、レスポンス構造確認
-- 関連実装: `apps/api/server.js`、`apps/api/standard_api_service.js`、protocol ごとの `storage/indexer.js`
-
-## 実装状態
-
-現在の API は、protocol ごとの `storage/indexer.js` と `storage/replay.js` で構築された派生 index を入力にして、`apps/api/standard_api_service.js` が canonical view を組み立てます。  
-デフォルトの参照実装は Nostr ですが、`TOITOI_PROTOCOL` に応じて `lingonberry` / `atproto` へ切り替えられます。
-
-Phase 15 以降は、必要に応じて `TOITOI_TRANSPORT_SOURCES` から複数 transport を合成した canonical view を返します。  
-Phase 16 以降は、identity claim registry がある場合に `identity.claim` の summary を解決し、embedded claim があればそのまま返します。
-
-現在の主要関数は次の通りです。
-
-- `lookupEvent(indexSnapshot, eventId)`
-- `listEvents(indexSnapshot, options)`
-- `searchEvents(indexSnapshot, query, options)`
-- `findEventsByRelationTerm(indexSnapshot, term, options)`
-- `getEventReferences(indexSnapshot, eventId)`
-- `buildLineageTree(indexSnapshot, rootId, options)`
-
-全文検索は現時点では token containment ベースの最小実装です。`pg_trgm` や highlight 出力は前提にしていません。
-
-## 共通仕様
-
-| 項目 | 内容 |
-|---|---|
-| プロトコル | HTTPS |
-| データ形式 | JSON (`Content-Type: application/json`) |
-| 文字コード | UTF-8 |
-| 認証 | なし（オープンAPI） |
-| レート制限 | 現バージョンでは未実装 |
-
-## エンドポイント一覧
-
-| メソッド | パス | 概要 |
+| Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/health` | サーバーの稼働確認 |
-| `GET` | `/api/v1/protocols` | registry に登録された protocol 一覧と capability を取得 |
-| `GET` | `/api/v1/protocols/:protocol` | 単一 protocol の metadata を取得 |
-| `GET` | `/api/v1/inquiries` | 最新の canonicalized event 一覧を取得 |
-| `GET` | `/api/v1/inquiries/query` | 全文検索・タグ絞り込み・DSL フィルタリングによる複合検索 |
-| `GET` | `/api/v1/inquiries/relation` | relationship 条件で絞り込んだ一覧を取得 |
-| `GET` | `/api/v1/inquiries/:id` | 単一の canonical event を取得 |
-| `GET` | `/api/v1/inquiries/:id/detail` | 関連参照を含む詳細ビューを取得 |
-| `GET` | `/api/v1/inquiries/:id/tree` | 問いの系譜ツリーを取得 |
+| `GET` | `/health` | runtimeとstorage selectionの確認 |
+| `GET` | `/api/v1/protocols` | protocol registryとcapability一覧 |
+| `GET` | `/api/v1/protocols/:protocol` | protocol metadataとstorage対応状況 |
+| `GET` | `/api/v1/inquiries` | canonical inquiry一覧 |
+| `GET` | `/api/v1/inquiries/query` | text / type / context条件による探索 |
+| `GET` | `/api/v1/inquiries/relation` | relationship termによる探索 |
+| `GET` | `/api/v1/inquiries/:id` | 単一canonical event |
+| `GET` | `/api/v1/inquiries/:id/detail` | provenance、parent、childを含む詳細 |
+| `GET` | `/api/v1/inquiries/:id/tree` | descendant lineage tree |
 
-## レスポンスの見方
+## Context exploration contract
 
-`lookup` 系のレスポンスは canonical event の投影です。代表的なフィールドは次の通りです。
+`GET /api/v1/inquiries/query`では、v0.3.0のfrontendが次のcontext条件を利用します。
+
+- `climate_zone`
+- `soil_type`
+- `farming_context`
+- `crop_family`
+
+複数のcontext条件はANDとして処理されます。
+
+- 認識できない条件だけのqueryは`400`
+- 有効な条件で一致がない場合は`200`と空の`results`
+- context similarityはcanonical identity mergeを意味しない
+
+例:
+
+```http
+GET /api/v1/inquiries/query?climate_zone=cool-temperate&farming_context=field-observation
+```
+
+## Canonical view
+
+APIレスポンスは必要に応じて次を含みます。
 
 - `id`
 - `schemaVersion`
@@ -162,301 +61,24 @@ Phase 16 以降は、identity claim registry がある場合に `identity.claim`
 - `rawRef`
 - `identityClaims`
 
-`provenance` は要約情報で、`sourceCount` / `sourceProtocols` / `sourceIds` / `rawRef` を含みます。  
-`rawRef` は raw event または raw payload を再取得・再 canonicalize するための参照です。
-`identity` は `key` / `ruleVersion` / `claim` を含み、`identityClaims` は embedded claim の一覧です。
-`/api/v1/protocols/:protocol` の `provenancePolicy` は、`provenance` を API 上でどう扱うかを示すメタデータです。
-
-API の identity 解決は保守的です。`body` の類似、`labels` の一致、時刻の近さだけでは merge しません。  
-同一と判断できない event は、必要に応じて `relation` / `lineage` で関連を表現します。
-
-`list` / `query` / `relation` 系のレスポンスは、基本的に次の形です。
+`provenance`は通常、次のsummaryです。
 
 ```json
 {
-  "total": 2,
-  "limit": 20,
-  "offset": 0,
-  "results": [
-    {
-      "event": { "... canonical view ..." },
-      "provenance": { "... summary ..." }
-    }
-  ]
+  "sourceCount": 1,
+  "sourceProtocols": ["nostr"],
+  "sourceIds": ["<transport source id>"],
+  "rawRef": null
 }
 ```
 
-## `GET /api/v1/protocols`
+APIはbodyの類似、label一致、時刻の近さだけではeventをmergeしません。曖昧な関連はrelationshipまたはlineageとして表現します。
 
-registry に登録されている protocol の一覧と capability matrix を返します。  
-起動時の introspection や運用確認に使います。
-
-### レスポンス
+## Detail response
 
 ```json
 {
-  "selectedProtocol": "nostr",
-  "selectionSource": "default:nostr",
-  "availableProtocols": ["nostr", "atproto", "localfs", "lingonberry"],
-  "capabilityMatrix": "| Capability | Nostr | ATProto | LocalFS | Lingonberry | ...",
-  "storage": {
-    "protocol": "nostr",
-    "supported": true,
-    "moduleName": "replay",
-    "selectionSource": "default:nostr"
-  },
-  "protocols": [
-    {
-      "protocol": "nostr",
-      "name": "Nostr",
-      "capabilities": { "...": "..." }
-    }
-  ]
-}
-```
-
-`protocols[]` の各要素には、`provenancePolicy` と `storage` も含まれます。`localfs` のような metadata-only protocol は、`storage.supported` が `false` になります。
-
-## `GET /health`
-
-サーバーが正常に稼働しているかを確認します。監視ツールや接続テストに使用します。
-
-### リクエスト
-
-パラメータなし。
-
-```bash
-curl https://api.your-domain.com/health
-```
-
-### レスポンス
-
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-05-01T10:00:00.000Z"
-}
-```
-
-| フィールド | 型 | 説明 |
-|---|---|---|
-| `status` | string | 常に `ok` |
-| `timestamp` | string | サーバー現在時刻（ISO 8601形式） |
-
-## `GET /api/v1/inquiries`
-
-蓄積された canonicalized event を新着順で取得します。ページネーションに対応しています。
-
-### クエリパラメータ
-
-| パラメータ | 型 | 必須 | デフォルト | 上限 | 説明 |
-|---|---|---|---|---|---|
-| `limit` | integer | - | `20` | `100` | 1回で取得する件数 |
-| `offset` | integer | - | `0` | - | 取得開始位置 |
-| `order` | string | - | `desc` | - | `asc` または `desc` |
-
-### レスポンス
-
-```json
-{
-  "total": 128,
-  "limit": 20,
-  "offset": 0,
-  "results": [
-    {
-      "event": {
-        "id": "tt:evt:01JV7Y8K7Y4Y2M4Q7W8J9R0ABC",
-        "schemaVersion": "0.1.0",
-        "type": "inquiry",
-        "createdAt": "2026-05-19T00:00:00Z",
-        "body": {
-          "text": "雑草の生え方が場所によって違うのはなぜ？",
-          "language": "ja"
-        },
-        "contexts": {
-          "climate_zone": "warm-temperate",
-          "soil_type": "volcanic_ash"
-        },
-        "relationships": [
-          {
-            "source": "microclimate",
-            "target": "weed_flora"
-          }
-        ],
-        "phase": "intermediate",
-        "lineage": [
-          {
-            "type": "derived_from",
-            "target": "tt:evt:01JV..."
-          }
-        ],
-        "provenance": {
-          "sourceCount": 1,
-          "sourceProtocols": ["nostr"],
-          "sourceIds": ["<nostr_event_id>"],
-          "rawRef": {
-            "protocol": "nostr",
-            "sourceId": "<nostr_event_id>",
-            "relay": "wss://relay.example",
-            "storage": "append-log",
-            "storageId": "log-000123",
-            "payloadHash": "<raw_payload_hash>"
-          }
-        }
-      },
-      "provenance": {
-        "sourceCount": 1,
-        "sourceProtocols": ["nostr"],
-        "sourceIds": ["<nostr_event_id>"],
-        "rawRef": {
-          "protocol": "nostr",
-          "sourceId": "<nostr_event_id>",
-          "relay": "wss://relay.example",
-          "storage": "append-log",
-          "storageId": "log-000123",
-          "payloadHash": "<raw_payload_hash>"
-        }
-      }
-    }
-  ]
-}
-```
-
-## `GET /api/v1/inquiries/query`
-
-`content` に対する全文検索と、`contexts`・`relationships`・`phase`・`dsl` などの条件を組み合わせて絞り込むエンドポイントです。  
-`q` や各種フィルタを1つ以上指定してください。未指定の場合は `400` になります。
-
-### クエリパラメータ
-
-**検索パラメータ**
-
-| パラメータ | 型 | 説明 |
-|---|---|---|
-| `q` | string | `body.text` に対する部分一致検索 |
-| `climate_zone` | string | 気候帯で絞り込み |
-| `soil_type` | string | 土壌タイプで絞り込み |
-| `farming_context` | string | 農法・栽培環境で絞り込み |
-| `crop_family` | string | 対象作物群で絞り込み |
-| `relationship` | string | 関係性の要素名で絞り込み |
-| `type` | string | canonical event type で絞り込み |
-| `phase` | string | 熟達フェーズで絞り込み |
-| `dsl_model` | string | DSL モデル名で絞り込み |
-| `dsl_var` | string | DSL 変数名で絞り込み |
-| `dsl_role` | string | DSL 変数ロールで絞り込み |
-| `since` | integer | この Unix timestamp 以降 |
-| `until` | integer | この Unix timestamp 以前 |
-
-**ページネーション**
-
-| パラメータ | 型 | デフォルト | 上限 | 説明 |
-|---|---|---|---|---|
-| `limit` | integer | `20` | `100` | 1回で取得する件数 |
-| `offset` | integer | `0` | - | 取得開始位置 |
-| `order` | string | `desc` | - | `asc` または `desc` |
-
-### 例
-
-```bash
-# 全文検索
-curl "https://api.your-domain.com/api/v1/inquiries/query?q=スギナ"
-
-# context 絞り込み
-curl "https://api.your-domain.com/api/v1/inquiries/query?soil_type=volcanic_ash&climate_zone=cool-temperate"
-
-# relationship 絞り込み
-curl "https://api.your-domain.com/api/v1/inquiries/query?relationship=weed_flora"
-
-# DSL 絞り込み
-curl "https://api.your-domain.com/api/v1/inquiries/query?dsl_var=microclimate&dsl_role=independent"
-```
-
-### レスポンス
-
-`/api/v1/inquiries` と同じ形で、`results` に canonical view と provenance summary が入ります。
-
-```json
-{
-  "total": 42,
-  "limit": 20,
-  "offset": 0,
-  "results": [
-    {
-      "event": {
-        "id": "tt:evt:01JV7Y8K7Y4Y2M4Q7W8J9R0ABC",
-        "type": "inquiry",
-        "createdAt": "2026-05-19T00:00:00Z",
-        "body": { "text": "雑草の生え方が場所によって違うのはなぜ？" },
-        "phase": "intermediate",
-        "provenance": {
-          "sourceCount": 1,
-          "sourceProtocols": ["nostr"],
-          "sourceIds": ["<nostr_event_id>"],
-          "rawRef": {
-            "protocol": "nostr",
-            "sourceId": "<nostr_event_id>"
-          }
-        }
-      },
-      "provenance": {
-        "sourceCount": 1,
-        "sourceProtocols": ["nostr"],
-        "sourceIds": ["<nostr_event_id>"],
-        "rawRef": {
-          "protocol": "nostr",
-          "sourceId": "<nostr_event_id>"
-        }
-      }
-    }
-  ]
-}
-```
-
-## `GET /api/v1/inquiries/relation`
-
-`relationship` パラメータで関連語を絞り込んだ一覧を返します。  
-`relationship` は必須です。未指定なら `400` になります。
-
-### クエリパラメータ
-
-| パラメータ | 型 | 必須 | 説明 |
-|---|---|---|---|
-| `relationship` | string | ✅ | 関係性の要素名 |
-| `limit` | integer | - | 取得件数 |
-| `offset` | integer | - | 取得開始位置 |
-| `order` | string | - | `asc` / `desc` |
-
-### レスポンス
-
-`/api/v1/inquiries/query` と同じ `results` 形状です。
-
-## `GET /api/v1/inquiries/:id`
-
-指定した event ID に対応する canonical event を1件返します。lookup 用です。
-
-### パスパラメータ
-
-| パラメータ | 型 | 必須 | 説明 |
-|---|---|---|---|
-| `:id` | string | ✅ | canonical event ID |
-
-### レスポンス
-
-`projectCanonicalEvent()` による canonical view が返ります。`provenance` と `rawRef` を含みます。
-
-### エラー
-
-- `404 Not Found`: `Inquiry not found`
-
-## `GET /api/v1/inquiries/:id/detail`
-
-単一イベントの詳細ビューを返します。`event` に加えて、`references.parents` / `references.children` / `references.relationships` を含みます。
-
-### レスポンス
-
-```json
-{
-  "event": { "... canonical view ..." },
+  "event": { "...": "canonical view" },
   "references": {
     "parents": [],
     "children": [],
@@ -465,68 +87,72 @@ curl "https://api.your-domain.com/api/v1/inquiries/query?dsl_var=microclimate&ds
 }
 ```
 
-### エラー
+## Lineage response
 
-- `404 Not Found`: `Inquiry not found`
+`GET /api/v1/inquiries/:id/tree`は指定eventをrootとしてdescendant treeを返します。各nodeにはcanonical event fieldsに加えて、index projectionの`parent_id`と`children`が含まれます。
 
-## `GET /api/v1/inquiries/:id/tree`
+frontendはlineage edgeのtargetをcanonical IDだけでなく、parent provenanceに含まれるtransport source IDとも照合します。これによりNostr再取り込み後も`translated_from`などのrelation typeを表示できます。
 
-指定したイベントをルートとし、lineage を再帰的に辿ったツリーを返します。  
-フロントエンドのマインドマップや系譜表示に使います。
+## Runtime selection
 
-### レスポンス
+単一transport:
 
-ルートノードと `children` を持つ再帰構造です。
-
-### エラー
-
-- `404 Not Found`: `Inquiry not found`
-
-## 使い方の例
-
-### JavaScript
-
-```javascript
-async function fetchInquiries({ q, soilType, phase, limit = 20, offset = 0 }) {
-  const params = new URLSearchParams();
-  if (q) params.set('q', q);
-  if (soilType) params.set('soil_type', soilType);
-  if (phase) params.set('phase', phase);
-  params.set('limit', String(limit));
-  params.set('offset', String(offset));
-
-  const res = await fetch(`https://api.your-domain.com/api/v1/inquiries/query?${params}`);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
+```bash
+TOITOI_PROTOCOL=nostr \
+TOITOI_STORAGE_DIR=/path/to/storage \
+corepack pnpm --filter @toitoi/api start
 ```
 
-### Python
+multi-transport fan-in:
 
-```python
-import requests
-
-BASE_URL = "https://api.your-domain.com"
-
-def fetch_inquiries(q=None, soil_type=None, phase=None, limit=20, offset=0):
-    params = {"limit": limit, "offset": offset}
-    if q:
-        params["q"] = q
-    if soil_type:
-        params["soil_type"] = soil_type
-    if phase:
-        params["phase"] = phase
-
-    res = requests.get(f"{BASE_URL}/api/v1/inquiries/query", params=params)
-    res.raise_for_status()
-    return res.json()
+```bash
+TOITOI_TRANSPORT_SOURCES='[
+  {"protocol":"nostr","storageDir":"/path/nostr"},
+  {"protocol":"lingonberry","storageDir":"/path/lingonberry"},
+  {"protocol":"atproto","storageDir":"/path/atproto"}
+]' corepack pnpm --filter @toitoi/api start
 ```
 
-## 関連リンク
+選択優先順位:
 
-- 入口一覧: [README.md](../../README.md)
-- ディレクトリ責務: [DIRECTORY_BOUNDARIES.md](../../docs/architecture/DIRECTORY_BOUNDARIES.md)
-- HTTP エントリポイント: [server.js](./server.js)
-- ルーティングと投影: [standard_api_service.js](./standard_api_service.js)
-- テスト: [test_standard_api_service.js](./test_standard_api_service.js)
-- 派生 index の元データ: [`@toitoi/nostr/storage/`](../../packages/nostr/storage/) / [`@toitoi/lingonberry/storage/`](../../packages/lingonberry/storage/) / [`@toitoi/atproto/storage/`](../../packages/atproto/storage/)
+1. `TOITOI_TRANSPORT_SOURCES`
+2. `TOITOI_PROTOCOL`
+3. default `nostr`
+
+## Implementation entry points
+
+- `server.js`: HTTP entrypoint
+- `standard_api_service.js`: routing and response projection
+- `test_standard_api_service.js`: API contract tests
+- `packages/<protocol>/storage/indexer.js`: lookup / list / search / lineage index
+- `packages/<protocol>/storage/standard_api_views.js`: canonical projection
+- `packages/<protocol>/storage/replay.js`: persisted storage replay
+
+## Test
+
+```bash
+corepack pnpm --filter @toitoi/api test
+```
+
+workspace全体:
+
+```bash
+corepack pnpm test
+```
+
+Default CIにはAPI contractsに加えて、frontend lineage、context exploration、reviewed derivation、Nostr再取り込みまでを含むv0.3.0 Golden Pathが含まれます。
+
+## Limitations
+
+- authentication / authorization / rate limitingは未実装
+- 全文検索はtoken containmentベースの最小実装
+- embeddings必須のsemantic searchとgraph inferenceは非対象
+- live external relay / carrier availabilityはdeterministic CIの保証範囲外
+
+## Related documents
+
+- [Frontend](../frontend/README.md)
+- [v0.3.0 User Journey](../frontend/V0.3.0_USER_JOURNEY.md)
+- [v0.3.0 Release Plan](../../docs/roadmap/V0.3.0_RELEASE_PLAN.md)
+- [v0.3.0 Release Runbook](../../docs/roadmap/V0.3.0_RELEASE_RUNBOOK.md)
+- [Canonical Identity and Provenance](../../docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)

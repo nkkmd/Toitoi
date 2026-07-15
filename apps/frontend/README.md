@@ -1,523 +1,173 @@
-# Toitoi フロントエンド README
+# Toitoi Frontend
 
-**Status: current** | **Last updated: 2026-06-24**
+**Status: v0.3.0 release candidate** | **Last updated: 2026-07-15**
 
-この README は、`apps/frontend/` に置くフロントエンド設計と実装方針の入口です。
+`apps/frontend/` は、ToitoiのStandard APIが返すtransport-independentなcanonical viewを、利用者向けの表示モデルへ変換するreference frontend layerです。
 
-本ドキュメントは、デジタル・アグロエコロジー・コモンズ「Toitoi」における **フロントエンド・ビューア層（農家向けダッシュボード / アプリケーション）** の入口です。  
-UI 方針、画面構成、API 連携、実装の考え方をひとまとめにしています。
+現時点ではframework非依存のview modelとHTML rendererを中心に実装しています。完成済みのproduction GUIではありませんが、v0.3.0の主要導線と状態遷移はdefault CIで再現可能です。
 
-## まず読む
+## v0.3.0の実装済み範囲
 
-1. [Standard API README](../api/README.md)
-1. [AI System Overview](../../docs/architecture/AI_SYSTEM_OVERVIEW.md)
-1. [Edge AI Hub](../edge-ai/README.md)
-
-Phase 17 完了後の前提として、フロントエンドは Canonical Event に対応する canonical view と provenance summary を読み込み側で扱い、投稿リクエスト時にのみエッジ側の converter に渡して選択された transport projection として送信します。canonical identity と provenance の役割分担は、UI 側ではなく API / storage / adapter 側の契約として受け取ります。
-
-既存のスマート農業アプリが「指示・管理・ダッシュボード（グラフの羅列）」を志向するのに対し、本システムは「探索・共鳴・ネットワークの可視化」を志向します。
-
----
-
-## 1. UXの基本思想（テクノロジーを手放すためのデザイン）
-
-1. **「正解」を提示しない（Anti-Prescriptive UI）：** 画面上に「最適値」「アラート（赤色の警告）」「〇〇すべき」という表現を一切使用しません。情報は常に「仮説」や「他者の観察結果（問い）」として控えめに提示され、最終判断は農家の身体的実践に委ねられます。UI は Canonical Event の `body.text` を主役として扱い、DSL 解釈モデルも同様に「ひとつの視点」として提示し、正答を示すものではないことを明示します。
-
-2. **文脈の共鳴（Contextual Serendipity）：** 農家がアプリを開いた際、単なる時系列のタイムラインではなく、「自分の農地の土壌・気候・直面している課題（コンテキスト）」と類似する、遠く離れた農家の「問い」が優先的に表示（レコメンド）されます。
-
-3. **進化の可視化（Tree Visualization）：** アグロエコロジーの知識がどのように派生し、結びついたかを「系統樹（マインドマップ）」としてグラフィカルに表示し、「自分の小さな観察が、コモンズ全体の知を育てている」という手触り（貢献感）を提供します。
-
-4. **二層の問い（Canonical Event + DSL projection）：** 農家には常に自然言語の問い（`body.text`）が主役として表示されます。DSL 解釈モデルは Canonical Event の optional projection として折りたたみ表示し、興味のある農家・研究者だけが深掘りできる設計とします。DSL がない問いも完全に有効であり、UI 上で差別化しません。
-
----
-
-## 2. 画面構成と主要機能（UI設計）
-
-フロントエンドは、主に以下の5つのビュー（画面）で構成されます。
-
-### 2.1 ホーム・ビュー：【共鳴のタイムライン】
-
-アプリを起動して最初に表示される画面。インデクサー API のマッチング機能を利用し、農家の「今」に最も関連する canonicalized event の inquiry view を提示します。
-
-**UI要素：**
-
-- **コンテキスト・ヘッダー：** 「九州・火山灰土・暖温帯」など、現在設定されている自身の属地性バッジが表示されます。ユーザーが設定した `context` タグは Canonical Event の `contexts` に投影され、`climate_zone` / `soil_type` / `farming_context` / `crop_family` がバッジとして並びます。
-- **ローカルAIからの問いかけ（Scaffolding）：** ローカルのセンサーデータや農家の観察からエッジAIが生成した Canonical Event draft に基づく「あなた自身の農地に対する問い」が最上部に表示されます。問いの右肩に `trigger` バッジ（例：「🌡️ センサー異常」「👁 農家観察」「📅 定期レビュー」「🌧 外部イベント」）を表示し、問いが生まれた起点を一目で確認できるようにします。
-- **コモンズからの共鳴（Discovery Feed）：** 「あなたの環境に似た農地で、現在こんな問いが議論（派生）されています」というフィードが表示されます。このフィードは Canonical Event を基にした `GET /api/v1/inquiries/query` の canonical view をユーザーの `contexts` 条件でフィルタリングして表示します。
-
-**UXの工夫：**
-
-一般的な SNS の「いいね（Like）」ボタンは存在しません。代わりに **「私の農地で試す（Translate）」** ボタンがあり、これを押すと、自分の農地環境に文脈を書き換えた「派生（`derived_from`）」の問いを作成するエディタが開きます。
-
----
-
-### 2.2 系統樹・ビュー：【翻訳の連鎖の可視化】
-
-特定の「問い（ノード）」をクリックした際に展開される、本アプリの核心となるグラフィカルな画面です。
-
-**UI要素（Node & Edge グラフ）：**
-
-- 画面全体がキャンバスとなり、問いが円（ノード）として、派生関係が線（エッジ）として描画されます。各ノードは Canonical Event の canonical view の可視化であり、transport 表現そのものではありません。
-- ノードの色やアイコンで「土壌の違い（例: 黒ボク土は茶色、沖積土はグレー）」や「気候帯の違い」を視覚的に表現します（Canonical Event の `contexts` に基づく）。
-- 複数の問いが結合（`synthesis`）して生まれた仮説は、より大きく輝くノードとして表現します。エッジのスタイルも `derived_from`（破線）と `synthesis`（実線・太め）で視覚的に区別します。
-- `trigger` バッジをノードに付与し、各問いの起点（センサー異常、農家観察など）をグラフ上で一覧できるようにします。
-
-**ノード詳細パネル（タップ時に展開）：**
-
-任意のノードをタップすると、右側または下部にスライドインするパネルが表示されます。パネルには以下の情報を含みます。
-
-```
-┌──────────────────────────────────────────────────────┐
-│ 問いのテキスト（Canonical Event の body.text）             │
-│                                                      │
-│ 📍 文脈（contexts）                                   │
-│   climate_zone: warm-temperate                         │
-│   soil_type: volcanic_ash                              │
-│   farming_context: no_till                             │
-│                                                      │
-│ 🔗 観察の焦点（relationships）                         │
-│   microclimate → weed_flora                            │
-│                                                      │
-│ 📶 熟達フェーズ: 中級者向け                              │
-│                                                      │
-│ 💡 問いの起点（Trigger）: 👁 農家観察 — 雑草の変化         │
-│                                                      │
-│ ▼ 解釈モデル（DSL projection） [折りたたみ / 任意表示]   │
-│   ┌──────────────────────────────────────────────┐   │
-│   │ モデル: climate_model                         │   │
-│   │   model_id: m1                                 │   │
-│   │   var: microclimate / independent             │   │
-│   │   var: weed_flora / dependent                  │   │
-│   │   rel: microclimate → weed_flora               │   │
-│   ├──────────────────────────────────────────────┤   │
-│   │ モデル: soil_model（競合する解釈）               │   │
-│   │   model_id: m2                                 │   │
-│   │   var: soil_moisture / independent             │   │
-│   │   var: weed_flora / dependent                  │   │
-│   │   rel: soil_moisture → weed_flora              │   │
-│   └──────────────────────────────────────────────┘   │
-│   ⚠️ DSL は Canonical Event の optional projection であり、正解ではありません
-│                                                      │
-│  [ 私の農地で試す（Translate） ]  [ 系統樹を見る ]       │
-└──────────────────────────────────────────────────────┘
+```text
+inquiry detail
+  → lineage tree
+  → context exploration
+  → reviewed derived inquiry creation
+  → publication / re-ingest / replay
+  → updated lineage tree
 ```
 
-DSL セクションは初期状態では折りたたまれており、農家が明示的に展開した場合のみ表示されます。複数の DSL モデルが存在する場合はタブ切り替えまたは縦に並べて表示し、「競合する解釈の多様性」をネガティブなものとして表現せず、「異なる農地からの視点が共存している」という文脈で説明します。UI は Canonical Event の意味表現を守り、transport projection の細部を前面に出しすぎないようにします。
+### Inquiry detail
 
-**インタラクション：**
+- Canonical Eventの`body.text`、`contexts`、`relationships`、`trigger`、`phase`を表示モデルへ投影
+- parent / child referenceの表示
+- provenance summaryとidentity summaryの保持
+- loading / empty / ready / error state
 
-- ピンチイン・アウト（拡大縮小）とスワイプで、広大な「知識の森」を探索できます。
-- ミニマップ（画面端の小さなナビゲーター）で全体の位置を把握できます。
-- 特定の `context` 条件（例：「火山灰土のみ表示」）でノードをフィルタリングできるサイドパネルを提供します。
+主要実装:
 
----
+- `inquiry_view_model.js`
+- `test_inquiry_view_model.js`
 
-### 2.3 実践記録・ビュー：【暗黙知の言語化サポート】
+### Lineage tree
 
-農家が自身の観察や、他者から受け取った問いに対する「実践の結果」を入力（言語化・表出化）する画面です。
+- root / branch / leafの区別
+- relation typeの表示
+- 選択中ノードとdetailリンク
+- provenance summary
+- 欠損参照と循環参照への防御
+- canonical IDとtransport source IDの双方を使ったrelation照合
+- HTML escaping、tree semantics、keyboard-accessible links
 
-**UI要素：**
+主要実装:
 
-- **テキスト入力：** 問いの本文（`body.text`）を入力するメインフィールド。口語での入力を歓迎し、後述の AI サジェストで構造化を補助します。
+- `inquiry_view_model.js`
+- `lineage_tree_renderer.js`
+- `test_lineage_tree_renderer.js`
 
-- **タグ・サジェスト（Context）：** `climate_zone` / `soil_type` / `farming_context` / `crop_family` の各カテゴリについて、推奨語彙をタップ選択できるトークン UI を提供します。手打ちさせないことで表記揺れを防ぎます。
+### Context exploration
 
-- **タグ・サジェスト（Relationship）：** 「関係性（Relationship）」を入力する際、推奨ボキャブラリー（`microclimate` / `weed_flora` / `soil_moisture` など）からタップで選択できます。2つの要素をペアで選ぶ UI（例：「微気候」 ↔ 「雑草相」）とします。
+対応するcontext条件:
 
-- **問いの起点（Trigger）の選択：** 以下の4カテゴリから起点をタップ選択できます。選択は任意で、直感による自発的な問いの場合はスキップできます。
+- `climate_zone`
+- `soil_type`
+- `farming_context`
+- `crop_family`
 
-  | カテゴリ | アイコン | 値の例 |
-  |---|---|---|
-  | センサー異常 | 🌡️ | `soil_moisture` / `temperature` / `illuminance` |
-  | 農家観察 | 👁 | `weed_change` / `pest_found` / `crop_symptom` |
-  | 定期レビュー | 📅 | `weekly` / `seasonal` |
-  | 外部イベント | 🌧 | `heavy_rain` / `frost` / `drought` |
+実装済み契約:
 
-- **熟達フェーズ（Phase）の選択：** 「初心者向け」「中級者向け」「上級者向け」をタップで選択します。選択が難しい場合は AI が `body.text` を解析してサジェストします。
+- 選択条件の可視化
+- 一致条件と異なるcontext値の比較
+- inquiry detailへの導線
+- loading / empty / ready / invalid query / error state
+- 文脈上の類似をcanonical identityの根拠にしない表示
 
-- **DSL プレビュー（任意・折りたたみ）：** AI アシストが有効な場合、入力された自然言語の問いから自動生成した DSL projection のプレビューを折りたたみ式で表示します。農家はこれを確認・修正・破棄できます。DSL は完全にオプションであり、強制されないことを UI で明示します。
+主要実装:
 
-  ```
-  ▼ AIが解釈した構造（任意・変更可）
-    モデル名: climate_model
-    独立変数: microclimate（微気候）
-    従属変数: weed_flora（雑草相）
-    関係: microclimate → weed_flora
-    [ この解釈を使う ] [ 使わない ] [ 編集する ]
-  ```
+- `context_exploration_model.js`
+- `context_exploration_renderer.js`
+- `test_context_exploration.js`
 
-- **AIアシスト（任意）：** 農家が「スギナが増えて、土がジメジメしている」と口語で入力すると、ローカル AI が「『微気候と雑草相の関係』に関する問いの形式に整形しましょうか？」とサジェスト（足場掛け）します。
+### Reviewed derived inquiry
 
----
+派生操作はfrontend単独の自由編集モデルではなく、`@toitoi/protocol`のInquiry Draft contractを利用します。
 
-### 2.4 統合検索・ビュー：【知識の森を探索する】
+対応relation type:
 
-コモンズ全体の問いを横断して検索・発見するための画面です。`GET /api/v1/inquiries/query` エンドポイントを活用し、全文検索・コンテキストフィルタ・DSL フィルタを自由に組み合わせられます。
+- `derived_from`
+- `translated_from`
+- `annotates`
+- `reframes`
+- `revises`
+- `synthesizes`
 
-**UI要素：**
+公開条件:
 
-- **テキスト検索バー（`q` パラメータ）：** `body.text` を中心に、必要に応じて API response の `content` に対して部分一致で検索します。マッチ箇所は、バックエンドが補助情報を返す場合にのみハイライト表示します。
+- draftを`in_review`へ提出する
+- 人間が`approved`または`rejected`を判断する
+- `approved`以外はCanonical Event化できない
+- semantic relationは`lineage`へ、workflow provenanceは`meta.publication`へ記録する
 
-  > **実装上の注意：** `highlight` は任意の表示補助として扱い、Standard API の必須契約には含めません。バックエンドがハイライト断片を返さない場合は、`body.text` や `content` をそのまま表示し、必要に応じてクエリ語をクライアント側で強調します。
+### Cross-feature Golden Path
 
-- **コンテキスト・フィルタパネル（折りたたみ式）：** 以下のパラメータをドロップダウンまたはトークン選択で指定できます。複数を同時指定した場合は AND 条件で絞り込みます。
+`test_v0_3_0_golden_path.js`は、次を一続きに検証します。
 
-  | フィルタ | API パラメータ | 推奨語彙（抜粋） |
-  |---|---|---|
-  | 気候帯 | `climate_zone` | `subarctic` / `cool-temperate` / `warm-temperate` / `subtropical` |
-  | 土壌タイプ | `soil_type` | `volcanic_ash` / `alluvial` / `sandy` / `clay` / `peat` |
-  | 農法 | `farming_context` | `open_field` / `no_till` / `organic` / `conventional` … |
-  | 作物群 | `crop_family` | `solanaceae` / `brassica` / `legume` / `cucurbitaceae` / `poaceae` |
-  | 関係性要素 | `relationship` | `weed_flora` / `microclimate` / `soil_moisture` … |
-  | 熟達フェーズ | `phase` | `beginner` / `intermediate` / `expert` |
+1. inquiry detailを取得する
+2. lineage treeを表示モデルへ変換する
+3. context explorationで関連inquiryを見つける
+4. 派生Inquiry Draftを作成する
+5. 未承認draftの公開を拒否する
+6. human reviewで承認する
+7. Canonical Eventとして公開する
+8. Nostrへlineageを投影する
+9. 再取り込み・永続化・replayを行う
+10. 派生inquiryが更新後のlineage treeに現れることを確認する
 
-- **DSL フィルタパネル（折りたたみ式・上級者向け）：** 研究者・上級農家向けに DSL 層での検索を提供します。
+詳細な利用者導線は[`V0.3.0_USER_JOURNEY.md`](./V0.3.0_USER_JOURNEY.md)を参照してください。
 
-  | フィルタ | API パラメータ | 説明 |
-  |---|---|---|
-  | DSL モデル名 | `dsl_model` | 例: `climate_model` / `soil_model` / `nutrient_chain_model` |
-  | DSL 変数名 | `dsl_var` | 例: `microclimate` / `weed_flora` |
-  | DSL 変数ロール | `dsl_role` | `independent` / `dependent` / `mediator` / `moderator` |
+## API dependency
 
-  > `dsl_model` と `dsl_var` / `dsl_role` を同時に指定した場合、現バージョンでは「同一モデル内での一致」ではなく「それぞれの条件を満たすタグがイベント内に存在する」という判定になります（API_REFERENCE v0.2.0 §よくある質問 参照）。1つのイベントに複数の DSL モデルが共存する場合はこの点を UI のヘルプテキストで案内してください。
+frontendはtransport固有eventを直接解釈せず、Standard APIのcanonical viewを利用します。
 
-- **日時フィルタ：** 「直近1週間」「直近1ヶ月」「期間指定」のプリセットボタンを提供し、`since` / `until` パラメータ（Unix timestamp）に変換して送信します。
+主なendpoint:
 
-- **検索結果カード：** 各問いをカード形式で表示します。カードには `content`（必要に応じてハイライト補助つき）・`contexts` バッジ・`trigger` バッジ・`phase` インジケータ・DSL モデル数（例：「解釈モデル: 2件」）を表示します。パラメータが何も指定されない場合は `400 Bad Request` が返るため、UI 上で「少なくとも1つの条件を入力してください」と案内します。
+- `GET /api/v1/inquiries/:id/detail`
+- `GET /api/v1/inquiries/:id/tree`
+- `GET /api/v1/inquiries/query`
 
----
+API仕様は[`../api/README.md`](../api/README.md)を参照してください。
 
-### 2.5 Trust ビュー：【農家ネットワークの可視化】
+## Test
 
-identity claim / provenance summary を活用したスパム防御と信頼ネットワークの UI です。
+workspace root:
 
-**UI要素：**
-
-- **Trust レベルの表示：** 各問いのカードに信頼バッジを表示します（例：★★★ = verified claim 内の農家、★★ = 直接確認外だが農家ネットワークとの繋がりあり、★ = 未確認）。スコアは API が返す identity summary / claim metadata / provenance summary を参照して算出します。
-- **信頼ネットワークの設定：** 「信頼する農家の identity key / claim を登録する」画面を提供します。公開鍵や claim reference の手入力または QR コード読み込みで登録できます。
-- **優先表示の切替：** 「信頼ネットワーク優先」モードをトグルで切り替え可能にします。オフの場合は全ての問いを公平に表示します。
-
----
-
-## 3. 推奨技術スタック
-
-本フロントエンドを実現するためのモダンで軽量な技術スタックです。
-
-- **フレームワーク：** `React` (Next.js) または `Vue.js` (Nuxt)
-  - クロスプラットフォーム（PWA として Web / iOS / Android で動作させるため）を推奨。
-- **ネットワーク描画（系統樹ビュー）：** `React Flow` または `D3.js`
-  - `React Flow` はノードベースのインタラクティブな UI 構築に極めて優れており、系統樹ビューの実装に最適です。
-- **API / transport draft helper：** `fetch` / `zod` / transport-specific helper
-  - API response の検証と、必要な場合の transport projection draft 確認に使用します。署名と publish は原則として edge 側の converter / transport helper に委ねます。
-- **状態管理 / キャッシュ：** `React Query`（または `SWR`）
-  - インデクサー API からのデータ取得とキャッシュ管理をスムーズに行います。
-- **スタイリング：** `Tailwind CSS` または `shadcn/ui`
-  - コンポーネント駆動の UI 開発に適しています。
-
----
-
-## 4. クライアント側のデータフロー（インデクサーとの連携）
-
-フロントエンド・アプリは、直接 transport relay / carrier と通信するのではなく、インデクサー層の REST API を利用して画面を構築します。読み込み側は canonicalized event / standardized API response を主に扱い、書き込み側は投稿リクエストをエッジの converter に渡して選択された transport projection を生成します。
-
-### 4.1 主要 API エンドポイントと利用画面の対応
-
-| API エンドポイント | 利用画面 | 用途 |
-|---|---|---|
-| `GET /api/v1/inquiries` | ホーム・ビュー | canonical view の inquiry タイムライン（全件新着順）の取得 |
-| `GET /api/v1/inquiries/query` | ホーム・ビュー / 統合検索 | contexts マッチング・全文検索・DSL フィルタ |
-| `GET /api/v1/inquiries/:id/tree` | 系統樹・ビュー | Canonical Event lineage view の取得・グラフ描画 |
-
-### 4.2 Discovery Feed の構築（コンテキストマッチング）
-
-ホーム・ビューの Discovery Feed は、ユーザーの `contexts` 設定を使って `/api/v1/inquiries/query` を呼び出します。
-
-```javascript
-// ユーザーの農地コンテキスト設定（ローカルに保存）
-const myContexts = {
-  climate_zone:     'warm-temperate',
-  soil_type:        'volcanic_ash',
-  farming_context:  'no_till',
-};
-
-// コンテキストマッチングによる Discovery Feed の取得
-async function fetchDiscoveryFeed(contexts, limit = 20) {
-  const params = new URLSearchParams({ ...contexts, limit });
-  const res = await fetch(
-    `https://api.your-domain.com/api/v1/inquiries/query?${params}`
-  );
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
-
-const feed = await fetchDiscoveryFeed(myContexts);
+```bash
+corepack pnpm test
 ```
 
-### 4.3 全文検索と結果表示
+frontendのみ:
 
-統合検索ビューでの全文検索と canonical view の表示例です。
-
-```javascript
-async function searchInquiries({
-  q, soilType, phase, dslModel, dslVar, dslRole, limit = 20, offset = 0
-}) {
-  const params = new URLSearchParams();
-  if (q)        params.set('q',          q);
-  if (soilType) params.set('soil_type',  soilType);
-  if (phase)    params.set('phase',      phase);
-  if (dslModel) params.set('dsl_model',  dslModel);
-  if (dslVar)   params.set('dsl_var',    dslVar);
-  if (dslRole)  params.set('dsl_role',   dslRole);
-  params.set('limit',  limit);
-  params.set('offset', offset);
-
-  const res = await fetch(
-    `https://api.your-domain.com/api/v1/inquiries/query?${params}`
-  );
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
-
-function InquiryCard({ item }) {
-  const displayText = item.highlight ?? item.body?.text ?? item.content ?? '';
-  return (
-    <div className="inquiry-card">
-      {displayText}
-    </div>
-  );
-}
+```bash
+corepack pnpm --filter @toitoi/frontend test
 ```
 
-### 4.4 系統樹ビューの描画ロジック（React Flow）
+実行対象:
 
-インデクサーから取得した再帰的なツリーデータ（JSON）を React Flow 用の Nodes / Edges に変換します。
+- `test_inquiry_view_model.js`
+- `test_lineage_tree_renderer.js`
+- `test_context_exploration.js`
+- `test_v0_3_0_golden_path.js`
 
-```javascript
-// GET /api/v1/inquiries/:id/tree のレスポンス構造:
-// { id, body: { text }, createdAt, parent_id, children: [...] }
+## UX原則
 
-// コンテキストの色マッピング（soil_type ベース）
-const SOIL_COLOR = {
-  volcanic_ash: '#6B4226',
-  alluvial:     '#8D8D8D',
-  sandy:        '#D4A96A',
-  clay:         '#9B6B4A',
-  peat:         '#4A3B2A',
-};
+- 問いを正解や処方として表示しない
+- 自然言語の`body.text`を主役にする
+- 文脈差を消去せず比較可能にする
+- 類似と同一性を混同しない
+- provenanceと人間確認を利用者から追跡可能にする
+- transport固有表現をUIへ過剰に露出しない
+- keyboard操作、HTML escaping、欠損データへの耐性を維持する
 
-// Canonical Event の contexts から特定のキーの値を取得するユーティリティ
-function getContextValue(contexts, key) {
-  return contexts?.[key] ?? null;
-}
+## 非対象・将来構想
 
-// ツリーデータを React Flow の Nodes / Edges に変換
-function transformToGraph(node, x = 0, y = 0, nodes = [], edges = []) {
-  const soilType = getContextValue(node.contexts, 'soil_type');
-  const hasDsl   = (node.dsl?.models ?? []).length > 0;
+v0.3.0では次を完成済みとは扱いません。
 
-  // 1. ノードの登録
-  nodes.push({
-    id:       node.id,
-    position: { x, y },
-    data: {
-      label:    node.body?.text ?? node.content,
-      soilType,
-      trigger:  node.trigger ?? null,
-      hasDsl,
-    },
-    type:  'customInquiryNode',
-    style: { backgroundColor: SOIL_COLOR[soilType] ?? '#4CAF50' },
-  });
+- production-readyなSPA／モバイルアプリ
+- canvasベースの大規模グラフUI、ピンチズーム、ミニマップ
+- relation typeの自由編集UI
+- 複数人同時編集
+- embeddings必須の意味検索
+- graph inference
+- 本格的なoffline synchronization
+- production authentication / authorization
+- AIによる無人公開
 
-  // 2. 子ノードの再帰処理
-  node.children?.forEach((child, index) => {
-    const childX = x + (index * 280) - ((node.children.length - 1) * 140);
-    const childY = y + 160;
+これらは設計上の将来候補であり、v0.3.0 release blockerではありません。
 
-    // エッジのスタイルを derived_from / synthesis で区別
-    const isSynthesis = child.lineage?.some(rel => rel.type === 'synthesis') ?? false;
-    edges.push({
-      id:       `edge-${node.id}-${child.id}`,
-      source:   node.id,
-      target:   child.id,
-      label:    isSynthesis ? '結合' : '派生',
-      animated: true,
-      style:    isSynthesis
-        ? { stroke: '#FF6B35', strokeWidth: 3 }
-        : { stroke: '#4CAF50', strokeWidth: 1.5, strokeDasharray: '5,5' },
-    });
+## 関連文書
 
-    transformToGraph(child, childX, childY, nodes, edges);
-  });
-
-  return { nodes, edges };
-}
-
-// 使用例
-const treeData = await fetch(
-  `https://api.your-domain.com/api/v1/inquiries/${rootEventId}/tree`
-).then(r => r.json());
-
-const { nodes, edges } = transformToGraph(treeData);
-// => <ReactFlow nodes={nodes} edges={edges} /> に渡すだけでグラフ完成
-```
-
-### 4.5 DSL タグの解釈ロジック
-
-API レスポンスの `tags` 配列では、DSL タグは現行の transport schema に従って格納されています。以下のユーティリティ関数でモデル単位に整形します。
-
-```javascript
-/**
- * tags 配列から DSL モデルを解釈し、構造化されたオブジェクトの配列を返す。
- *
- * 現行 transport schema:
- *   dsl:model  [model_id, model_name]
- *   dsl:var    [model_id, var_name, role]
- *   dsl:rel    [model_id, source_var, target_var]
- *   dsl:meta   [model_id, key, value?]
- */
-function parseDslModels(tags) {
-  const dslModels = {};
-
-  // 1. モデル宣言の収集
-  tags
-    .filter(t => t.tagKey === 'dsl:model')
-    .forEach(t => {
-      dslModels[t.tagValue1] = {
-        modelId:   t.tagValue1,
-        modelName: t.tagValue2,
-        vars:      [],
-        rels:      [],
-        meta:      {},
-      };
-    });
-
-  // 2. 変数宣言の収集（1タグ = 1変数）
-  tags
-    .filter(t => t.tagKey === 'dsl:var')
-    .forEach(t => {
-      const model = dslModels[t.tagValue1];
-      if (model) {
-        model.vars.push({ name: t.tagValue2, role: t.tagValue3 ?? null });
-      }
-    });
-
-  // 3. 関係宣言の収集（1タグ = 1関係）
-  tags
-    .filter(t => t.tagKey === 'dsl:rel')
-    .forEach(t => {
-      const model = dslModels[t.tagValue1];
-      if (model) {
-        model.rels.push({ source: t.tagValue2, target: t.tagValue3 ?? null });
-      }
-    });
-
-  // 4. 任意メタデータの収集
-  tags
-    .filter(t => t.tagKey === 'dsl:meta')
-    .forEach(t => {
-      const model = dslModels[t.tagValue1];
-      if (model) {
-        model.meta[t.tagValue2] = t.tagValue3 ?? null;
-      }
-    });
-
-  return Object.values(dslModels);
-}
-
-// 使用例
-const dslModels = parseDslModels(inquiry.tags);
-// => [
-//   { modelId: 'm1', modelName: 'climate_model',
-//     vars: [{ name: 'microclimate', role: 'independent' },
-//            { name: 'weed_flora',   role: 'dependent'   }],
-//     rels: [{ source: 'microclimate', target: 'weed_flora' }] },
-//   { modelId: 'm2', modelName: 'soil_model', ... }
-// ]
-```
-
----
-
-## 5. アイデンティティ（鍵）とプライバシーの管理
-
-1. **identity key はブラウザ/端末内に封じ込める：** 農家が初回起動時に生成（またはインポート）した identity key は、ブラウザの `localStorage` またはアプリの `SecureStorage` にのみ保存され、インデクサー API や外部サーバーには決して送信されません。transport への projection はエッジ側で署名され、フロントエンドはそのドラフト作成と確認に集中します。
-
-2. **投稿時の匿名性の選択：** システムは「誰が」問いを発したかよりも「どのような環境（コンテキスト）から」発されたかを重視します。プロフィールや identity claim の公開は任意であり、完全に匿名（公開鍵の羅列）のままでもコモンズに参加・貢献できるよう UI を設計します。
-
-3. **`trigger` 情報のクライアント生成ガイドライン（Canonical Event / transport schema 準拠）：**
-   - センサー連携機能を実装する場合、センサー値が閾値を超えた際に `["trigger", "sensor_anomaly", "<センサー種別>"]` タグを自動付与することを推奨します。
-   - 農家の観察入力からの場合は `["trigger", "farmer_observation", "<観察種別>"]` をサジェスト選択式で付与します。
-   - `trigger` タグが付与されない問い（自発的な直感による問い）も完全に有効であり、UI 上で差別化しません。
-
-4. **生データは絶対に外部へ送らない：** フロントエンドが扱うのは、エッジ AI がすでに抽象化・構造化した canonicalized event と、その編集用ドラフトです。IoT センサーの生値・緯度経度・農場名などの個人特定情報は、エッジ層から外に出ることなく、フロントエンドに届くことはありません。
-
----
-
-## 6. 用語・タグ対応表（UI表示文言）
-
-フロントエンドでユーザーに表示する際の日本語表記は以下を推奨します。
-
-### Context タグ
-
-| タグ値 | UI表示文言 |
-|---|---|
-| `subarctic` | 亜寒帯 |
-| `cool-temperate` | 冷温帯 |
-| `warm-temperate` | 暖温帯 |
-| `subtropical` | 亜熱帯 |
-| `volcanic_ash` / `andisol` | 火山灰土（黒ボク土） |
-| `alluvial` | 沖積土 |
-| `sandy` | 砂土 |
-| `clay` | 粘土質 |
-| `peat` | 泥炭土 |
-| `open_field` | 露地栽培 |
-| `greenhouse_unheated` | 無加温ハウス |
-| `greenhouse_heated` | 加温ハウス |
-| `no_till` | 不耕起栽培 |
-| `organic` | 有機栽培 |
-| `conventional` | 慣行栽培 |
-| `solanaceae` | ナス科 |
-| `brassica` | アブラナ科 |
-| `legume` | マメ科 |
-| `cucurbitaceae` | ウリ科 |
-| `poaceae` | イネ科 |
-
-### Relationship 要素
-
-| タグ値 | UI表示文言 |
-|---|---|
-| `soil_moisture` | 土壌水分 |
-| `weed_flora` | 雑草相 |
-| `pest` | 害虫 |
-| `natural_enemy` | 天敵 |
-| `microclimate` | 微気候 |
-| `nutrient_cycle` | 養分循環 |
-| `soil_physical` | 土壌物理性 |
-| `soil_microbe` | 土壌微生物 |
-| `crop_vitality` | 作物の活力 |
-
-### Phase（熟達フェーズ）
-
-| タグ値 | UI表示文言 | 説明 |
-|---|---|---|
-| `beginner` | 初心者向け | 単一の事象・物理的な変化への観察を促す問い |
-| `intermediate` | 中級者向け | 複数要素の関係性・目に見えない要因への推論を促す問い |
-| `expert` | 上級者向け | 生態系全体を俯瞰する高度な相互作用への問い |
-
-### Trigger（問いの起点）
-
-| タグ値 | UI表示文言 | アイコン |
-|---|---|---|
-| `sensor_anomaly` | センサー異常 | 🌡️ |
-| `farmer_observation` | 農家観察 | 👁 |
-| `periodic_review` | 定期レビュー | 📅 |
-| `external_event` | 外部イベント | 🌧 |
-
-### DSL 変数ロール
-
-| タグ値 | UI表示文言 |
-|---|---|
-| `independent` | 独立変数（仮説的な原因） |
-| `dependent` | 従属変数（問いの対象） |
-| `mediator` | 媒介変数（中間経路） |
-| `moderator` | 調整変数（条件付け要因） |
+- [v0.3.0 User Journey](./V0.3.0_USER_JOURNEY.md)
+- [Standard API](../api/README.md)
+- [v0.3.0 Release Plan](../../docs/roadmap/V0.3.0_RELEASE_PLAN.md)
+- [v0.3.0 Release Runbook](../../docs/roadmap/V0.3.0_RELEASE_RUNBOOK.md)
+- [Inquiry Draft Contract](../../docs/protocols/INQUIRY_DRAFT.md)
