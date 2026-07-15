@@ -6,30 +6,12 @@
   "type": "object",
   "required": ["id", "schemaVersion", "status", "createdAt", "updatedAt", "candidate"],
   "properties": {
-    "id": {
-      "type": "string",
-      "pattern": "^tt:draft:[^\\s]+$"
-    },
-    "schemaVersion": {
-      "type": "string",
-      "const": "0.1.0"
-    },
-    "status": {
-      "type": "string",
-      "enum": ["draft", "in_review", "approved", "rejected"]
-    },
-    "createdAt": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "updatedAt": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "submittedAt": {
-      "type": "string",
-      "format": "date-time"
-    },
+    "id": { "type": "string", "pattern": "^tt:draft:[^\\s]+$" },
+    "schemaVersion": { "type": "string", "const": "0.1.0" },
+    "status": { "type": "string", "enum": ["draft", "in_review", "approved", "rejected"] },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "submittedAt": { "type": "string", "format": "date-time" },
     "candidate": {
       "type": "object",
       "required": ["type", "body"],
@@ -62,25 +44,28 @@
       },
       "additionalProperties": false
     },
+    "derivation": {
+      "type": "object",
+      "required": ["sourceInquiryId", "relationType"],
+      "properties": {
+        "sourceInquiryId": { "type": "string", "pattern": "^tt:evt:[^\\s]+$" },
+        "relationType": {
+          "type": "string",
+          "enum": ["derived_from", "translated_from", "annotates", "reframes", "revises", "synthesizes"]
+        },
+        "authorId": { "type": "string", "minLength": 1 },
+        "ai": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
     "review": {
       "type": "object",
       "required": ["decision", "reviewerId", "reviewedAt"],
       "properties": {
-        "decision": {
-          "type": "string",
-          "enum": ["approved", "rejected"]
-        },
-        "reviewerId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "reviewedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "note": {
-          "type": "string"
-        }
+        "decision": { "type": "string", "enum": ["approved", "rejected"] },
+        "reviewerId": { "type": "string", "minLength": 1 },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "note": { "type": "string" }
       },
       "additionalProperties": false
     }
