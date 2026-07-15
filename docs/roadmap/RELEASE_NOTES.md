@@ -8,49 +8,57 @@
 
 ## v0.3.0
 
-**Status: planned**
+**Status: release candidate**
 
 v0.3.0 は、v0.2.0 で固定した「問いの一生」の Golden Path を、閲覧可能な reference implementation から、問いを発見・比較・派生できる最初の知識空間へ進めるリリースです。
 
-### Planned Highlights
+### Highlights
 
-- inquiry detail と接続された lineage tree
-- root / parent / child / derived inquiry と relation type の可視化
-- contexts / relationships に基づく inquiry 探索と比較
-- lineage を保持した derived inquiry draft の作成
-- human review と publication guard を通した派生 inquiry 公開
-- 派生元、操作種別、作成主体、AI関与、人間確認を追跡できる provenance
-- 公開後の lineage tree と Standard API canonical view への反映
-- 雑草相 Golden Path を使った browser-level E2E / contract validation
+- inquiry detail と接続された、選択・relation・provenance対応の lineage tree
+- root / branch / leaf / cycle / missing nodeを扱うresilient frontend contract
+- contextsに基づくinquiry探索、条件表示、異なる文脈の比較
+- context similarityをcanonical identity mergeと混同しない明示的なsemantics
+- lineageを保持したderived inquiry draftの作成
+- `draft` → `in_review` → `approved` / `rejected`のhuman review workflow再利用
+- `approved`以外を拒否するpublication guard
+- 派生元、relation type、作成主体、AI関与、人間確認を追跡する`meta.publication`
+- Nostr relation marker付き`e` tagとLingonberry lineage metadataへのtransport projection
+- detail → lineage → context exploration → reviewed derivation → Nostr re-ingest → updated lineageを一続きで確認するv0.3.0 Golden Path
 
-### Required Scope
+### Completed Scope
 
-- [#16](https://github.com/nkkmd/Toitoi/issues/16): lineage tree を中核UIとして実装する
-- [#17](https://github.com/nkkmd/Toitoi/issues/17): context に基づく inquiry 探索を実装する
-- [#18](https://github.com/nkkmd/Toitoi/issues/18): lineage を保持した派生 inquiry 作成を実装する
-- [#19](https://github.com/nkkmd/Toitoi/issues/19): release tracking と横断的な release gate
+- [#16](https://github.com/nkkmd/Toitoi/issues/16): lineage tree を中核UIとして実装
+- [#17](https://github.com/nkkmd/Toitoi/issues/17): context に基づく inquiry 探索を実装
+- [#18](https://github.com/nkkmd/Toitoi/issues/18): lineage を保持した派生 inquiry 作成を実装
+- [#19](https://github.com/nkkmd/Toitoi/issues/19): release tracking、横断E2E、release gate
+
+### Validation
+
+- workspace rootの`corepack pnpm install --frozen-lockfile`をdefault CIで実行
+- workspace rootの`corepack pnpm test`をdefault CIで実行
+- lineage、context exploration、derived inquiryのcontract testsをdefault CIへ追加
+- 雑草相fixtureを使ったv0.3.0 cross-feature Golden Pathをdefault CIへ追加
+- Nostr / Lingonberry deterministic operational smokeを既存workspace testsで回帰確認
 
 ### Release Criteria
 
-- 雑草相 Golden Path を detail → lineage → context exploration → derived inquiry creation までブラウザ上で辿れる
+- 雑草相 Golden Path を detail → lineage → context exploration → derived inquiry creation まで辿れる
 - `approved` 以外の Inquiry Draft が公開されない
-- 派生 inquiry の lineage / provenance が publish、retrieve、re-ingest、replay 後も維持される
+- 派生 inquiry の lineage / provenance が transport projection、re-ingest、persistence、replay 後も維持される
 - canonical identity と semantic relationship を混同しない
-- workspace tests と追加された frontend / API / E2E contracts が成功する
-- Nostr / Lingonberry の deterministic operational smoke に既知回帰がない
+- workspace tests と frontend / API / protocol / transport contracts が成功する
 - release plan、release notes、release runbook、known limitations が整合している
 
-### Non-goals
+### Known Limitations
 
-- 新transport追加
-- embeddings 必須の意味検索
-- graph inference
-- 本格的なオフライン同期
-- 語彙管理UI
-- 外部SDKまたはgovernance processの完成
-- AI生成 inquiry の無人公開
+- frontendはframework-independent model / HTML rendererが中心で、完成したSPA製品ではない
+- 汎用lineage editor、relation type自由編集、複数人同時編集は対象外
+- production-grade authentication / authorization / rate limitingは対象外
+- default operational smokeは外部networkを使わない決定的テストであり、実relay / carrierの可用性を保証しない
+- embeddings、graph inference、本格オフライン同期、新transport、大規模DB最適化は後続リリースで扱う
+- AI生成inquiryの無人公開は行わず、明示的なhuman reviewを必須とする
 
-詳細は [`V0.3.0_RELEASE_PLAN.md`](./V0.3.0_RELEASE_PLAN.md) を参照してください。
+詳細は [`V0.3.0_RELEASE_PLAN.md`](./V0.3.0_RELEASE_PLAN.md) と [`V0.3.0_RELEASE_RUNBOOK.md`](./V0.3.0_RELEASE_RUNBOOK.md) を参照してください。
 
 ---
 
