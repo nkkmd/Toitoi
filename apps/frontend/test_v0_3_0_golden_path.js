@@ -21,6 +21,7 @@ const { renderContextExploration } = require('./context_exploration_renderer');
 
 const DERIVED_NOSTR_ID = '0000000000000000000000000000000000000000000000000000000000000004';
 const DERIVED_CANONICAL_ID = `tt:evt:${DERIVED_NOSTR_ID}`;
+const DERIVED_TEXT = '冷涼地の東側圃場で、朝露の残り方と雑草相の違いを継続観察したい。';
 
 function buildService(sourceEvents, label) {
   const ingestResult = ingestNostrEvents(sourceEvents, { skipVerify: true });
@@ -31,6 +32,11 @@ function buildService(sourceEvents, label) {
   });
   const replayed = replayStorage(storageDir, { persistIndex: false });
   return createStandardApiService({ indexSnapshot: replayed.indexSnapshot });
+}
+
+function hasSourceId(result, sourceId) {
+  return Array.isArray(result?.provenance?.sourceIds)
+    && result.provenance.sourceIds.includes(sourceId);
 }
 
 function run() {
@@ -63,10 +69,10 @@ function run() {
     criteria: { climate_zone: 'cool-temperate' },
   });
   assert.strictEqual(contextModel.state, VIEW_STATES.READY);
-  assert.ok(contextModel.results.some(result => result.id.endsWith(GOLDEN_PATH_IDS.translated)));
+  assert.ok(contextModel.results.some(result => hasSourceId(result, GOLDEN_PATH_IDS.translated)));
   assert.ok(renderContextExploration(contextModel).includes('文脈探索'));
 
-  const sourceInquiry = contextModel.results.find(result => result.id.endsWith(GOLDEN_PATH_IDS.translated));
+  const sourceInquiry = contextModel.results.find(result => hasSourceId(result, GOLDEN_PATH_IDS.translated));
   const draft = createDerivedInquiryDraft({
     id: 'tt:draft:v0.3.0-golden-path-derived',
     sourceInquiryId: sourceInquiry.id,
@@ -81,7 +87,7 @@ function run() {
     candidate: {
       type: 'inquiry',
       body: {
-        text: '冷涼地の東側圃場で、朝露の残り方と雑草相の違いを継続観察したい。',
+        text: DERIVED_TEXT,
         language: 'ja',
       },
       contexts: {
@@ -144,13 +150,15 @@ function run() {
     url: `/api/v1/inquiries/${GOLDEN_PATH_IDS.root}/tree`,
   });
   assert.strictEqual(updatedTreeResponse.statusCode, 200);
-  const updatedTreeModel = createLineageTreeModel(updatedTreeResponse.body, {
-    selectedId: DERIVED_CANONICAL_ID,
-  });
+  const updatedTreeModel = createLineageTreeModel(updatedTreeResponse.body);
   assert.strictEqual(updatedTreeModel.state, VIEW_STATES.READY);
-  assert.ok(updatedTreeModel.nodes.some(node => node.id === DERIVED_CANONICAL_ID));
-  assert.strictEqual(updatedTreeModel.selectedId, DERIVED_CANONICAL_ID);
-  assert.ok(renderLineageTree(updatedTreeModel).includes('translated_from'));
+  const derivedNode = updatedTreeModel.nodes.find(node => node.text === DERIVED_TEXT);
+  assert.ok(derivedNode);
+  const selectedTreeModel = createLineageTreeModel(updatedTreeResponse.body, {
+    selectedId: derivedNode.id,
+  });
+  assert.strictEqual(selectedTreeModel.selectedId, derivedNode.id);
+  assert.ok(renderLineageTree(selectedTreeModel).includes('translated_from'));
 
   const derivedDetailResponse = updatedService.handleRequest({
     method: 'GET',
