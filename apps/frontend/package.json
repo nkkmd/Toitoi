@@ -1,5 +1,8 @@
 {
   "name": "@toitoi/frontend",
   "private": true,
-  "type": "commonjs"
+  "type": "commonjs",
+  "scripts": {
+    "test": "node test_inquiry_view_model.js && node test_lineage_tree_renderer.js"
+  }
 }
