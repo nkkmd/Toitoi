@@ -5,5 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node ../../scripts/run-tests.js"
+  },
+  "dependencies": {
+    "@toitoi/protocol": "workspace:*"
   }
 }
