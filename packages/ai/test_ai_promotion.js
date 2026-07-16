@@ -8,6 +8,7 @@ const {
   approveInquiryDraft,
   assertPublishableInquiryDraft,
 } = require('@toitoi/protocol/inquiry_draft');
+const { publishApprovedDerivedInquiry } = require('@toitoi/protocol/derived_inquiry');
 
 function makeAnnotation(overrides = {}) {
   return createAiAnnotation({
@@ -31,6 +32,7 @@ function run() {
     id: 'tt:draft:ai-promotion-001',
     eventId: annotation.eventId,
     annotations: [annotation],
+    authorId: 'human:farmer-001',
     candidate: {
       type: 'inquiry',
       body: {
@@ -47,6 +49,14 @@ function run() {
   assert.strictEqual(draft.candidate.meta.aiPromotion.requiresHumanReview, true);
   assert.strictEqual(draft.candidate.meta.aiPromotion.sourceEventId, annotation.eventId);
   assert.strictEqual(draft.candidate.meta.aiPromotion.annotationRefs[0].annotationId, annotation.id);
+  assert.deepStrictEqual(draft.candidate.lineage, [
+    { type: 'derived_from', target: annotation.eventId },
+  ]);
+  assert.strictEqual(draft.derivation.sourceInquiryId, annotation.eventId);
+  assert.strictEqual(draft.derivation.relationType, 'derived_from');
+  assert.strictEqual(draft.derivation.authorId, 'human:farmer-001');
+  assert.strictEqual(draft.derivation.ai.operation, 'annotation-promotion');
+  assert.strictEqual(draft.derivation.ai.annotationRefs[0].annotationId, annotation.id);
   assert.throws(() => assertPublishableInquiryDraft(draft), /only approved/);
 
   const submitted = submitInquiryDraft(draft, {
@@ -57,6 +67,18 @@ function run() {
     reviewedAt: '2026-07-16T10:20:00.000Z',
   });
   assert.doesNotThrow(() => assertPublishableInquiryDraft(approved));
+
+  const published = publishApprovedDerivedInquiry(approved, {
+    canonicalId: 'tt:evt:ai-promoted-001',
+    publisherId: 'human:farmer-001',
+    publishedAt: '2026-07-16T10:25:00.000Z',
+  });
+  assert.deepStrictEqual(published.lineage, [
+    { type: 'derived_from', target: annotation.eventId },
+  ]);
+  assert.strictEqual(published.meta.publication.sourceInquiryId, annotation.eventId);
+  assert.strictEqual(published.meta.publication.relationType, 'derived_from');
+  assert.strictEqual(published.meta.publication.ai.operation, 'annotation-promotion');
 
   assert.throws(() => promoteAcceptedAnnotationsToInquiryDraft({
     id: 'tt:draft:unreviewed',
@@ -72,7 +94,7 @@ function run() {
     candidate: draft.candidate,
   }), /different event/);
 
-  console.log('PASS accepted AI annotations promote only into a human-reviewed inquiry draft');
+  console.log('PASS accepted AI annotations preserve lineage through reviewed publication');
 }
 
 try {
