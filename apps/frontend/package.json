@@ -3,6 +3,10 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "test": "node test_inquiry_view_model.js && node test_lineage_tree_renderer.js && node test_context_exploration.js && node test_v0_3_0_golden_path.js"
+    "test": "node test_inquiry_view_model.js && node test_lineage_tree_renderer.js && node test_context_exploration.js && node test_v0_3_0_golden_path.js && node test_ai_review.js && node test_v0_4_0_golden_path.js"
+  },
+  "dependencies": {
+    "@toitoi/ai": "workspace:*",
+    "@toitoi/protocol": "workspace:*"
   }
 }
