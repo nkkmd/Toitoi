@@ -10,14 +10,18 @@ function createAiJobQueue({ maxAttempts = 3, now = () => new Date().toISOString(
   const jobs = new Map();
   const order = [];
 
-  function enqueue({ id, eventId, task, payload = null }) {
+  function validateIdentity({ id, eventId, task }) {
     for (const [field, value] of Object.entries({ id, eventId, task })) {
       if (typeof value !== 'string' || value.trim() === '') {
         throw new TypeError(`${field} must be a non-empty string`);
       }
     }
+  }
+
+  function enqueue({ id, eventId, task, payload = null }) {
+    validateIdentity({ id, eventId, task });
     if (jobs.has(id)) {
-      return { accepted: false, reason: 'duplicate', job: jobs.get(id) };
+      return { accepted: false, reason: 'duplicate', job: { ...jobs.get(id) } };
     }
 
     const timestamp = now();
@@ -35,6 +39,41 @@ function createAiJobQueue({ maxAttempts = 3, now = () => new Date().toISOString(
     jobs.set(id, job);
     order.push(id);
     return { accepted: true, job: { ...job } };
+  }
+
+  function restore(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+      throw new TypeError('snapshot must be an object');
+    }
+    validateIdentity(snapshot);
+    if (!JOB_STATES.has(snapshot.state)) {
+      throw new TypeError(`unsupported state: ${snapshot.state}`);
+    }
+    if (!Number.isInteger(snapshot.attempts) || snapshot.attempts < 0) {
+      throw new TypeError('attempts must be a non-negative integer');
+    }
+    if (snapshot.attempts > maxAttempts) {
+      throw new TypeError('attempts exceeds maxAttempts');
+    }
+    if (jobs.has(snapshot.id)) {
+      throw new Error(`duplicate restored job: ${snapshot.id}`);
+    }
+
+    const job = {
+      id: snapshot.id,
+      eventId: snapshot.eventId,
+      task: snapshot.task,
+      payload: snapshot.payload == null ? null : snapshot.payload,
+      state: snapshot.state,
+      attempts: snapshot.attempts,
+      lastError: snapshot.lastError == null ? null : String(snapshot.lastError),
+      createdAt: snapshot.createdAt || now(),
+      updatedAt: snapshot.updatedAt || snapshot.createdAt || now(),
+    };
+    if (Object.prototype.hasOwnProperty.call(snapshot, 'result')) job.result = snapshot.result;
+    jobs.set(job.id, job);
+    order.push(job.id);
+    return { ...job };
   }
 
   function claimNext() {
@@ -88,7 +127,7 @@ function createAiJobQueue({ maxAttempts = 3, now = () => new Date().toISOString(
       .map((job) => ({ ...job }));
   }
 
-  return Object.freeze({ enqueue, claimNext, complete, fail, get, list });
+  return Object.freeze({ enqueue, restore, claimNext, complete, fail, get, list });
 }
 
 module.exports = { JOB_STATES, createAiJobQueue };
