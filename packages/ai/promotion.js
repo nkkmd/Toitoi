@@ -1,6 +1,6 @@
 'use strict';
 
-const { createInquiryDraft } = require('@toitoi/protocol/inquiry_draft');
+const { createDerivedInquiryDraft } = require('@toitoi/protocol/derived_inquiry');
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
@@ -16,6 +16,8 @@ function promoteAcceptedAnnotationsToInquiryDraft({
   candidate,
   annotations,
   createdAt,
+  authorId,
+  relationType = 'derived_from',
 }) {
   if (!isNonEmptyString(eventId)) {
     throw new TypeError('eventId must be a non-empty string');
@@ -60,10 +62,18 @@ function promoteAcceptedAnnotationsToInquiryDraft({
     requiresHumanReview: true,
   };
 
-  return createInquiryDraft({
+  return createDerivedInquiryDraft({
     id,
+    sourceInquiryId: eventId,
+    relationType,
     candidate: promotedCandidate,
     createdAt,
+    authorId,
+    ai: {
+      involved: true,
+      operation: 'annotation-promotion',
+      annotationRefs,
+    },
   });
 }
 
