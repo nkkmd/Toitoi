@@ -10,6 +10,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@toitoi/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
       '@toitoi/atproto':
         specifier: workspace:*
         version: link:../../packages/atproto
@@ -25,7 +28,14 @@ importers:
 
   apps/edge-ai: {}
 
-  apps/frontend: {}
+  apps/frontend:
+    dependencies:
+      '@toitoi/ai':
+        specifier: workspace:*
+        version: link:../../packages/ai
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
 
   infra/transports/atproto:
     dependencies:
@@ -53,6 +63,12 @@ importers:
       '@toitoi/protocol':
         specifier: workspace:*
         version: link:../../../packages/protocol
+
+  packages/ai:
+    dependencies:
+      '@toitoi/protocol':
+        specifier: workspace:*
+        version: link:../protocol
 
   packages/atproto:
     dependencies:
