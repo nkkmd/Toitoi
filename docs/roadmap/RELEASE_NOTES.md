@@ -1,8 +1,70 @@
 # Toitoi Release Notes
 
-**Status: current** | **Last updated: 2026-07-15**
+**Status: current** | **Last updated: 2026-07-16**
 
 この文書は、Toitoi の公開基準点を短く記録するための release note です。
+
+---
+
+## v0.4.0
+
+**Status: release candidate**
+
+v0.4.0 は、v0.3.0 で確立した human-reviewed inquiry derivation の手前に、非同期 AI 補助層を接続するリリースです。AI 出力は Canonical Event や公開済み inquiry を直接変更せず、監査可能な annotation として保存され、人間による確認と既存の Inquiry Draft workflow を経て初めて公開候補になります。
+
+### Highlights
+
+- ingest 経路と分離された、重複抑止・bounded retry 対応の AI job queue
+- summary / tag を扱う versioned AI annotation contract
+- model、prompt version、raw output、review state を保持する AI provenance
+- append-only JSONL による job transition / annotation persistence
+- プロセス再起動後の job 復元と、中断された `processing` job の明示的な再キュー化
+- provider-neutral worker boundary と、CI／オフライン検証用 deterministic provider
+- `TOITOI_AI_STORAGE_DIR` を利用した read-only Standard API inspection routes
+- accepted annotation を通常の Inquiry Draft へ昇格する明示的な promotion contract
+- AI annotation を公開済み inquiry と区別して表示する frontend review model / renderer
+- observation → async AI annotation → human acceptance → draft → human approval を検証する v0.4.0 Golden Path
+
+### Completed Scope
+
+- AI job queue、annotation contract、worker、persistence、recovery
+- job / annotation / event 単位の read-only inspection service と HTTP routes
+- annotation acceptance と Inquiry Draft promotion
+- AI provenance・review state・draft 昇格可否の frontend 表示契約
+- v0.4.0 release plan、release runbook、default CI release gate
+
+### Validation
+
+- workspace root の `corepack pnpm install --frozen-lockfile` を default CI で実行
+- workspace root の `corepack pnpm test` を default CI で実行
+- queue、annotation、worker、recovery、promotion の package contract tests を追加
+- AI inspection HTTP routes の API contract test を追加
+- AI provenance / review frontend tests を追加
+- 雑草相 observation を使った v0.4.0 cross-feature Golden Path を default CI へ追加
+- v0.3.0 以前の frontend / API / protocol / transport tests を同じ workspace run で回帰確認
+
+### Release Criteria
+
+- AI 処理を無効化しても既存 ingest / persistence / replay / Standard API が動作する
+- AI failure が canonical event の保存・再処理経路を停止させない
+- annotation から source event、model、prompt version、raw output、人間確認状態を追跡できる
+- 中断 job を再起動後に復元・再キュー化できる
+- `unreviewed` annotation は draft 昇格にも公開にも利用できない
+- accepted annotation の昇格後も `draft` → `in_review` → `approved` を必須とする
+- AI annotation が frontend 上で公開済み inquiry と明確に区別される
+- v0.4.0 Golden Path と workspace tests が default CI で成功する
+
+### Known Limitations
+
+- deterministic provider は契約検証用であり、production inference model ではない
+- production-grade distributed queue、authentication、authorization、rate limiting は対象外
+- annotation review と promotion の HTTP mutation API は未実装で、現行 API は inspection のみ
+- frontend は framework-independent model / HTML renderer が中心で、完成した SPA 製品ではない
+- model quality や生成内容の農業上の妥当性は保証しない
+- embeddings、vector database、RAG、semantic similarity による identity merge は後続リリースで扱う
+- AI 生成 inquiry の無人公開は行わず、明示的な human review を必須とする
+
+詳細は [`V0.4.0_RELEASE_PLAN.md`](./V0.4.0_RELEASE_PLAN.md) と [`V0.4.0_RELEASE_RUNBOOK.md`](./V0.4.0_RELEASE_RUNBOOK.md) を参照してください。
 
 ---
 
