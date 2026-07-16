@@ -9,8 +9,8 @@ const {
   createAiJobQueue,
   createAiJsonlStore,
   createAiWorker,
-  createDeterministicFakeProvider,
-  promoteAnnotationsToInquiryDraft,
+  createDeterministicAiProvider,
+  promoteAcceptedAnnotationsToInquiryDraft,
 } = require('@toitoi/ai');
 const {
   submitInquiryDraft,
@@ -24,7 +24,7 @@ async function run() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'toitoi-v0-4-golden-'));
   const store = createAiJsonlStore({ directory });
   const queue = createAiJobQueue({ now: () => '2026-07-16T12:00:00.000Z' });
-  const provider = createDeterministicFakeProvider();
+  const provider = createDeterministicAiProvider();
   const worker = createAiWorker({ queue, provider, store, now: () => '2026-07-16T12:01:00.000Z' });
   const eventId = 'tt:evt:field-east-001';
 
@@ -53,8 +53,9 @@ async function run() {
   const reviewedModel = createAiReviewViewModel({ eventId, annotations: [accepted] });
   assert.strictEqual(reviewedModel.cards[0].canPromoteToDraft, true);
 
-  const draft = promoteAnnotationsToInquiryDraft({
+  const draft = promoteAcceptedAnnotationsToInquiryDraft({
     id: 'tt:draft:ai-promoted-001',
+    eventId,
     annotations: [accepted],
     candidate: {
       type: 'inquiry',
@@ -81,7 +82,7 @@ async function run() {
 
   assert.strictEqual(publishable.body.language, 'ja');
   assert.strictEqual(publishable.meta.aiPromotion.requiresHumanReview, true);
-  assert.strictEqual(publishable.meta.aiPromotion.annotations[0].annotationId, accepted.id);
+  assert.strictEqual(publishable.meta.aiPromotion.annotationRefs[0].annotationId, accepted.id);
 
   console.log('PASS v0.4.0 Golden Path: async AI annotation -> human acceptance -> draft -> human approval');
 }
