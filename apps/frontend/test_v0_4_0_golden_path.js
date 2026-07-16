@@ -34,7 +34,7 @@ async function run() {
     task: 'summarize',
     payload: { text: '畑の東側だけ雑草の種類が違う。土の湿り方も異なるように見える。' },
   });
-  await worker.runNext();
+  await worker.runOnce();
 
   const generated = [...store.latestAnnotationsById().values()][0];
   assert.strictEqual(generated.reviewState, 'unreviewed');
