@@ -20,6 +20,10 @@ const {
   loadTransportSourcesFromOptions,
 } = require('./server');
 
+function resolveProtocolName(options = {}) {
+  return options.protocol || process.env.TOITOI_PROTOCOL;
+}
+
 function createAiInspectionServiceFromOptions(options = {}) {
   if (options.aiInspectionService) return options.aiInspectionService;
 
@@ -33,30 +37,36 @@ function createAiInspectionServiceFromOptions(options = {}) {
 }
 
 function createToitoiApiServer(options = {}) {
+  const protocol = resolveProtocolName(options);
+  const runtimeOptions = { ...options, protocol };
   const protocolRuntime = options.protocolRuntime || createProtocolRuntime({
-    protocol: options.protocol,
+    protocol,
     registry: options.protocolRegistry,
     defaultProtocol: options.defaultProtocol,
   });
-  const transportSources = loadTransportSourcesFromOptions(options);
+  const transportSources = loadTransportSourcesFromOptions(runtimeOptions);
   const protocolStorageRuntime = options.protocolStorageRuntime || (transportSources.length > 0
     ? createMultiTransportStorageRuntime(transportSources)
     : createProtocolStorageRuntime({
-      protocol: protocolRuntime.selectedProtocol || options.protocol,
+      protocol: protocolRuntime.selectedProtocol || protocol,
       registry: protocolRuntime.registry,
       selectionSource: protocolRuntime.selectionSource,
-      loadReplayModule(protocol) {
-        if (protocol === 'nostr') return require('@toitoi/nostr/storage/replay');
-        if (protocol === 'atproto') return require('@toitoi/atproto/storage/replay');
-        if (protocol === 'lingonberry') return require('@toitoi/lingonberry/storage/replay');
+      loadReplayModule(selectedProtocol) {
+        if (selectedProtocol === 'nostr') return require('@toitoi/nostr/storage/replay');
+        if (selectedProtocol === 'atproto') return require('@toitoi/atproto/storage/replay');
+        if (selectedProtocol === 'lingonberry') return require('@toitoi/lingonberry/storage/replay');
         return null;
       },
     }));
   const storageModule = options.storageModule
-    || loadStorageModule(protocolRuntime.selectedProtocol || options.protocol)
+    || loadStorageModule(protocolRuntime.selectedProtocol || protocol)
     || loadStorageModule('nostr');
   const standardService = createStandardApiService({
-    getIndexSnapshot: loadIndexSnapshotFromOptions({ ...options, protocolRuntime, protocolStorageRuntime }),
+    getIndexSnapshot: loadIndexSnapshotFromOptions({
+      ...runtimeOptions,
+      protocolRuntime,
+      protocolStorageRuntime,
+    }),
     protocolRuntime,
     protocolStorageRuntime,
     describeProtocolStorage,
@@ -98,5 +108,6 @@ if (require.main === module) startServer();
 module.exports = {
   createAiInspectionServiceFromOptions,
   createToitoiApiServer,
+  resolveProtocolName,
   startServer,
 };
