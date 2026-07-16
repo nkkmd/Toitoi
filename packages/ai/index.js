@@ -8,4 +8,5 @@ module.exports = {
   ...require('./worker'),
   ...require('./recovery'),
   ...require('./inspection_service'),
+  ...require('./promotion'),
 };
