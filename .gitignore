@@ -58,6 +58,5 @@ temp/
 # Dependencies
 .cache
 
-# Local agent templates
-/AGENTS.md
+# Local Codex configuration
 /.codex/config.toml
