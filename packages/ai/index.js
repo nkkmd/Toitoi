@@ -6,4 +6,6 @@ module.exports = {
   ...require('./fake_provider'),
   ...require('./jsonl_store'),
   ...require('./worker'),
+  ...require('./recovery'),
+  ...require('./inspection_service'),
 };
