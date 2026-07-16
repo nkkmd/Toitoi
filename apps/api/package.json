@@ -2,12 +2,13 @@
   "name": "@toitoi/api",
   "private": true,
   "type": "commonjs",
-  "main": "server.js",
+  "main": "server_v0_4.js",
   "scripts": {
     "test": "node ../../scripts/run-tests.js",
-    "start": "node server.js"
+    "start": "node server_v0_4.js"
   },
   "dependencies": {
+    "@toitoi/ai": "workspace:*",
     "@toitoi/atproto": "workspace:*",
     "@toitoi/lingonberry": "workspace:*",
     "@toitoi/protocol": "workspace:*",
