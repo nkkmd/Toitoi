@@ -1,6 +1,6 @@
 # Toitoi Foundation Implementation Status
 
-**Status: current index / historical implementation record** | **Last updated: 2026-07-16**
+**Status: current index / historical implementation record** | **Last updated: 2026-07-17**
 
 ## 目的
 
@@ -12,6 +12,7 @@ Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inqu
 
 今後の新規機能優先順位は`IMPLEMENTATION_PLAN.md`のフェーズ番号を延長して管理せず、次を正本として扱います。
 
+- v1.0.0までのrelease sequenceと完成条件: [`V1.0.0_ROADMAP.md`](./V1.0.0_ROADMAP.md)
 - プロジェクト全体の改善方針: [`IMPROVEMENT_ROADMAP.md`](./IMPROVEMENT_ROADMAP.md)
 - AI導入方針: [`AI_ADOPTION_ROADMAP.md`](./AI_ADOPTION_ROADMAP.md)
 - リリースごとのスコープとacceptance criteria: `Vx.y.z_RELEASE_PLAN.md`
@@ -24,6 +25,7 @@ Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inqu
 |---|---|---|
 | `IMPLEMENTATION_PLAN.md` | Phase 1〜18の基盤実装履歴と設計判断 | 原則として履歴保存 |
 | `FOUNDATION_IMPLEMENTATION_STATUS.md` | 基盤の現在地と後続文書への入口 | 各minor releaseで更新 |
+| `V1.0.0_ROADMAP.md` | v0.4.0からv1.0.0までのrelease sequenceと完成条件 | release境界またはv1.0.0条件変更時に更新 |
 | `IMPROVEMENT_ROADMAP.md` | 中長期の利用者価値・改善方向 | 方針変更時に更新 |
 | `AI_ADOPTION_ROADMAP.md` | AI補助層の段階導入と安全境界 | AI scope変更時に更新 |
 | `Vx.y.z_RELEASE_PLAN.md` | リリース単位の必須・非対象・完了条件 | 対象release中はcurrent |
@@ -99,17 +101,24 @@ v0.4.0の正本:
 - [`RELEASE_NOTES.md`](./RELEASE_NOTES.md)
 - [PR #26](https://github.com/nkkmd/Toitoi/pull/26)
 
+v0.4.0以降の工程:
+
+- [`V1.0.0_ROADMAP.md`](./V1.0.0_ROADMAP.md)
+
 ## 次の基盤課題
 
-v0.4.0後の主な候補:
+v0.5.0以降のrelease sequenceは`V1.0.0_ROADMAP.md`を正本とします。直近の主な候補は次のとおりです。
 
 - production inference provider / local model runtime integration
-- durableまたはdistributedなjob queue
+- inquiry-generation annotation contract
 - annotation reviewとpromotionのmutation API
+- complete SPA / PWA integration
+- offline persistence and synchronization
 - production authentication / authorization / rate limiting
-- complete SPA integration
-- embeddings、vector database、RAG
+- Conformance Suiteとschema migration tooling
 - AI quality evaluationとdomain-specific review protocol
+
+embeddings、vector database、RAG、大規模distributed queue、新規transportは、Golden Pathと実地利用が安定した後に再評価します。
 
 AIによる無人公開は将来課題としても既定路線にせず、人間確認をpublication boundaryとして維持します。
 
@@ -121,4 +130,4 @@ AIによる無人公開は将来課題としても既定路線にせず、人間
 - ファイル移動によって参照先が壊れた
 - security / data integrity上、過去の設計判断に明確な注意書きが必要になった
 
-新しい機能、優先順位、release blockerはImprovement Roadmap、AI Adoption Roadmap、release plan、Issueで管理します。
+新しい機能、優先順位、release blockerはV1.0.0 Roadmap、Improvement Roadmap、AI Adoption Roadmap、release plan、Issueで管理します。
