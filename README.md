@@ -103,6 +103,7 @@ Select a single transport with `TOITOI_PROTOCOL=nostr`, `atproto`, or `lingonber
 
 ### Release and current implementation
 
+- [Roadmap to v1.0.0](./docs/roadmap/V1.0.0_ROADMAP.md)
 - [v0.4.0 Release Plan](./docs/roadmap/V0.4.0_RELEASE_PLAN.md)
 - [v0.4.0 Release Runbook](./docs/roadmap/V0.4.0_RELEASE_RUNBOOK.md)
 - [v0.4.0 GitHub Release Content](./docs/roadmap/V0.4.0_GITHUB_RELEASE.md)
@@ -219,6 +220,7 @@ corepack pnpm start:api
 
 ## まず読む文書
 
+- [v1.0.0までのロードマップ](./docs/roadmap/V1.0.0_ROADMAP.md)
 - [v0.4.0リリース計画](./docs/roadmap/V0.4.0_RELEASE_PLAN.md)
 - [v0.4.0リリース手順](./docs/roadmap/V0.4.0_RELEASE_RUNBOOK.md)
 - [v0.4.0 GitHub Release本文](./docs/roadmap/V0.4.0_GITHUB_RELEASE.md)
