@@ -7,7 +7,7 @@
 
 **Digital Agroecology Commons powered by protocol-independent canonical events**
 
-**Current release line: v0.4.0**
+**Current release line: v0.5.0**
 
 *[日本語は下に続きます]*
 
@@ -15,35 +15,36 @@ Toitoi is a decentralized protocol platform and digital commons for sharing and 
 
 It is based on the philosophy of [Letting Go of Technology in Agriculture](./docs/essays/Letting-Go-of-Technology-in-Agriculture.md). Local observations remain grounded in their own context, while transport-independent Canonical Events allow inquiries to be translated, compared, derived, and replayed across distributed systems.
 
-## v0.4.0: Human-reviewed AI annotation foundation
+## v0.5.0: Practical human-reviewed inquiry generation
 
-v0.4.0 places an asynchronous AI assistance layer in front of the human-reviewed inquiry workflow established in v0.3.0.
+v0.5.0 extends the asynchronous AI annotation foundation introduced in v0.4.0 into practical, auditable inquiry generation.
 
 ```text
-stored observation / inquiry
-  → asynchronous AI job
-  → auditable summary / tag annotation
-  → human acceptance
-  → derived Inquiry Draft with lineage
-  → human review
+stored observation
+  → asynchronous generate_inquiries job
+  → multiple validated inquiry candidates
+  → explicit human accept / edit / reject
+  → selected candidate promoted to an Inquiry Draft
+  → independent publication review
   → approved Canonical Event publication
 ```
 
 Implemented capabilities:
 
-- duplicate-aware AI job queue with bounded retries
-- versioned summary / tag annotation contract
-- model, prompt version, raw output, source event, and review-state provenance
-- append-only JSONL persistence for jobs and annotations
-- restart recovery with interrupted jobs explicitly requeued
-- provider-neutral worker boundary with deterministic offline CI provider
-- read-only AI inspection routes in the Standard API
-- accepted-annotation promotion into the existing derived Inquiry Draft workflow
-- preserved `derived_from` lineage and publication provenance
-- frontend review cards that distinguish AI assistance from published inquiries
-- deterministic v0.4.0 Golden Path in the default workspace CI
+- versioned `generate_inquiries` annotation contract for multiple candidates
+- structured retention of `inquiry`, `context`, `observation`, `relationship`, `uncertainty`, `tags`, and `source_refs`
+- llama.cpp OpenAI-compatible production inference provider
+- provider-neutral worker boundary with deterministic, network-free CI provider
+- provenance for model, model version, prompt version, raw output, source event, and generation time
+- malformed JSON and malformed candidate rejection before annotation persistence
+- append-only human review operations for accept, edit, and reject
+- Standard API mutation routes for annotation review
+- accepted or human-edited candidate promotion into the existing Inquiry Draft workflow
+- preserved source lineage and AI annotation provenance
+- deterministic v0.5.0 Golden Path in default workspace CI
+- low-resource reference profile for 4GB-class systems
 
-AI output never modifies Canonical Events or published inquiries directly. Workers create `unreviewed` annotations. Human acceptance only allows an annotation to support draft creation; the existing `draft → in_review → approved` publication guard remains mandatory.
+AI output never modifies Canonical Events or published inquiries directly. Annotation review only permits draft creation; publication still requires the independent `draft → in_review → approved` workflow.
 
 ## Architecture
 
@@ -52,8 +53,11 @@ Toitoi separates semantic meaning from transport representation and keeps AI out
 ```text
 Edge / local observation
   → Canonical Event storage
-  → asynchronous AI annotation layer
-  → human-reviewed Inquiry Draft
+  → asynchronous AI job queue
+  → inquiry-generation annotation
+  → human annotation review
+  → Inquiry Draft with lineage
+  → human publication review
   → Canonical Event publication
   → protocol converter
   → Nostr / Lingonberry / ATProto transport
@@ -71,8 +75,8 @@ Toitoi treats AI as a **librarian** or **mycelium**, not as an authority that is
 
 - It connects inquiries and contexts.
 - It helps surface relationships without erasing locality.
-- It keeps human judgment at the publication boundary.
-- It records how inquiries are summarized, tagged, translated, revised, annotated, and synthesized.
+- It keeps human judgment at both annotation and publication boundaries.
+- It records how inquiries are generated, summarized, tagged, translated, revised, annotated, and synthesized.
 
 ## Quick start
 
@@ -89,7 +93,7 @@ Start the Standard API:
 TOITOI_STORAGE_DIR=/path/to/storage corepack pnpm start:api
 ```
 
-Enable read-only AI inspection:
+Enable AI inspection and review storage:
 
 ```bash
 TOITOI_AI_STORAGE_DIR=/path/to/ai-storage \
@@ -99,14 +103,26 @@ corepack pnpm start:api
 
 Select a single transport with `TOITOI_PROTOCOL=nostr`, `atproto`, or `lingonberry`.
 
+A llama.cpp-compatible provider can be connected for local inference. Default CI remains deterministic and does not require a running model service.
+
+## AI review API
+
+When the review service is configured, the following mutation routes are available:
+
+- `POST /api/v1/ai/annotations/:id/accept`
+- `POST /api/v1/ai/annotations/:id/edit`
+- `POST /api/v1/ai/annotations/:id/reject`
+
+These operations update append-only annotation history. They do not approve publication.
+
 ## Documentation
 
 ### Release and current implementation
 
 - [Roadmap to v1.0.0](./docs/roadmap/V1.0.0_ROADMAP.md)
-- [v0.4.0 Release Plan](./docs/roadmap/V0.4.0_RELEASE_PLAN.md)
-- [v0.4.0 Release Runbook](./docs/roadmap/V0.4.0_RELEASE_RUNBOOK.md)
-- [v0.4.0 GitHub Release Content](./docs/roadmap/V0.4.0_GITHUB_RELEASE.md)
+- [v0.5.0 Release Plan](./docs/roadmap/V0.5.0_RELEASE_PLAN.md)
+- [v0.5.0 Release Runbook](./docs/roadmap/V0.5.0_RELEASE_RUNBOOK.md)
+- [v0.5.0 GitHub Release Content](./docs/roadmap/V0.5.0_GITHUB_RELEASE.md)
 - [Release Notes](./docs/roadmap/RELEASE_NOTES.md)
 - [AI Adoption Roadmap](./docs/roadmap/AI_ADOPTION_ROADMAP.md)
 - [Foundation Implementation Status](./docs/roadmap/FOUNDATION_IMPLEMENTATION_STATUS.md)
@@ -139,7 +155,7 @@ These endpoints are operational project infrastructure. Deterministic release te
 
 ## Scope and limitations
 
-v0.4.0 is an experimental reference release, not a production-grade hosted product. The deterministic provider is for contract validation rather than production inference. Distributed queues, production authentication / authorization / rate limiting, AI review mutation APIs, a complete SPA, embeddings, vector databases, RAG, semantic identity merging, and unattended AI publication are outside this release.
+v0.5.0 is an experimental reference release, not a production-grade hosted product. Live llama.cpp validation is opt-in. Distributed queues, production authentication / authorization / rate limiting, a complete SPA / PWA, offline synchronization, embeddings, vector databases, RAG, semantic identity merging, and unattended AI publication remain outside this release. Generated inquiries are not guaranteed to be agriculturally correct.
 
 ## Contributing and licensing
 
@@ -155,39 +171,40 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) and [LICENSE_POLICY.md](./LICENSE_POLIC
 
 **プロトコル非依存のCanonical Eventを基盤とする、デジタル・アグロエコロジー・コモンズ**
 
-**現在のリリース系列: v0.4.0**
+**現在のリリース系列: v0.5.0**
 
 Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、普遍的な「答え」ではなく、地域固有の観察から生まれる**問い**を共有・翻訳・派生させる分散型プロトコル・プラットフォームです。
 
-## v0.4.0で実現したこと
+## v0.5.0で実現したこと
 
-v0.4.0では、v0.3.0で確立した人間確認付きの派生問いworkflowの手前に、非同期AI補助層を接続しました。
+v0.5.0では、v0.4.0の非同期AI annotation基盤を、実用的かつ監査可能な問い生成へ拡張しました。
 
 ```text
-保存済みの観察／問い
-  → 非同期AI job
-  → 監査可能な要約／タグannotation
-  → 人間によるacceptance
-  → lineageを持つ派生Inquiry Draft
-  → human review
+保存済みの観察
+  → 非同期generate_inquiries job
+  → 複数の検証済み問い候補
+  → 人間によるaccept / edit / reject
+  → 選択候補をlineage付きInquiry Draftへ昇格
+  → 独立したpublication review
   → 承認済みCanonical Eventとして公開
 ```
 
 主な機能:
 
-- 重複抑止とbounded retryを備えたAI job queue
-- summary／tag用のversioned annotation contract
-- model、prompt version、raw output、source event、review stateを保持するprovenance
-- append-only JSONLによるjob／annotation永続化
-- 再起動時の復元と中断jobの明示的な再キュー化
-- provider-neutral workerとCI用deterministic provider
-- Standard APIのread-only AI inspection routes
-- accepted annotationから既存のderived Inquiry Draft workflowへの昇格
-- `derived_from` lineageとpublication provenanceの維持
-- AI補助を公開済みinquiryと区別するfrontend review表示
-- default CIで再現するv0.4.0 Golden Path
+- 複数候補を扱うversioned `generate_inquiries` annotation contract
+- `inquiry`、`context`、`observation`、`relationship`、`uncertainty`、`tags`、`source_refs`の保持
+- llama.cppのOpenAI互換APIへ接続するproduction inference provider
+- provider-neutral workerとネットワーク不要のdeterministic CI provider
+- model、model version、prompt version、raw output、source event、generation timeのprovenance
+- 不正JSONや不正候補schemaのannotation保存前拒否
+- append-onlyなaccept／edit／reject review操作
+- Standard APIのannotation review mutation routes
+- acceptedまたは人間がeditedした候補からInquiry Draftへの昇格
+- source lineageとAI annotation provenanceの維持
+- default CIで再現するv0.5.0 Golden Path
+- RAM 4GB級環境向けの低資源運用プロファイル
 
-AI出力はCanonical Eventや公開済みinquiryを直接変更しません。workerは`unreviewed` annotationを生成し、人間によるacceptanceはdraft作成の補助入力としての利用を許可するだけです。公開には従来どおり`draft → in_review → approved`が必須です。
+AI出力はCanonical Eventや公開済みinquiryを直接変更しません。annotationのacceptanceはdraft作成を許可するだけで、公開には独立した`draft → in_review → approved` workflowが必須です。
 
 ## Toitoiは「司書」もしくは「菌糸」である
 
@@ -208,7 +225,7 @@ Standard APIの起動:
 TOITOI_STORAGE_DIR=/path/to/storage corepack pnpm start:api
 ```
 
-AI inspectionを有効化:
+AI inspection／review storageを有効化:
 
 ```bash
 TOITOI_AI_STORAGE_DIR=/path/to/ai-storage \
@@ -218,14 +235,25 @@ corepack pnpm start:api
 
 単一transportは`TOITOI_PROTOCOL=nostr`、`atproto`、`lingonberry`から選択できます。
 
+## AI review API
+
+review serviceが設定されている場合、次のmutation routeを利用できます。
+
+- `POST /api/v1/ai/annotations/:id/accept`
+- `POST /api/v1/ai/annotations/:id/edit`
+- `POST /api/v1/ai/annotations/:id/reject`
+
+これらはappend-only annotation historyを更新しますが、publication approvalではありません。
+
 ## まず読む文書
 
 - [v1.0.0までのロードマップ](./docs/roadmap/V1.0.0_ROADMAP.md)
-- [v0.4.0リリース計画](./docs/roadmap/V0.4.0_RELEASE_PLAN.md)
-- [v0.4.0リリース手順](./docs/roadmap/V0.4.0_RELEASE_RUNBOOK.md)
-- [v0.4.0 GitHub Release本文](./docs/roadmap/V0.4.0_GITHUB_RELEASE.md)
+- [v0.5.0リリース計画](./docs/roadmap/V0.5.0_RELEASE_PLAN.md)
+- [v0.5.0リリース手順](./docs/roadmap/V0.5.0_RELEASE_RUNBOOK.md)
+- [v0.5.0 GitHub Release本文](./docs/roadmap/V0.5.0_GITHUB_RELEASE.md)
 - [リリースノート](./docs/roadmap/RELEASE_NOTES.md)
 - [AI導入ロードマップ](./docs/roadmap/AI_ADOPTION_ROADMAP.md)
+- [基盤実装状況](./docs/roadmap/FOUNDATION_IMPLEMENTATION_STATUS.md)
 - [Standard API](./apps/api/README.md)
 - [Frontend](./apps/frontend/README.md)
 - [Canonical Event](./docs/protocols/CANONICAL_EVENT.md)
@@ -233,7 +261,7 @@ corepack pnpm start:api
 
 ## 既知の制約
 
-v0.4.0は実験的なreference releaseです。deterministic providerはproduction inference用ではありません。production-gradeのdistributed queue、認証・認可・rate limiting、AI review mutation API、完成したSPA、embeddings、vector database、RAG、semantic identity merge、AIによる無人公開は対象外です。
+v0.5.0は実験的なreference releaseです。live llama.cpp検証はopt-inです。production-gradeのdistributed queue、認証・認可・rate limiting、完成したSPA／PWA、本格的なoffline synchronization、embeddings、vector database、RAG、semantic identity merge、AIによる無人公開は対象外です。生成された問いの農業上の妥当性は保証しません。
 
 ## ライセンス
 
