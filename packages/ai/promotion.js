@@ -63,17 +63,24 @@ function promoteAcceptedAnnotationsToInquiryDraft({
   });
 }
 
-function promoteInquiryCandidate({ annotation, candidateIndex = 0, ...draftInput }) {
+function promoteInquiryCandidate({ annotation, candidateIndex = 0, language, ...draftInput }) {
   if (!annotation || annotation.task !== 'generate_inquiries') {
     throw new TypeError('annotation must be a generate_inquiries annotation');
   }
   const generated = annotation.output?.candidates?.[candidateIndex];
   if (!generated) throw new RangeError(`inquiry candidate not found: ${candidateIndex}`);
+
+  const candidateLanguage = isNonEmptyString(language)
+    ? language.trim()
+    : (isNonEmptyString(generated.context?.language) ? generated.context.language.trim() : 'und');
   const candidate = {
     type: 'inquiry',
-    content: generated.inquiry,
-    context: generated.context,
-    tags: generated.tags,
+    body: {
+      text: generated.inquiry,
+      language: candidateLanguage,
+    },
+    contexts: generated.context,
+    labels: generated.tags,
     meta: {
       observation: generated.observation,
       relationship: generated.relationship,
