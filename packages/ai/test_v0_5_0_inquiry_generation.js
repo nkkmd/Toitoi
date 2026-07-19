@@ -12,6 +12,7 @@ const {
   createAiWorker,
   createDeterministicAiProvider,
   createLlamaCppProvider,
+  promoteInquiryCandidate,
 } = require('./index');
 
 async function testInquiryGenerationGoldenPath() {
@@ -21,7 +22,7 @@ async function testInquiryGenerationGoldenPath() {
   const worker = createAiWorker({ queue, store, provider: createDeterministicAiProvider() });
   queue.enqueue({
     id: 'job-inquiry-1',
-    eventId: 'observation-1',
+    eventId: 'tt:evt:observation-1',
     task: 'generate_inquiries',
     payload: { observation: '畑の東側だけ雑草の種類が違う。' },
   });
@@ -29,7 +30,7 @@ async function testInquiryGenerationGoldenPath() {
   assert.equal(result.state, 'completed');
   assert.equal(result.annotation.task, 'generate_inquiries');
   assert.equal(result.annotation.output.candidates.length, 2);
-  assert.deepEqual(result.annotation.output.candidates[0].source_refs, ['observation-1']);
+  assert.deepEqual(result.annotation.output.candidates[0].source_refs, ['tt:evt:observation-1']);
   assert.equal(result.annotation.reviewState, 'unreviewed');
 
   const review = createAiReviewService({ store, now: () => '2026-07-19T00:00:00.000Z' });
@@ -37,6 +38,20 @@ async function testInquiryGenerationGoldenPath() {
   assert.equal(accepted.reviewState, 'accepted');
   assert.equal(accepted.reviewedBy, 'human-reviewer');
   assert.throws(() => review.reject(result.annotation.id, { reviewedBy: 'other' }), /already accepted/);
+
+  const draft = promoteInquiryCandidate({
+    annotation: accepted,
+    candidateIndex: 0,
+    id: 'tt:draft:generated-1',
+    createdAt: '2026-07-19T00:01:00.000Z',
+    authorId: 'human-author',
+    language: 'ja',
+  });
+  assert.equal(draft.status, 'draft');
+  assert.equal(draft.candidate.body.language, 'ja');
+  assert.match(draft.candidate.body.text, /雑草/);
+  assert.equal(draft.candidate.meta.aiPromotion.requiresHumanReview, true);
+  assert.equal(draft.candidate.meta.aiPromotion.annotationRefs[0].annotationId, accepted.id);
 }
 
 function testMalformedInquiryOutputIsRejected() {
