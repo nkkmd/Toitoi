@@ -2,6 +2,7 @@
 
 const assert = require('node:assert/strict');
 const {
+  AI_ANNOTATION_SCHEMA_VERSION,
   createAiAnnotation,
   createAiJobQueue,
 } = require('./index');
@@ -18,7 +19,7 @@ function testAnnotationContract() {
     createdAt: '2026-07-16T00:00:00.000Z',
   });
 
-  assert.equal(annotation.schemaVersion, '0.1.0');
+  assert.equal(annotation.schemaVersion, AI_ANNOTATION_SCHEMA_VERSION);
   assert.deepEqual(annotation.output.tags, ['weed', 'east-side']);
   assert.equal(annotation.reviewState, 'unreviewed');
   assert.throws(() => createAiAnnotation({
