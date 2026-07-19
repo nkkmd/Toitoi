@@ -1,14 +1,14 @@
 # Toitoi Foundation Implementation Status
 
-**Status: current index / historical implementation record** | **Last updated: 2026-07-17**
+**Status: current index / historical implementation record** | **Last updated: 2026-07-19**
 
 ## 目的
 
-この文書は、[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) の現在の位置づけと、v0.4.0時点の基盤到達点を明確にします。
+この文書は、[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) の現在の位置づけと、v0.5.0時点の基盤到達点を明確にします。
 
 `IMPLEMENTATION_PLAN.md` は、Canonical Event、adapter / normalizer、storage / replay、Indexer、Standard API、multi-protocol、canonical identity、identity claim、Lingonberry、registry-driven runtime selectionを段階的に実装した履歴です。
 
-Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inquiry Draft、human review、publication guard、frontend render boundary、primary transport operational smokeが追加されました。v0.3.0ではlineage tree、context exploration、reviewed derived inquiry publicationを統合し、v0.4.0ではその手前に非同期AI annotation layerを接続しました。
+Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inquiry Draft、human review、publication guard、frontend render boundary、primary transport operational smokeが追加されました。v0.3.0ではlineage tree、context exploration、reviewed derived inquiry publicationを統合し、v0.4.0ではその手前に非同期AI annotation layerを接続しました。v0.5.0では、実モデル互換provider、複数の問い候補生成、annotation review mutation、Inquiry Draft promotionを統合しました。
 
 今後の新規機能優先順位は`IMPLEMENTATION_PLAN.md`のフェーズ番号を延長して管理せず、次を正本として扱います。
 
@@ -53,7 +53,7 @@ Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inqu
 - Lingonberryをprimary knowledge-object projection / ingest transportとして接続
 - ATProtoをsecondary compatibility transportとして維持
 - fan-out / fan-in、protocol registry、storage runtime selection
-- `TOITOI_PROTOCOL`によるsingle-transport selectionをv0.4 API entrypointでも維持
+- `TOITOI_PROTOCOL`によるsingle-transport selectionを現行API entrypointでも維持
 
 ### Identity, provenance, and lineage
 
@@ -72,11 +72,11 @@ Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inqu
 - lineage treeとcontext exploration
 - Inquiry Draft / human review / publication guard
 - frontend transport-independent render model
-- v0.2.0〜v0.4.0のcross-feature Golden Paths
+- v0.2.0〜v0.5.0のcross-feature Golden Paths
 
 ### Asynchronous AI assistance
 
-v0.4.0で次を接続しました。
+v0.4.0で次の基盤を接続しました。
 
 - ingestから分離されたduplicate-aware AI job queue
 - bounded retryとterminal failureの区別
@@ -86,35 +86,46 @@ v0.4.0で次を接続しました。
 - restart recoveryと中断jobの再キュー化
 - provider-neutral workerとdeterministic CI provider
 - read-only Standard API AI inspection routes
-- accepted annotationからlineage付きderived Inquiry Draftへのpromotion
-- frontend上でAI補助と公開済みinquiryを区別するreview presentation
 
-AI annotationはCanonical Eventとは分離され、`unreviewed`状態ではpromotionもpublicationもできません。accepted後も通常の`draft → in_review → approved` workflowを必須とします。
+v0.5.0で次を追加しました。
+
+- 複数候補を扱う`generate_inquiries` annotation contract
+- `inquiry`、`context`、`observation`、`relationship`、`uncertainty`、`tags`、`source_refs`のschema validation
+- llama.cpp OpenAI-compatible production inference provider
+- model versionとgeneration timestampを含むprovenance
+- malformed JSON／malformed candidateのannotation保存前拒否
+- append-only accept／edit／reject review service
+- Standard APIのannotation review mutation routes
+- acceptedまたはhuman-edited candidateからvalidなInquiry Draftへのpromotion
+- source observation lineageとAI annotation referenceの維持
+- annotation reviewとpublication approvalの明示的分離
+- RAM 4GB級を想定したsingle-worker低資源プロファイル
+
+AI annotationはCanonical Eventとは分離され、`unreviewed`／`rejected`状態ではpromotionもpublicationもできません。`accepted`／`edited`後も通常の`draft → in_review → approved` workflowを必須とします。
 
 ## 現在のリリース基準点
 
-v0.4.0の正本:
+v0.5.0の正本:
 
-- [`V0.4.0_RELEASE_PLAN.md`](./V0.4.0_RELEASE_PLAN.md)
-- [`V0.4.0_RELEASE_RUNBOOK.md`](./V0.4.0_RELEASE_RUNBOOK.md)
-- [`V0.4.0_GITHUB_RELEASE.md`](./V0.4.0_GITHUB_RELEASE.md)
+- [`V0.5.0_RELEASE_PLAN.md`](./V0.5.0_RELEASE_PLAN.md)
+- [`V0.5.0_RELEASE_RUNBOOK.md`](./V0.5.0_RELEASE_RUNBOOK.md)
+- [`V0.5.0_GITHUB_RELEASE.md`](./V0.5.0_GITHUB_RELEASE.md)
 - [`RELEASE_NOTES.md`](./RELEASE_NOTES.md)
-- [PR #26](https://github.com/nkkmd/Toitoi/pull/26)
+- [PR #28](https://github.com/nkkmd/Toitoi/pull/28)
+- [PR #29](https://github.com/nkkmd/Toitoi/pull/29)
 
-v0.4.0以降の工程:
+v0.5.0以降の工程:
 
 - [`V1.0.0_ROADMAP.md`](./V1.0.0_ROADMAP.md)
 
 ## 次の基盤課題
 
-v0.5.0以降のrelease sequenceは`V1.0.0_ROADMAP.md`を正本とします。直近の主な候補は次のとおりです。
+v0.6.0以降のrelease sequenceは`V1.0.0_ROADMAP.md`を正本とします。直近の主な候補は次のとおりです。
 
-- production inference provider / local model runtime integration
-- inquiry-generation annotation contract
-- annotation reviewとpromotionのmutation API
 - complete SPA / PWA integration
-- offline persistence and synchronization
+- offline observation persistence and synchronization
 - production authentication / authorization / rate limiting
+- model installation and live local-inference operational guidance
 - Conformance Suiteとschema migration tooling
 - AI quality evaluationとdomain-specific review protocol
 
