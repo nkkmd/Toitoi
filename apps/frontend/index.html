@@ -32,6 +32,30 @@
     </section>
     <section aria-labelledby="saved-heading"><div class="section-heading"><h2 id="saved-heading">保存済み観察</h2><button id="sync-now" type="button" class="secondary">今すぐ同期</button></div><div id="observation-list" class="cards"></div></section>
     <section aria-labelledby="queue-heading"><h2 id="queue-heading">同期状態</h2><ul id="queue-list" class="queue"></ul></section>
+
+    <section aria-labelledby="workflow-heading">
+      <h2 id="workflow-heading">問い候補の確認と公開</h2>
+      <p>同期済み観察のIDを指定し、AI候補の確認から人間による公開承認まで進めます。</p>
+      <form id="workflow-load-form" class="stack">
+        <label>観察イベントID<input id="workflow-event-id" required placeholder="tt:evt:observation-..."></label>
+        <button type="submit">AI候補を読み込む</button>
+      </form>
+      <p id="workflow-status" aria-live="polite"></p>
+      <div id="annotation-list" class="cards"></div>
+      <section id="draft-panel" hidden class="card stack" aria-labelledby="draft-heading">
+        <h3 id="draft-heading">Inquiry Draft</h3>
+        <pre id="draft-summary"></pre>
+        <label>レビュー担当者ID<input id="draft-reviewer" value="human:reviewer"></label>
+        <label>レビュー注記<textarea id="draft-note" rows="2"></textarea></label>
+        <div class="actions">
+          <button id="draft-submit" type="button">レビューへ提出</button>
+          <button id="draft-approve" type="button">承認</button>
+          <button id="draft-reject" type="button" class="secondary">却下</button>
+          <button id="draft-publish" type="button">公開</button>
+        </div>
+        <div id="publication-result"></div>
+      </section>
+    </section>
   </main>
   <dialog id="publish-dialog">
     <form id="publish-form" method="dialog" class="stack">
@@ -47,5 +71,6 @@
   <script src="./field_app.js"></script>
   <script src="./api_client.js"></script>
   <script src="./app.js"></script>
+  <script src="./workflow_ui.js"></script>
 </body>
 </html>
