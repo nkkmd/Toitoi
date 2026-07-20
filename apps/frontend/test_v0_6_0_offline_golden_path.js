@@ -12,9 +12,11 @@ async function run() {
   let failures = 1;
   const api = {
     async publishObservation(payload) {
-      assert.equal(payload.observation, '東側の畝で葉の黄化が増えた');
+      assert.equal(payload.text, '東側の畝で葉の黄化が増えた');
+      assert.equal(payload.contexts.field_context, '雨天後、火山灰土');
+      assert.equal(payload.sensitive.location, true);
       if (failures-- > 0) throw new Error('temporary network failure');
-      return { event_id: 'tt:evt:published-001' };
+      return { id: 'tt:evt:published-001' };
     },
   };
   const app = createFieldApp({ store, api, now, random: () => 0.12345, online: () => online });
