@@ -1,150 +1,180 @@
 # Toitoi Frontend
 
-**Status: v0.5.0** | **Last updated: 2026-07-19**
+**Status: v0.6.0** | **Last updated: 2026-07-20**
 
-`apps/frontend/` は、ToitoiのStandard APIが返すtransport-independentなcanonical viewとAI annotation viewを、利用者向けの表示モデルへ変換するreference frontend layerです。
+`apps/frontend/` は、ToitoiのStandard APIを利用するmobile-first SPA／PWA reference implementationです。transport固有eventを直接扱わず、観察のローカル保存、明示的同期、AI問い候補レビュー、Inquiry Draft review、Canonical Event publicationまでを一つの利用体験として接続します。
 
-現時点ではframework非依存のview model、HTML renderer、cross-feature Golden Pathを中心に実装しています。完成済みのproduction GUIではありませんが、v0.3.0のknowledge-space workflow、v0.4.0のAI annotation presentation、v0.5.0のhuman-reviewed inquiry generationをdefault CIで再現できます。
-
-## 実装済み範囲
-
-### v0.3.0 knowledge-space workflow
+## v0.6.0で実装した範囲
 
 ```text
-inquiry detail
-  → lineage tree
-  → context exploration
-  → reviewed derived inquiry creation
-  → publication / re-ingest / replay
-  → updated lineage tree
+field observation
+  → IndexedDB local persistence
+  → durable explicit sync queue
+  → Standard API observation ingest
+  → AI annotation review
+  → Inquiry Draft promotion
+  → independent publication review
+  → approved Canonical Event publication
+  → provenance / lineage / delivery result
 ```
 
-- Canonical Eventのdetail、context、relationship、provenance表示
-- root / branch / leaf、relation type、missing reference、cycleを扱うlineage tree
-- `climate_zone`、`soil_type`、`farming_context`、`crop_family`によるcontext exploration
-- Inquiry Draftとhuman reviewを使ったderived inquiry publication
-- `approved`以外を拒否するpublication guard
+### SPA／PWA shell
 
-### v0.4.0 AI annotation presentation
+- `index.html`: mobile-first application entry point
+- `styles.css`: smartphone-first responsive layout
+- `manifest.webmanifest`: installable PWA metadata
+- `service-worker.js`: application-shell caching
+- `icon.svg`: PWA icon
 
-AI annotationは公開済みinquiryとして表示せず、人間確認が必要な補助情報として表示します。
+Service WorkerはGET対象のapplication shellをcacheします。publication mutationをbackgroundで自動実行しません。
 
-表示内容:
+### オフライン観察保存
 
-- summary、tag、または問い候補
-- source event ID
-- model、model version、prompt version
-- `unreviewed` / `accepted` / `edited` / `rejected` review state
-- draft作成の補助入力として利用可能かどうか
-- annotation review後も別途Inquiry Draft reviewが必要であること
+`offline_store.js`はIndexedDBに次を保持します。
 
-主要実装:
+- local observation
+- synchronization queue item
+- retry回数
+- 最終error
+- remote Canonical Event ID
 
-- `ai_review_model.js`
-- `ai_review_renderer.js`
-- `test_ai_review.js`
+`field_app.js`は次の状態を扱います。
 
-rendererはHTML escaping、empty state、error stateを扱います。AI出力の内容を農業上の正解として提示しません。
+- `local`
+- `queued`
+- `syncing`
+- `sync_failed`
+- `published`
 
-### v0.5.0 human-reviewed inquiry generation
+接続回復だけでは公開せず、利用者の明示的な同期・公開確認を境界とします。
 
-v0.5.0では、保存済みobservationから生成された複数の問い候補を、人間のannotation reviewとpublication reviewの二段階境界へ接続しました。
+### privacy boundary
+
+次のfieldが入力されている場合、公開キュー追加前に個別確認を要求します。
+
+- `location`
+- `person_names`
+- `contact`
+- `private_context`
+
+local raw observationと外部公開Canonical Eventは別recordとして扱います。非公開情報を自動的にCanonical Eventへ含めません。
+
+### AI annotation review
+
+`workflow_ui.js`はsource event単位のannotationを読み込み、次の操作を提供します。
+
+- accept
+- edit APIへの接続
+- reject
+- accepted／edited annotationからInquiry Draft作成
+
+annotation acceptanceはpublication approvalではありません。Draft作成後も別のreviewを必須とします。
+
+### Inquiry Draft and publication
+
+SPAは次の状態遷移を表示・操作します。
 
 ```text
-saved observation
-  → asynchronous generate_inquiries job
-  → multiple inquiry candidates
-  → accept / edit / reject through AI review API
-  → selected candidate promoted to Inquiry Draft
-  → publication rejected while draft
-  → independent human publication approval
+draft
+  → in_review
+  → approved / rejected
 ```
 
-問い候補は次を保持します。
+`approved`以外のDraftはpublication guardによって拒否されます。公開後は次を表示します。
 
-- `inquiry`
-- `context`
-- `observation`
-- `relationship`
-- `uncertainty`
-- `tags`
-- `source_refs`
-
-annotation acceptanceはpublication approvalではありません。promotion後のInquiry Draftにも既存の`draft → in_review → approved` workflowが適用されます。
-
-## Golden Paths
-
-### v0.3.0
-
-`test_v0_3_0_golden_path.js`はdetail、lineage、context exploration、derived draft、human approval、Nostr projection、re-ingest、replayまでを検証します。
-
-### v0.4.0
-
-`test_v0_4_0_golden_path.js`は次を一続きに検証します。
-
-1. observation由来のAI jobをenqueueする
-2. deterministic providerで非同期推論を実行する
-3. `unreviewed` annotationを永続化する
-4. frontendで未公開のAI補助として表示する
-5. 人間がannotationをacceptする
-6. accepted annotationをlineage付きInquiry Draftへ昇格する
-7. `draft`状態での公開を拒否する
-8. `in_review`へ提出し、人間が承認する
-9. 承認後のみ公開可能とする
-
-### v0.5.0
-
-`test_v0_5_0_golden_path.js`は次を検証します。
-
-1. observationを保存する
-2. `generate_inquiries` jobを非同期実行する
-3. schema-validな複数候補を生成する
-4. AI review mutation APIから候補をacceptする
-5. 選択候補をvalidなInquiry Draftへpromotionする
-6. source lineageとAI provenanceを確認する
-7. annotation acceptance直後の公開を拒否する
-8. 独立したpublication reviewerがdraftを承認する
-9. approved draftのみpublishableになることを確認する
+- Canonical Event ID
+- inquiry body
+- source lineage
+- AI promotion provenance
+- reviewerとreview日時
+- publication metadata
+- storage／transport delivery result
 
 ## API dependency
 
-frontendはtransport固有eventを直接解釈せず、Standard APIを利用します。
+### Observation and workflow mutation
 
-Canonical view:
+- `POST /api/v1/observations`
+- `POST /api/v1/ai/annotations/:id/promote`
+- `GET /api/v1/inquiry-drafts/:id`
+- `POST /api/v1/inquiry-drafts/:id/submit`
+- `POST /api/v1/inquiry-drafts/:id/approve`
+- `POST /api/v1/inquiry-drafts/:id/reject`
+- `POST /api/v1/inquiry-drafts/:id/publish`
+- `GET /api/v1/publications/:id`
+
+### AI inspection and review
+
+- `GET /api/v1/ai/jobs`
+- `GET /api/v1/ai/jobs/:id`
+- `GET /api/v1/ai/annotations`
+- `GET /api/v1/ai/annotations/:id`
+- `GET /api/v1/ai/events/:eventId`
+- `POST /api/v1/ai/annotations/:id/accept`
+- `POST /api/v1/ai/annotations/:id/edit`
+- `POST /api/v1/ai/annotations/:id/reject`
+
+### Canonical read views
 
 - `GET /api/v1/inquiries/:id/detail`
 - `GET /api/v1/inquiries/:id/tree`
 - `GET /api/v1/inquiries/query`
 
-AI inspection view:
+## Local execution
 
-- `GET /api/v1/ai/annotations`
-- `GET /api/v1/ai/annotations/:id`
-- `GET /api/v1/ai/events/:eventId`
-
-AI review mutation:
-
-- `POST /api/v1/ai/annotations/:id/accept`
-- `POST /api/v1/ai/annotations/:id/edit`
-- `POST /api/v1/ai/annotations/:id/reject`
-
-v0.5.0はmutation API contractとGolden Pathを実装していますが、完成したinteractive review SPAはまだ対象外です。
-
-## Test
-
-workspace root:
+API runtime:
 
 ```bash
-corepack pnpm test
+TOITOI_STORAGE_DIR=/path/to/storage \
+TOITOI_AI_STORAGE_DIR=/path/to/ai-storage \
+TOITOI_PROTOCOL=nostr \
+corepack pnpm --filter @toitoi/api start
 ```
 
-frontendのみ:
+`apps/frontend/`を静的HTTP serverで配信し、`/api/v1/*`を同一originのAPIへ到達させます。`file://`で直接開く構成はService Workerとsame-origin APIの検証に適しません。
+
+## Golden Paths
+
+### v0.3.0
+
+`test_v0_3_0_golden_path.js`はdetail、lineage、context exploration、derived draft、human approval、transport projection、re-ingest、replayを検証します。
+
+### v0.4.0
+
+`test_v0_4_0_golden_path.js`は非同期AI annotation、human acceptance、Draft promotion、publication guardを検証します。
+
+### v0.5.0
+
+`test_v0_5_0_golden_path.js`は複数の問い候補生成、review mutation、selected candidate promotion、AI provenanceを検証します。
+
+### v0.6.0
+
+`test_v0_6_0_offline_golden_path.js`は次を検証します。
+
+1. observationをofflineで保存する
+2. sensitive fieldの未確認publicationを拒否する
+3. durable queueへ追加する
+4. offline中はqueueを保持する
+5. temporary failureを可視化する
+6. retry後に同期する
+7. remote Canonical Event IDを保持する
+8. queueから完了itemを除去する
+
+API側のworkflow testはDraft state transition、publication guard、canonical storage、multi-transport deliveryを検証します。
+
+## Test
 
 ```bash
 corepack pnpm --filter @toitoi/frontend test
 ```
 
-主な実行対象:
+workspace全体:
+
+```bash
+corepack pnpm test
+```
+
+主なfrontend test:
 
 - `test_inquiry_view_model.js`
 - `test_lineage_tree_renderer.js`
@@ -153,41 +183,35 @@ corepack pnpm --filter @toitoi/frontend test
 - `test_v0_3_0_golden_path.js`
 - `test_v0_4_0_golden_path.js`
 - `test_v0_5_0_golden_path.js`
+- `test_v0_6_0_offline_golden_path.js`
 
 ## UX原則
 
 - 問いを正解や処方として表示しない
 - AI出力を公開済みinquiryと混同しない
-- annotation reviewとpublication reviewを明確に分離する
-- 自然言語の`body.text`を主役にする
-- 文脈差を消去せず比較可能にする
-- 類似と同一性を混同しない
-- provenance、model情報、人間確認状態を追跡可能にする
-- human reviewをpublication boundaryとして維持する
-- transport固有表現をUIへ過剰に露出しない
-- keyboard操作、HTML escaping、欠損データへの耐性を維持する
+- annotation reviewとpublication reviewを分離する
+- raw local observationとpublic Canonical Eventを分離する
+- sensitive fieldを公開前に明示確認する
+- sync failureとretry状態を隠さない
+- transport固有表現を主要UIへ露出しない
+- provenance、lineage、AI関与、人間確認状態を追跡可能にする
+- keyboard操作と欠損データへの耐性を維持する
 
-## 非対象・将来構想
+## Limitations
 
-v0.5.0では次を完成済みとは扱いません。
-
-- production-readyなSPA／PWA／モバイルアプリ
-- 完成したAI annotation review／promotion UI
-- 本格的なoffline observation storageとsynchronization
-- canvasベースの大規模グラフUI
-- relation typeの自由編集UI
-- 複数人同時編集
-- embeddings、vector search、RAG
-- graph inference
-- production authentication / authorization
-- AIによる無人公開
+- production authentication、authorization、rate limitingは未実装
+- multi-user collaborationとreal-time editingは未実装
+- Service Workerによるunattended background publicationは行わない
+- browser-level E2Eは最小Golden Path中心で、全browser matrixを保証しない
+- relation type自由編集、大規模graph UI、semantic searchは後続releaseの対象
+- embeddings、vector search、RAG、graph inferenceは非対象
+- AI生成内容の農業上の妥当性は保証しない
 
 ## 関連文書
 
 - [Standard API](../api/README.md)
-- [v0.5.0 Release Plan](../../docs/roadmap/V0.5.0_RELEASE_PLAN.md)
-- [v0.5.0 Release Runbook](../../docs/roadmap/V0.5.0_RELEASE_RUNBOOK.md)
-- [v0.5.0 GitHub Release Content](../../docs/roadmap/V0.5.0_GITHUB_RELEASE.md)
-- [AI Adoption Roadmap](../../docs/roadmap/AI_ADOPTION_ROADMAP.md)
+- [v0.6.0 Release Plan](../../docs/roadmap/V0.6.0_RELEASE_PLAN.md)
+- [v0.6.0 Release Runbook](../../docs/roadmap/V0.6.0_RELEASE_RUNBOOK.md)
+- [v0.6.0 GitHub Release Content](../../docs/roadmap/V0.6.0_GITHUB_RELEASE.md)
+- [Roadmap to v1.0.0](../../docs/roadmap/V1.0.0_ROADMAP.md)
 - [Inquiry Draft Contract](../../docs/protocols/INQUIRY_DRAFT.md)
-- [v0.3.0 User Journey](./V0.3.0_USER_JOURNEY.md)
