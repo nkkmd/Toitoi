@@ -50,10 +50,25 @@ function createFieldApp({ store, api, now = () => new Date(), random = Math.rand
       }
       item.state = 'syncing'; item.attempts += 1; item.updated_at = now().toISOString(); await store.updateQueueItem(item);
       try {
-        const response = await api.publishObservation({ local_id: observation.id, observation: observation.text, context: observation.context });
-        observation.status = 'published'; observation.remote_event_id = response.event_id; observation.sync_error = null;
+        const contexts = observation.context ? { field_context: observation.context } : {};
+        const sensitive = {
+          location: Boolean(observation.location),
+          personNames: Boolean(observation.person_names),
+          contact: Boolean(observation.contact),
+          privateContext: Boolean(observation.private_context),
+        };
+        const response = await api.publishObservation({
+          localId: observation.id,
+          text: observation.text,
+          language: 'ja',
+          contexts,
+          sensitive,
+        });
+        const eventId = response.id || response.event_id;
+        if (!eventId) throw new Error('Observation API response did not include an id');
+        observation.status = 'published'; observation.remote_event_id = eventId; observation.sync_error = null;
         await store.saveObservation(observation); await store.removeQueueItem(item.id);
-        results.push({ id: item.id, ok: true, event_id: response.event_id });
+        results.push({ id: item.id, ok: true, event_id: eventId });
       } catch (error) {
         item.state = 'failed'; item.last_error = error.message || String(error); item.updated_at = now().toISOString();
         observation.status = 'sync_failed'; observation.sync_error = item.last_error;
