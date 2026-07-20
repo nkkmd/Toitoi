@@ -8,16 +8,26 @@ function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch } = {}) {
       ...options,
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.error || `API request failed (${response.status})`);
+    if (!response.ok) throw new Error(payload.message || payload.error || `API request failed (${response.status})`);
     return payload;
   }
+  const post = (path, body = {}) => request(path, { method: 'POST', body: JSON.stringify(body) });
   return {
-    publishObservation(payload) { return request('/api/v1/observations', { method: 'POST', body: JSON.stringify(payload) }); },
+    publishObservation(payload) { return post('/api/v1/observations', payload); },
     listAnnotations(eventId) { return request(`/api/v1/ai/events/${encodeURIComponent(eventId)}`); },
     reviewAnnotation(annotationId, action, body = {}) {
       if (!['accept', 'edit', 'reject'].includes(action)) throw new Error('Invalid review action');
-      return request(`/api/v1/ai/annotations/${encodeURIComponent(annotationId)}/${action}`, { method: 'POST', body: JSON.stringify(body) });
+      return post(`/api/v1/ai/annotations/${encodeURIComponent(annotationId)}/${action}`, body);
     },
+    promoteAnnotation(annotationId, body = {}) {
+      return post(`/api/v1/ai/annotations/${encodeURIComponent(annotationId)}/promote`, body);
+    },
+    getDraft(draftId) { return request(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}`); },
+    submitDraft(draftId, body = {}) { return post(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/submit`, body); },
+    approveDraft(draftId, body = {}) { return post(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/approve`, body); },
+    rejectDraft(draftId, body = {}) { return post(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/reject`, body); },
+    publishDraft(draftId, body = {}) { return post(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/publish`, body); },
+    getPublication(eventId) { return request(`/api/v1/publications/${encodeURIComponent(eventId)}`); },
     inquiryDetail(eventId) { return request(`/api/v1/inquiries/${encodeURIComponent(eventId)}/detail`); },
   };
 }
