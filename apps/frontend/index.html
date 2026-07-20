@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#244b38">
+  <meta name="description" content="Toitoi field observation and human-reviewed inquiry workflow">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Toitoi Field</title>
+</head>
+<body>
+  <header class="app-header">
+    <div><p class="eyebrow">Toitoi</p><h1>Field</h1></div>
+    <span id="network-status" role="status">確認中</span>
+  </header>
+  <main>
+    <p id="notice" aria-live="polite"></p>
+    <section aria-labelledby="observation-heading">
+      <h2 id="observation-heading">観察を記録</h2>
+      <form id="observation-form" class="stack">
+        <label>観察内容<textarea name="text" required rows="5" placeholder="見たこと、変化、違和感を記録します"></textarea></label>
+        <label>文脈<textarea name="context" rows="3" placeholder="天候、土壌、作物、時期など"></textarea></label>
+        <details><summary>非公開情報を含む可能性がある項目</summary>
+          <label>位置情報<input name="location" autocomplete="off"></label>
+          <label>人物名<input name="person_names" autocomplete="off"></label>
+          <label>連絡先<input name="contact" autocomplete="off"></label>
+          <label>非公開文脈<textarea name="private_context" rows="2"></textarea></label>
+        </details>
+        <button type="submit">端末へ保存</button>
+      </form>
+    </section>
+    <section aria-labelledby="saved-heading"><div class="section-heading"><h2 id="saved-heading">保存済み観察</h2><button id="sync-now" type="button" class="secondary">今すぐ同期</button></div><div id="observation-list" class="cards"></div></section>
+    <section aria-labelledby="queue-heading"><h2 id="queue-heading">同期状態</h2><ul id="queue-list" class="queue"></ul></section>
+
+    <section aria-labelledby="workflow-heading">
+      <h2 id="workflow-heading">問い候補の確認と公開</h2>
+      <p>同期済み観察のIDを指定し、AI候補の確認から人間による公開承認まで進めます。</p>
+      <form id="workflow-load-form" class="stack">
+        <label>観察イベントID<input id="workflow-event-id" required placeholder="tt:evt:observation-..."></label>
+        <button type="submit">AI候補を読み込む</button>
+      </form>
+      <p id="workflow-status" aria-live="polite"></p>
+      <div id="annotation-list" class="cards"></div>
+      <section id="draft-panel" hidden class="card stack" aria-labelledby="draft-heading">
+        <h3 id="draft-heading">Inquiry Draft</h3>
+        <pre id="draft-summary"></pre>
+        <label>レビュー担当者ID<input id="draft-reviewer" value="human:reviewer"></label>
+        <label>レビュー注記<textarea id="draft-note" rows="2"></textarea></label>
+        <div class="actions">
+          <button id="draft-submit" type="button">レビューへ提出</button>
+          <button id="draft-approve" type="button">承認</button>
+          <button id="draft-reject" type="button" class="secondary">却下</button>
+          <button id="draft-publish" type="button">公開</button>
+        </div>
+        <div id="publication-result"></div>
+      </section>
+    </section>
+  </main>
+  <dialog id="publish-dialog">
+    <form id="publish-form" method="dialog" class="stack">
+      <h2>公開前の最終確認</h2>
+      <p>raw observationは端末内記録です。外部へ公開するCanonical Eventの対象を確認してください。</p>
+      <blockquote id="publish-preview"></blockquote>
+      <div id="sensitive-fields" class="stack"></div>
+      <p class="warning">AI候補の採用と公開承認は別の操作です。公開には人間の明示的確認が必要です。</p>
+      <div class="actions"><button id="cancel-publish" type="button" class="secondary">戻る</button><button type="submit">確認して公開キューへ</button></div>
+    </form>
+  </dialog>
+  <script src="./offline_store.js"></script>
+  <script src="./field_app.js"></script>
+  <script src="./api_client.js"></script>
+  <script src="./app.js"></script>
+  <script src="./workflow_ui.js"></script>
+</body>
+</html>

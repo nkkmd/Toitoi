@@ -2,14 +2,21 @@
 
 const { createAiHttpService } = require('./ai_http_service');
 const { createStandardApiService } = require('./standard_api_service');
+const { createWorkflowHttpService } = require('./workflow_http_service');
 
 function createToitoiApiService(options = {}) {
   const standardService = options.standardService || createStandardApiService(options);
   const aiService = options.aiInspectionService
-    ? createAiHttpService({ inspectionService: options.aiInspectionService })
+    ? createAiHttpService({
+      inspectionService: options.aiInspectionService,
+      reviewService: options.aiReviewService || null,
+    })
+    : null;
+  const workflowService = options.workflowService
+    ? createWorkflowHttpService({ workflowService: options.workflowService })
     : null;
 
-  function handleRequest(request = {}) {
+  function fallback(request) {
     if (aiService) {
       const aiResult = aiService.handleRequest(request);
       if (aiResult) return aiResult;
@@ -17,10 +24,20 @@ function createToitoiApiService(options = {}) {
     return standardService.handleRequest(request);
   }
 
+  function handleRequest(request = {}) {
+    if (!workflowService) return fallback(request);
+    const workflowResult = workflowService.handleRequest(request);
+    if (workflowResult && typeof workflowResult.then === 'function') {
+      return workflowResult.then((resolved) => resolved || fallback(request));
+    }
+    return workflowResult || fallback(request);
+  }
+
   return Object.freeze({
     handleRequest,
     standardService,
     aiService,
+    workflowService,
   });
 }
 

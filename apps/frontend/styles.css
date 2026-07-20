@@ -1,0 +1,16 @@
+:root { font-family: system-ui, sans-serif; color: #17231c; background: #f4f3eb; line-height: 1.55; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.app-header { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: center; padding: .8rem 1rem; background: #244b38; color: white; box-shadow: 0 2px 8px #0003; }
+h1,.eyebrow { margin: 0; }.eyebrow { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+#network-status { padding: .35rem .65rem; border-radius: 999px; background: #fff2; font-size: .85rem; } #network-status[data-online="false"] { background: #7a382e; }
+main { max-width: 48rem; margin: auto; padding: 1rem; } section { margin-block: 1.5rem 2rem; }
+.stack { display: grid; gap: .85rem; } label { display: grid; gap: .35rem; font-weight: 650; }
+input,textarea,button { font: inherit; } input,textarea { width: 100%; border: 1px solid #9ba99f; border-radius: .6rem; padding: .75rem; background: white; }
+button { border: 0; border-radius: .6rem; padding: .75rem 1rem; background: #244b38; color: white; font-weight: 700; min-height: 44px; } button.secondary { background: #dfe7e1; color: #183326; }
+.section-heading,.actions { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }.cards { display: grid; gap: .8rem; }
+.card { background: white; border: 1px solid #d3d9d4; border-radius: .8rem; padding: 1rem; box-shadow: 0 2px 5px #0001; }.card h3 { margin-top: 0; font-size: 1rem; }.meta { color: #526158; font-size: .85rem; }.warning { color: #7a382e; font-weight: 650; }
+.queue { padding-left: 1.25rem; }.queue li { margin: .6rem 0; }.queue button { margin-left: .5rem; padding: .35rem .65rem; min-height: 36px; }
+#notice:not(:empty) { border-radius: .6rem; padding: .7rem; background: #e2eee6; } #notice[data-kind="error"] { background: #f5dfdb; }
+dialog { width: min(92vw, 38rem); border: 0; border-radius: .8rem; padding: 1.2rem; } dialog::backdrop { background: #0008; } blockquote { margin: 0; padding: .8rem; border-left: 4px solid #67806f; background: #f3f5f3; }
+@media (min-width: 700px) { main { padding: 2rem; } .cards { grid-template-columns: repeat(2,minmax(0,1fr)); } }

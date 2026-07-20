@@ -1,0 +1,13 @@
+{
+  "name": "Toitoi Field",
+  "short_name": "Toitoi",
+  "description": "Offline-first field observation and human-reviewed inquiry workflow",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f3eb",
+  "theme_color": "#244b38",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
