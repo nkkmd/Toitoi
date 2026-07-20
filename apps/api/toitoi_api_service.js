@@ -16,9 +16,9 @@ function createToitoiApiService(options = {}) {
     ? createWorkflowHttpService({ workflowService: options.workflowService })
     : null;
 
-  function handleRequest(request = {}) {
+  async function handleRequest(request = {}) {
     if (workflowService) {
-      const workflowResult = workflowService.handleRequest(request);
+      const workflowResult = await workflowService.handleRequest(request);
       if (workflowResult) return workflowResult;
     }
     if (aiService) {
