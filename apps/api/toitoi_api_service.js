@@ -16,16 +16,21 @@ function createToitoiApiService(options = {}) {
     ? createWorkflowHttpService({ workflowService: options.workflowService })
     : null;
 
-  async function handleRequest(request = {}) {
-    if (workflowService) {
-      const workflowResult = await workflowService.handleRequest(request);
-      if (workflowResult) return workflowResult;
-    }
+  function fallback(request) {
     if (aiService) {
       const aiResult = aiService.handleRequest(request);
       if (aiResult) return aiResult;
     }
     return standardService.handleRequest(request);
+  }
+
+  function handleRequest(request = {}) {
+    if (!workflowService) return fallback(request);
+    const workflowResult = workflowService.handleRequest(request);
+    if (workflowResult && typeof workflowResult.then === 'function') {
+      return workflowResult.then((resolved) => resolved || fallback(request));
+    }
+    return workflowResult || fallback(request);
   }
 
   return Object.freeze({
