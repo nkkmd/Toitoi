@@ -30,7 +30,11 @@ function requiredString(value, name) {
   return value.trim();
 }
 
-function createMemoryWorkflowService({ annotationService, now = () => new Date().toISOString() } = {}) {
+function createMemoryWorkflowService({
+  annotationService,
+  canonicalPublisher = async (event) => ({ canonicalEvent: event, storage: null, delivery: null }),
+  now = () => new Date().toISOString(),
+} = {}) {
   const observations = new Map();
   const drafts = new Map();
   const publications = new Map();
@@ -119,15 +123,16 @@ function createMemoryWorkflowService({ annotationService, now = () => new Date()
       return clone(next);
     },
 
-    publishDraft(id, input = {}) {
+    async publishDraft(id, input = {}) {
       const draft = drafts.get(id);
       if (!draft) throw new Error('Inquiry Draft not found');
       const candidate = assertPublishableInquiryDraft(draft);
+      const publishedAt = input.createdAt || now();
       const publicationId = input.id || nextId('tt:evt:inquiry-');
       const publication = {
         ...clone(candidate),
         id: publicationId,
-        createdAt: input.createdAt || now(),
+        createdAt: publishedAt,
         lineage: draft.derivation ? [{
           sourceId: draft.derivation.sourceInquiryId,
           relationType: draft.derivation.relationType,
@@ -138,12 +143,23 @@ function createMemoryWorkflowService({ annotationService, now = () => new Date()
             draftId: draft.id,
             approvedBy: draft.review.reviewerId,
             approvedAt: draft.review.reviewedAt,
-            publishedAt: input.createdAt || now(),
+            publishedAt,
           },
         },
       };
-      publications.set(publicationId, publication);
-      return clone(publication);
+      const result = await canonicalPublisher(publication, {
+        draftId: draft.id,
+        publishedAt,
+        batchId: input.batchId,
+      });
+      const canonicalEvent = result && result.canonicalEvent ? result.canonicalEvent : publication;
+      canonicalEvent.meta = canonicalEvent.meta && typeof canonicalEvent.meta === 'object' ? canonicalEvent.meta : {};
+      canonicalEvent.meta.publication = {
+        ...(canonicalEvent.meta.publication || {}),
+        storage: result ? result.storage : null,
+      };
+      publications.set(canonicalEvent.id, canonicalEvent);
+      return clone(canonicalEvent);
     },
 
     getPublication(id) {
@@ -156,7 +172,7 @@ function createMemoryWorkflowService({ annotationService, now = () => new Date()
 function createWorkflowHttpService({ workflowService }) {
   if (!workflowService) throw new TypeError('workflowService is required');
 
-  function handleRequest(request = {}) {
+  async function handleRequest(request = {}) {
     const method = typeof request.method === 'string' ? request.method.toUpperCase() : 'GET';
     const parsedUrl = new URL(request.url || '/', 'http://localhost');
     const pathname = parsedUrl.pathname.replace(/\/+$/, '') || '/';
@@ -165,13 +181,13 @@ function createWorkflowHttpService({ workflowService }) {
     try {
       if (pathname === '/api/v1/observations') {
         if (method !== 'POST') return json(405, { message: 'Method not allowed' });
-        return json(201, workflowService.createObservation(body()));
+        return json(201, await workflowService.createObservation(body()));
       }
 
       const promotion = pathname.match(/^\/api\/v1\/ai\/annotations\/([^/]+)\/promote$/);
       if (promotion) {
         if (method !== 'POST') return json(405, { message: 'Method not allowed' });
-        return json(201, workflowService.promoteAnnotation(decodeURIComponent(promotion[1]), body()));
+        return json(201, await workflowService.promoteAnnotation(decodeURIComponent(promotion[1]), body()));
       }
 
       const draft = pathname.match(/^\/api\/v1\/inquiry-drafts\/([^/]+)(?:\/(submit|approve|reject|publish))?$/);
@@ -180,21 +196,21 @@ function createWorkflowHttpService({ workflowService }) {
         const action = draft[2];
         if (!action) {
           if (method !== 'GET') return json(405, { message: 'Method not allowed' });
-          const value = workflowService.getDraft(id);
+          const value = await workflowService.getDraft(id);
           return value ? json(200, value) : json(404, { message: 'Inquiry Draft not found', id });
         }
         if (method !== 'POST') return json(405, { message: 'Method not allowed' });
         const methods = {
           submit: 'submitDraft', approve: 'approveDraft', reject: 'rejectDraft', publish: 'publishDraft',
         };
-        return json(action === 'publish' ? 201 : 200, workflowService[methods[action]](id, body()));
+        return json(action === 'publish' ? 201 : 200, await workflowService[methods[action]](id, body()));
       }
 
       const publication = pathname.match(/^\/api\/v1\/publications\/([^/]+)$/);
       if (publication) {
         if (method !== 'GET') return json(405, { message: 'Method not allowed' });
         const id = decodeURIComponent(publication[1]);
-        const value = workflowService.getPublication(id);
+        const value = await workflowService.getPublication(id);
         return value ? json(200, value) : json(404, { message: 'Publication not found', id });
       }
       return null;
