@@ -107,7 +107,7 @@ v0.3.0ではlineage treeとcontext exploration、v0.4.0では非同期AI annotat
 - `GET /api/v1/search/contexts`
 - `GET /api/v1/inquiries/:id/related`
 - `exact_identity`、`explicit_relation`、`related_candidate`の分離
-- explicit relationをlexical candidateより優先する関連問い取得
+- outgoing relationとincoming lineage childを含むexplicit relation優先の関連問い取得
 - Core／Domain／Local Vocabulary contract
 - locality、provenance、review state、人間確認境界を保持するmapping claim
 - `GET /api/v1/vocabulary/terms`
@@ -115,6 +115,7 @@ v0.3.0ではlineage treeとcontext exploration、v0.4.0では非同期AI annotat
 - search／context exploration ViewModelとrenderer
 - fixed reference ranking／filter dataset
 - canonical replay前後のsearch result／facet同値性
+- canonical `provenance.sources[]`とpublication human review decisionのprojection対応
 
 ## v0.8.0の不変条件
 
@@ -124,17 +125,20 @@ v0.3.0ではlineage treeとcontext exploration、v0.4.0では非同期AI annotat
 - lexical similarity、context overlap、relation、Vocabulary mappingからidentityを自動統合しない
 - local vocabularyをshared termへsilent normalizationしない
 - mapping claimはsource／target、relation、locality、provenance、review stateを保持する
--既存の`draft → in_review → approved → published`境界を維持する
+- 既存の`draft → in_review → approved → published`境界を維持する
 
 ## 現在のリリース基準点
 
-v0.8.0 release candidateの正本:
+v0.8.0 released baselineの正本:
 
 - [`V0.8.0_RELEASE_PLAN.md`](./V0.8.0_RELEASE_PLAN.md)
 - [`V0.8.0_RELEASE_RUNBOOK.md`](./V0.8.0_RELEASE_RUNBOOK.md)
 - [`V0.8.0_GITHUB_RELEASE.md`](./V0.8.0_GITHUB_RELEASE.md)
 - [`RELEASE_NOTES.md`](./RELEASE_NOTES.md)
 - [PR #36](https://github.com/nkkmd/Toitoi/pull/36)
+- tag: `v0.8.0`
+- tag target／merge commit: `d04e4354325ebd68f270f844cd7130a47ae4e660`
+- final pre-merge CI: run #654 succeeded
 
 ## 次の基盤課題
 
