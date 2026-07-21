@@ -12,6 +12,7 @@ const canonicalIdentity = require('./canonical_identity');
 const identityVerification = require('./identity_verification');
 const inquiryDraft = require('./inquiry_draft');
 const derivedInquiry = require('./derived_inquiry');
+const vocabulary = require('./vocabulary');
 
 module.exports = {
   ...protocolDescriptor,
@@ -26,4 +27,5 @@ module.exports = {
   ...identityVerification,
   ...inquiryDraft,
   ...derivedInquiry,
+  ...vocabulary,
 };
