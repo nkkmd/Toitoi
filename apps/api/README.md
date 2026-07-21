@@ -1,6 +1,6 @@
 # Toitoi Standard API
 
-**Status: v0.7.0 release candidate** | **Last updated: 2026-07-21**
+**Status: v0.7.0** | **Last updated: 2026-07-21**
 
 `apps/api/` は、transport-independentなcanonical read view、AI job／annotation inspection、human review mutation、Inquiry Draft workflow、semantic inquiry derivation、Canonical Event publicationを提供するStandard API reference implementationです。
 
