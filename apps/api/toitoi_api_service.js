@@ -6,6 +6,9 @@ const { createWorkflowHttpService } = require('./workflow_http_service');
 
 function createToitoiApiService(options = {}) {
   const standardService = options.standardService || createStandardApiService(options);
+  const searchService = options.searchService || null;
+  const vocabularyService = options.vocabularyService || null;
+  const relatedInquiryService = options.relatedInquiryService || null;
   const aiService = options.aiInspectionService
     ? createAiHttpService({
       inspectionService: options.aiInspectionService,
@@ -17,6 +20,18 @@ function createToitoiApiService(options = {}) {
     : null;
 
   function fallback(request) {
+    if (relatedInquiryService) {
+      const relatedResult = relatedInquiryService.handleRequest(request);
+      if (relatedResult) return relatedResult;
+    }
+    if (searchService) {
+      const searchResult = searchService.handleRequest(request);
+      if (searchResult) return searchResult;
+    }
+    if (vocabularyService) {
+      const vocabularyResult = vocabularyService.handleRequest(request);
+      if (vocabularyResult) return vocabularyResult;
+    }
     if (aiService) {
       const aiResult = aiService.handleRequest(request);
       if (aiResult) return aiResult;
@@ -36,6 +51,9 @@ function createToitoiApiService(options = {}) {
   return Object.freeze({
     handleRequest,
     standardService,
+    searchService,
+    vocabularyService,
+    relatedInquiryService,
     aiService,
     workflowService,
   });
