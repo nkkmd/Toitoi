@@ -46,6 +46,7 @@ function createRelatedInquiryHttpService(options = {}) {
     const explicitIds = new Set(explicit.map(item => item.id));
     let candidates = [];
     if (searchService && source.body && typeof source.body.text === 'string') {
+      if (typeof searchService.ensureCurrent === 'function') searchService.ensureCurrent();
       const result = searchService.projection.search({ q: source.body.text, limit: 20 });
       candidates = result.results
         .filter(item => item.id !== inquiryId && !explicitIds.has(item.id))
