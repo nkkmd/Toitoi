@@ -8,7 +8,7 @@
 
 ## v0.7.0
 
-**Status: release-candidate**
+**Status: release-ready**
 
 v0.7.0は、既存のlineage inspectionを、semantic relationを明示して問いを育てる第一級のauthoring workflowへ拡張するリリースです。
 
@@ -57,6 +57,8 @@ v0.7.0は、既存のlineage inspectionを、semantic relationを明示して問
 - integrated genealogy view
 - v0.7.0 transport replay round trip
 - v0.6.0以前のworkspace regression
+- PR #35 final CI run #525 succeeded
+- implementation merged to `main` as `b1ba070c1bf9cfc4c21be74a4cd9d4e479640959`
 
 ### Known limitations
 
