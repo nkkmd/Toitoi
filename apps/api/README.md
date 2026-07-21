@@ -1,6 +1,6 @@
 # Toitoi Standard API
 
-**Status: v0.8.0 release candidate** | **Last updated: 2026-07-22**
+**Status: v0.8.0 released** | **Last updated: 2026-07-22**
 
 `apps/api/` は、transport-independentなcanonical read view、検索・文脈探索、Vocabulary、AI inspection／review、Inquiry Draft workflow、semantic derivation、Canonical Event publicationを提供するStandard API reference implementationです。
 
@@ -62,6 +62,8 @@ explicit_relation
 ```
 
 `exact_identity`、`explicit_relation`、`related_candidate`は別分類です。`identityMerged`は`false`であり、類似性やrelationを根拠にCanonical identityを統合しません。
+
+Canonical `provenance.sources[]`のprotocol／source identifierと、`meta.publication.humanReview.decision`のreview stateを検索projectionへ取り込みます。関連inquiry APIはoutgoing relationに加えてincoming lineage childもexplicit relationとして返します。
 
 ## Vocabulary API
 
@@ -139,12 +141,14 @@ corepack pnpm test
 v0.8.0 validation includes:
 
 - FTS5 projection、lexical search、filter、facet、upsert
+- canonical provenance-source indexingとpublication review-state indexing
 - search HTTP routingとresult classification
 - fixed reference ranking/filter dataset
 - Vocabulary contractとHTTP endpoint
-- explicit relation優先のrelated inquiry
+- outgoing relationとincoming lineage childを含むrelated inquiry
 - replay前後のsearch result／facet同値性
 - v0.7.0以前のworkspace regression
+- final pre-merge GitHub Actions run #654
 
 ## Limitations
 
