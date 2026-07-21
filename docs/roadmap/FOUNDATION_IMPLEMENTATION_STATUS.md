@@ -4,7 +4,7 @@
 
 ## 目的
 
-この文書は、[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)の現在の位置づけと、v0.7.0 release candidate時点の基盤到達点を明確にします。
+この文書は、[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)の現在の位置づけと、v0.7.0時点の基盤到達点を明確にします。
 
 `IMPLEMENTATION_PLAN.md`は、Canonical Event、adapter／normalizer、storage／replay、Indexer、Standard API、multi-protocol、canonical identity、identity claim、Lingonberry、registry-driven runtime selectionを段階的に実装した履歴です。
 
@@ -126,7 +126,7 @@ AI annotationはCanonical Eventとは分離され、`unreviewed`／`rejected`状
 
 ## 現在のリリース基準点
 
-v0.7.0 release candidateの正本:
+v0.7.0の正本:
 
 - [`V0.7.0_RELEASE_PLAN.md`](./V0.7.0_RELEASE_PLAN.md)
 - [`V0.7.0_RELEASE_RUNBOOK.md`](./V0.7.0_RELEASE_RUNBOOK.md)
