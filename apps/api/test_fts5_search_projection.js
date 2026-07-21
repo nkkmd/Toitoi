@@ -58,30 +58,37 @@ function buildFixtures() {
   ];
 }
 
-function run() {
+function projectionContract() {
   assert.strictEqual(buildFtsQuery('east weeds'), '"east" AND "weeds"');
-
   const projected = projectSearchDocument(buildFixtures()[0]);
   assert.strictEqual(projected.id, 'inquiry-east-weeds');
   assert.strictEqual(projected.region, 'Shikoku');
   assert.strictEqual(projected.climate, 'warm-temperate');
   assert.strictEqual(projected.transport, 'nostr');
   assert.match(projected.tagsText, /weeds/);
+}
 
+function searchContract() {
   const projection = createFts5SearchProjection();
   try {
     assert.deepStrictEqual(projection.rebuild(buildFixtures()), { indexed: 2 });
-
     const textResult = projection.search({ q: 'east weeds' });
     assert.strictEqual(textResult.total, 1);
     assert.strictEqual(textResult.results[0].id, 'inquiry-east-weeds');
     assert.strictEqual(textResult.results[0].classification, 'related_candidate');
     assert.strictEqual(textResult.results[0].signals.lexical, true);
-
     const summaryResult = projection.search({ q: 'drainage compaction' });
     assert.strictEqual(summaryResult.total, 1);
     assert.strictEqual(summaryResult.results[0].id, 'inquiry-north-soil');
+  } finally {
+    projection.close();
+  }
+}
 
+function filterFacetContract() {
+  const projection = createFts5SearchProjection();
+  try {
+    projection.rebuild(buildFixtures());
     const filtered = projection.search({
       climate_zone: 'warm-temperate',
       soil_type: 'volcanic-ash',
@@ -92,28 +99,49 @@ function run() {
     assert.strictEqual(filtered.total, 1);
     assert.strictEqual(filtered.results[0].id, 'inquiry-east-weeds');
     assert.strictEqual(filtered.results[0].signals.structuredFilters, true);
-
     assert.deepStrictEqual(projection.facets('region'), [
       { value: 'Shikoku', count: 1 },
       { value: 'Tohoku', count: 1 },
     ]);
+    assert.throws(() => projection.facets('identity'), /Unsupported facet dimension/);
+  } finally {
+    projection.close();
+  }
+}
 
+function upsertContract() {
+  const projection = createFts5SearchProjection();
+  try {
+    projection.rebuild(buildFixtures());
     projection.upsert({
       ...buildFixtures()[0],
       body: { text: 'Why do sedges dominate the wet eastern edge?' },
     });
     assert.strictEqual(projection.search({ q: 'sedges' }).total, 1);
     assert.strictEqual(projection.search({ q: 'species' }).total, 0);
-
-    assert.throws(
-      () => projection.facets('identity'),
-      /Unsupported facet dimension/,
-    );
   } finally {
     projection.close();
   }
+}
 
+const scenarios = {
+  projection: projectionContract,
+  search: searchContract,
+  filters: filterFacetContract,
+  upsert: upsertContract,
+};
+
+function run(selected = process.argv[2]) {
+  if (selected) {
+    if (!scenarios[selected]) throw new RangeError(`Unknown FTS5 test scenario: ${selected}`);
+    scenarios[selected]();
+    console.log(`FTS5 ${selected} contract passed`);
+    return;
+  }
+  for (const scenario of Object.values(scenarios)) scenario();
   console.log('FTS5 search projection tests passed');
 }
 
-run();
+if (require.main === module) run();
+
+module.exports = { buildFixtures, run, scenarios };
