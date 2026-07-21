@@ -44,7 +44,7 @@ function run() {
 
   const search = service.handleRequest({
     method: 'GET',
-    url: '/api/v1/search?q=hiyoko-gusa&region=Shikoku&review_state=approved',
+    url: '/api/v1/search?q=hiyoko&region=Shikoku&review_state=approved',
   });
   assert.strictEqual(search.statusCode, 200);
   assert.strictEqual(search.body.total, 1);
