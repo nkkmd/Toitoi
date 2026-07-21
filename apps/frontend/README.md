@@ -1,6 +1,6 @@
 # Toitoi Frontend
 
-**Status: v0.8.0 release candidate** | **Last updated: 2026-07-22**
+**Status: v0.8.0 released** | **Last updated: 2026-07-22**
 
 `apps/frontend/` は、ToitoiのStandard APIを利用するmobile-first SPA／PWA reference implementationです。transport固有eventを直接扱わず、観察のローカル保存、AI問い候補レビュー、Inquiry Draft、Canonical Event publication、semantic derivation、検索・文脈探索を接続します。
 
