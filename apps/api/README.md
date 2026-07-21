@@ -1,12 +1,12 @@
 # Toitoi Standard API
 
-**Status: v0.6.0** | **Last updated: 2026-07-20**
+**Status: v0.7.0 release candidate** | **Last updated: 2026-07-21**
 
-`apps/api/` は、transport-independentなcanonical read view、AI job／annotation inspection、human review mutation、Inquiry Draft workflow、Canonical Event publicationを提供するStandard API reference implementationです。
+`apps/api/` は、transport-independentなcanonical read view、AI job／annotation inspection、human review mutation、Inquiry Draft workflow、semantic inquiry derivation、Canonical Event publicationを提供するStandard API reference implementationです。
 
 protocol固有のraw event shapeを利用者向けAPIへ露出せず、Nostr、Lingonberry、ATProtoの違いをruntime／storage／converter層へ閉じ込めます。
 
-## 主なendpoint
+## Main endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -19,6 +19,7 @@ protocol固有のraw event shapeを利用者向けAPIへ露出せず、Nostr、L
 | `GET` | `/api/v1/inquiries/:id` | 単一Canonical Event |
 | `GET` | `/api/v1/inquiries/:id/detail` | provenance、parent、childを含む詳細 |
 | `GET` | `/api/v1/inquiries/:id/tree` | descendant lineage tree |
+| `POST` | `/api/v1/inquiries/:id/derive` | existing inquiryからderived Inquiry Draftを作成 |
 | `GET` | `/api/v1/ai/jobs` | AI job一覧と状態確認 |
 | `GET` | `/api/v1/ai/jobs/:id` | 単一AI jobの確認 |
 | `GET` | `/api/v1/ai/annotations` | AI annotation一覧とfilter |
@@ -36,13 +37,12 @@ protocol固有のraw event shapeを利用者向けAPIへ露出せず、Nostr、L
 | `POST` | `/api/v1/inquiry-drafts/:id/publish` | approved DraftをCanonical Eventとして公開 |
 | `GET` | `/api/v1/publications/:id` | publication結果を取得 |
 
-## v0.6.0 workflow boundary
+## Workflow boundary
 
 ```text
-observation ingest
-  → AI annotation inspection / review
-  → accepted or edited annotation
-  → Inquiry Draft promotion
+observation ingest or existing published inquiry
+  → AI annotation review or semantic derivation authoring
+  → Inquiry Draft
   → draft submission
   → independent human approval
   → publication guard
@@ -50,34 +50,65 @@ observation ingest
   → multi-transport outbound delivery
 ```
 
-### Observation
+## v0.7.0 derivation mutation
 
-`POST /api/v1/observations`はraw observationをpublic inquiryとして扱いません。初期状態では次のmetadataを保持します。
+`POST /api/v1/inquiries/:id/derive`は、pathのinquiryをsourceとして新しいInquiry Draftを作成します。これはpublicationではありません。
+
+Example:
 
 ```json
 {
-  "meta": {
-    "visibility": "private",
-    "localOnly": true,
-    "sensitive": {}
+  "relationType": "contrasts_with",
+  "relationConfirmedByHuman": true,
+  "relationDetails": {
+    "rationale": "Different soil moisture response"
+  },
+  "text": "Why did the same crop respond differently in the drier plot?",
+  "language": "en",
+  "authorId": "human:field-worker",
+  "aiSuggestion": {
+    "suggestedRelationType": "reframes",
+    "model": "deterministic"
   }
 }
 ```
 
-SPAのIndexedDB recordはlocal application stateであり、このAPIが返すworkflow observationとも、公開済みCanonical Eventとも区別されます。
+Supported relation types:
 
-### Annotation promotion
+- `derived_from`
+- `translated_from`
+- `observed_alongside`
+- `contrasts_with`
+- `synthesizes`
+- `reframes`
+- `annotates`
+- `revises`
 
-`POST /api/v1/ai/annotations/:id/promote`は`generate_inquiries` annotationのselected candidateをInquiry Draftへ変換します。
+### Validation and review boundary
 
-- `unreviewed`／`rejected` annotationはpromotionできない
-- `accepted`／`edited` annotationのみ利用できる
-- source event、annotation ID、model、model version、prompt version、review stateをprovenanceとして保持する
-- promotionはpublication approvalではない
+- relation typeごとのrequired fieldをstrictに検証する
+- `relationConfirmedByHuman`が`true`でなければDraftを作成しない
+- AI suggestionはselected／confirmed relationとは別metadataとして保持する
+- `synthesizes`は2件以上のdistinct source inquiry IDを要求する
+- 作成後も`draft → in_review → approved`を通過する
+- relation confirmationはpublication approvalではない
 
-### Inquiry Draft review
+### Semantic boundary
 
-既存protocol contractの状態遷移を利用します。
+Canonical identity、semantic relation、context similarityは別契約です。
+
+- sourceとderived eventは別Canonical Event IDを持つ
+- semantic relationはlineage edgeとして保持する
+- context similarityだけでidentity mergeしない
+- AI suggestionだけでrelationを確定しない
+
+## Observation and annotation workflow
+
+`POST /api/v1/observations`はraw observationをpublic inquiryとして扱いません。SPAのIndexedDB record、workflow observation、公開済みCanonical Eventは別recordです。
+
+`POST /api/v1/ai/annotations/:id/promote`は、human-reviewed `generate_inquiries` candidateのみをInquiry Draftへ変換します。annotation acceptanceはpublication approvalではありません。
+
+## Inquiry Draft and publication
 
 ```text
 draft
@@ -85,17 +116,7 @@ draft
   → approved / rejected
 ```
 
-`approved`以外のDraftに対するpublish requestは拒否されます。annotation reviewerとpublication reviewerは別の監査境界です。
-
-### Canonical publication
-
-publication runtimeは次を実行します。
-
-1. approved DraftからCanonical Eventを構築
-2. source lineage、AI involvement、human reviewをmetadataへ保持
-3. existing multi-transport outbound runtimeでfan-out planを作成・実行
-4. selected protocolのappend-only storageへcanonical recordを保存
-5. delivered／skipped／quarantined transport結果とstorage IDをpublication provenanceへ保持
+`approved`以外のDraftに対するpublish requestは拒否されます。publication runtimeはsource lineage、semantic derivation、AI involvement、human review、storage ID、delivered／skipped／quarantined transport resultを保持します。
 
 transport delivery failureを隠さず、Canonical Eventの承認事実と外部transportの配信結果を区別します。
 
@@ -122,44 +143,11 @@ TOITOI_TRANSPORT_SOURCES='[
 ]' corepack pnpm --filter @toitoi/api start
 ```
 
-outbound transport credentialsやhandlersが利用できない場合、その結果は`skipped`または`quarantined`としてpublication metadataへ残ります。
+## Context and lineage read contract
 
-## AI inspection and review contract
+`GET /api/v1/inquiries/query`は`climate_zone`、`soil_type`、`farming_context`、`crop_family`等をAND条件で処理します。context similarityはcanonical identity mergeを意味しません。
 
-review mutation body:
-
-```json
-{
-  "reviewedBy": "human:reviewer-id",
-  "note": "確認内容"
-}
-```
-
-`edit`ではannotation task schemaを満たす`output`も必要です。AI annotationはCanonical Eventとは別契約であり、AI outputを農業上の正解として保証しません。
-
-## Context exploration contract
-
-`GET /api/v1/inquiries/query`で利用可能な代表的context条件:
-
-- `climate_zone`
-- `soil_type`
-- `farming_context`
-- `crop_family`
-
-複数条件はANDとして処理されます。context similarityはcanonical identity mergeを意味しません。
-
-## HTTP server behavior
-
-`server_v0_4.js`は互換性のため名称を維持していますが、v0.6.0ではintegrated API entrypointとして次を組み立てます。
-
-- protocol runtime
-- protocol storage runtime
-- canonical Standard API service
-- AI inspection／review service
-- workflow mutation service
-- canonical publisher adapter
-
-POST bodyをJSONとして読み取り、同期read serviceと非同期workflow mutationの双方を扱います。
+`GET /api/v1/inquiries/:id/tree`はtransport projection／re-ingest／replay後もsemantic lineageを復元するためのread boundaryです。
 
 ## Implementation entry points
 
@@ -167,54 +155,43 @@ POST bodyをJSONとして読み取り、同期read serviceと非同期workflow m
 - `toitoi_api_service.js`: Standard API／AI／workflow routing
 - `standard_api_service.js`: canonical read routing
 - `ai_http_service.js`: AI inspection／review mutation routes
-- `workflow_http_service.js`: observation、promotion、Draft review、publication routes
+- `workflow_http_service.js`: observation、promotion、derivation、Draft review、publication routes
 - `canonical_publisher.js`: canonical storageとmulti-transport outbound adapter
-- `packages/ai/review_service.js`: append-only annotation review
-- `packages/ai/promotion_service.js`: selected candidate promotion
+- `packages/protocol/derived_inquiry.js`: relation vocabulary、validation、derived Draft contract
 - `packages/protocol/inquiry_draft.js`: Draft state transitionとpublication guard
-- `packages/protocol/multi_transport_delivery.js`: outbound delivery execution
-- `packages/<protocol>/storage/persistence.js`: append-only canonical persistence
 
 ## Test
 
-API package:
-
 ```bash
 corepack pnpm --filter @toitoi/api test
-```
-
-workspace全体:
-
-```bash
 corepack pnpm test
 ```
 
-v0.6.0で追加された主要検証:
+v0.7.0 validation includes:
 
-- workflow HTTP mutation contract
-- draft／in_review／approved／rejected transition
-- unapproved publication rejection
-- canonical publisher adapter
-- append-only canonical storage record
-- multi-transport delivered／skipped／quarantined result
-- v0.3.0〜v0.5.0 Golden Path regression
-- frontend offline retry Golden Path
+- all eight relation types
+- relation-specific rejection
+- `POST /api/v1/inquiries/:id/derive`
+- AI suggestion and human confirmation separation
+- existing Draft publication guard
+- transport round trip and replay lineage recovery
+- v0.6.0 and earlier regressions
 
 ## Limitations
 
 - authentication、authorization、rate limitingは未実装
 - workflow mutationはreference contractでありproduction access controlを備えない
-- AI queueはlocal single-processでありdistributed queueではない
 - workflow Draft／publication lookupのproduction-grade shared databaseは未実装
 - live external transport availabilityはdeterministic CIの保証範囲外
-- embeddings、vector database、RAG、graph inference、semantic identity mergeは非対象
-- AIによる無人公開は非対応
+- semantic search、embeddings、vector database、RAG、graph inferenceは非対象
+- automatic identity mergeは行わない
+- AI relation自動確定と無人公開は非対応
 
 ## Related documents
 
 - [Frontend SPA/PWA](../frontend/README.md)
-- [v0.6.0 Release Plan](../../docs/roadmap/V0.6.0_RELEASE_PLAN.md)
-- [v0.6.0 Release Runbook](../../docs/roadmap/V0.6.0_RELEASE_RUNBOOK.md)
-- [v0.6.0 GitHub Release Content](../../docs/roadmap/V0.6.0_GITHUB_RELEASE.md)
+- [v0.7.0 Release Plan](../../docs/roadmap/V0.7.0_RELEASE_PLAN.md)
+- [v0.7.0 Release Runbook](../../docs/roadmap/V0.7.0_RELEASE_RUNBOOK.md)
+- [v0.7.0 GitHub Release Content](../../docs/roadmap/V0.7.0_GITHUB_RELEASE.md)
 - [Roadmap to v1.0.0](../../docs/roadmap/V1.0.0_ROADMAP.md)
 - [Canonical Identity and Provenance](../../docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)
