@@ -50,8 +50,11 @@ jobs:
       - name: Validate v0.8.0 FTS5 projection mapping
         run: node apps/api/test_fts5_search_projection.js projection
 
-      - name: Validate v0.8.0 FTS5 lexical search
-        run: node apps/api/test_fts5_search_projection.js search
+      - name: Validate v0.8.0 FTS5 primary search
+        run: node apps/api/test_fts5_search_projection.js search-primary
+
+      - name: Validate v0.8.0 FTS5 summary search
+        run: node apps/api/test_fts5_search_projection.js search-summary
 
       - name: Validate v0.8.0 FTS5 filters and facets
         run: node apps/api/test_fts5_search_projection.js filters
