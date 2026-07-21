@@ -1,7 +1,7 @@
 'use strict';
 
 const { URL } = require('url');
-const { classifySearchResult } = require('@toitoi/protocol');
+const { classifySearchResult } = require('./search_result_classifier');
 
 function json(statusCode, body) {
   return { statusCode, headers: { 'content-type': 'application/json; charset=utf-8' }, body };
@@ -38,6 +38,10 @@ function createRelatedInquiryHttpService(options = {}) {
     const source = events.find(event => event.id === inquiryId);
     if (!source) return json(404, { message: 'Inquiry not found', inquiryId });
 
+    if (searchService && typeof searchService.ensureCurrent === 'function') {
+      searchService.ensureCurrent();
+    }
+
     const explicit = relationTargets(source).map(edge => ({
       id: edge.id,
       relation: edge.relation || '',
@@ -46,7 +50,6 @@ function createRelatedInquiryHttpService(options = {}) {
     const explicitIds = new Set(explicit.map(item => item.id));
     let candidates = [];
     if (searchService && source.body && typeof source.body.text === 'string') {
-      if (typeof searchService.ensureCurrent === 'function') searchService.ensureCurrent();
       const result = searchService.projection.search({ q: source.body.text, limit: 20 });
       candidates = result.results
         .filter(item => item.id !== inquiryId && !explicitIds.has(item.id))
