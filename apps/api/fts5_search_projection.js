@@ -7,20 +7,13 @@ function isNonEmptyString(value) {
 }
 
 function stringValue(value) {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  if (value === null || value === undefined) {
-    return '';
-  }
+  if (typeof value === 'string') return value.trim();
+  if (value === null || value === undefined) return '';
   return String(value).trim();
 }
 
 function stringArray(value) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-  return value.map(stringValue).filter(Boolean);
+  return Array.isArray(value) ? value.map(stringValue).filter(Boolean) : [];
 }
 
 function objectEntries(value) {
@@ -29,13 +22,16 @@ function objectEntries(value) {
     : [];
 }
 
+function provenanceSources(event) {
+  return Array.isArray(event?.provenance?.sources)
+    ? event.provenance.sources.filter(source => source && typeof source === 'object')
+    : [];
+}
+
 function collectRelationTerms(event) {
   const terms = [];
-  const relationships = Array.isArray(event?.relationships) ? event.relationships : [];
-  for (const relation of relationships) {
-    if (!relation || typeof relation !== 'object') {
-      continue;
-    }
+  for (const relation of Array.isArray(event?.relationships) ? event.relationships : []) {
+    if (!relation || typeof relation !== 'object') continue;
     terms.push(
       stringValue(relation.type),
       stringValue(relation.relation),
@@ -43,12 +39,8 @@ function collectRelationTerms(event) {
       stringValue(relation.target),
     );
   }
-
-  const lineage = Array.isArray(event?.lineage) ? event.lineage : [];
-  for (const edge of lineage) {
-    if (!edge || typeof edge !== 'object') {
-      continue;
-    }
+  for (const edge of Array.isArray(event?.lineage) ? event.lineage : []) {
+    if (!edge || typeof edge !== 'object') continue;
     terms.push(
       stringValue(edge.type),
       stringValue(edge.relation),
@@ -56,7 +48,6 @@ function collectRelationTerms(event) {
       stringValue(edge.target),
     );
   }
-
   return terms.filter(Boolean);
 }
 
@@ -83,15 +74,11 @@ function resolveSummaryText(event) {
     event?.body?.summary,
     event?.metadata?.summary,
   ].map(stringValue).find(Boolean);
-  if (direct) {
-    return direct;
-  }
+  if (direct) return direct;
 
   const annotations = Array.isArray(event?.annotations) ? event.annotations : [];
   const accepted = annotations.find(annotation => {
-    if (!annotation || typeof annotation !== 'object') {
-      return false;
-    }
+    if (!annotation || typeof annotation !== 'object') return false;
     const kind = stringValue(annotation.kind || annotation.type);
     const reviewState = stringValue(annotation.reviewState || annotation.review_state);
     return kind === 'summary' && ['accepted', 'edited', 'approved'].includes(reviewState);
@@ -100,7 +87,10 @@ function resolveSummaryText(event) {
 }
 
 function resolveTransport(event) {
-  return stringValue(
+  const sourceProtocol = provenanceSources(event)
+    .map(source => stringValue(source.protocol || source.sourceProtocol || source.transport))
+    .find(Boolean);
+  return sourceProtocol || stringValue(
     event?.provenance?.sourceProtocol
       || event?.provenance?.transport
       || event?.sourceProtocol
@@ -109,13 +99,26 @@ function resolveTransport(event) {
 }
 
 function resolveProvenance(event) {
-  return [
+  const parts = [
     event?.provenance?.sourceId,
-    event?.provenance?.rawRef,
     event?.provenance?.actorId,
     event?.provenance?.authorId,
     event?.metadata?.authorId,
-  ].map(stringValue).filter(Boolean).join(' ');
+  ];
+  for (const source of provenanceSources(event)) {
+    parts.push(
+      source.protocol,
+      source.sourceProtocol,
+      source.transport,
+      source.sourceId,
+      source.id,
+      source.uri,
+      source.actorId,
+      source.authorId,
+      source.eventId,
+    );
+  }
+  return parts.map(stringValue).filter(Boolean).join(' ');
 }
 
 function resolveReviewState(event) {
@@ -124,7 +127,8 @@ function resolveReviewState(event) {
       || event?.reviewState
       || event?.review_state
       || event?.metadata?.reviewState
-      || event?.metadata?.review_state,
+      || event?.metadata?.review_state
+      || event?.meta?.publication?.humanReview?.decision,
   );
 }
 
@@ -139,21 +143,16 @@ function projectSearchDocument(event) {
     ...stringArray(event.tags),
     ...stringArray(event.body?.tags),
   ];
-  const primaryText = stringValue(event.body?.text || event.text || event.title);
-  const observationText = resolveObservationText(event);
-  const summaryText = resolveSummaryText(event);
-  const contextTerms = collectContextTerms(event);
-  const relationTerms = collectRelationTerms(event);
 
   return {
     id: event.id.trim(),
     eventType: stringValue(event.type),
-    primaryText,
-    observationText,
-    summaryText,
+    primaryText: stringValue(event.body?.text || event.text || event.title),
+    observationText: resolveObservationText(event),
+    summaryText: resolveSummaryText(event),
     tagsText: labels.join(' '),
-    contextsText: contextTerms.join(' '),
-    relationsText: relationTerms.join(' '),
+    contextsText: collectContextTerms(event).join(' '),
+    relationsText: collectRelationTerms(event).join(' '),
     region: stringValue(contexts.region || contexts.locality || contexts.place),
     climate: stringValue(contexts.climate || contexts.climate_zone),
     soil: stringValue(contexts.soil || contexts.soil_type),
@@ -171,9 +170,7 @@ function escapeFtsToken(token) {
 }
 
 function buildFtsQuery(query) {
-  if (!isNonEmptyString(query)) {
-    return null;
-  }
+  if (!isNonEmptyString(query)) return null;
   const tokens = query.trim().split(/\s+/).filter(Boolean);
   return tokens.length > 0 ? tokens.map(escapeFtsToken).join(' AND ') : null;
 }
@@ -231,34 +228,38 @@ function createFts5SearchProjection(options = {}) {
     ) VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
 
+  function insertProjected(document) {
+    insertDocument.run(
+      document.id,
+      document.eventType,
+      document.region,
+      document.climate,
+      document.soil,
+      document.crop,
+      document.season,
+      document.transport,
+      document.provenance,
+      document.reviewState,
+      document.createdAt,
+    );
+    insertFtsDocument.run(
+      document.id,
+      document.primaryText,
+      document.observationText,
+      document.summaryText,
+      document.tagsText,
+      document.contextsText,
+      document.relationsText,
+    );
+  }
+
   function upsert(event) {
     const document = projectSearchDocument(event);
     database.exec('BEGIN IMMEDIATE');
     try {
       deleteFtsDocument.run(document.id);
       deleteDocument.run(document.id);
-      insertDocument.run(
-        document.id,
-        document.eventType,
-        document.region,
-        document.climate,
-        document.soil,
-        document.crop,
-        document.season,
-        document.transport,
-        document.provenance,
-        document.reviewState,
-        document.createdAt,
-      );
-      insertFtsDocument.run(
-        document.id,
-        document.primaryText,
-        document.observationText,
-        document.summaryText,
-        document.tagsText,
-        document.contextsText,
-        document.relationsText,
-      );
+      insertProjected(document);
       database.exec('COMMIT');
       return document;
     } catch (error) {
@@ -273,31 +274,7 @@ function createFts5SearchProjection(options = {}) {
     try {
       deleteAllFtsDocuments.run();
       deleteAllDocuments.run();
-      for (const event of canonicalEvents) {
-        const document = projectSearchDocument(event);
-        insertDocument.run(
-          document.id,
-          document.eventType,
-          document.region,
-          document.climate,
-          document.soil,
-          document.crop,
-          document.season,
-          document.transport,
-          document.provenance,
-          document.reviewState,
-          document.createdAt,
-        );
-        insertFtsDocument.run(
-          document.id,
-          document.primaryText,
-          document.observationText,
-          document.summaryText,
-          document.tagsText,
-          document.contextsText,
-          document.relationsText,
-        );
-      }
+      for (const event of canonicalEvents) insertProjected(projectSearchDocument(event));
       database.exec('COMMIT');
       return { indexed: canonicalEvents.length };
     } catch (error) {
@@ -400,9 +377,7 @@ function createFts5SearchProjection(options = {}) {
       ['review_state', 'review_state'],
     ]);
     const column = allowed.get(dimension);
-    if (!column) {
-      throw new RangeError(`Unsupported facet dimension: ${dimension}`);
-    }
+    if (!column) throw new RangeError(`Unsupported facet dimension: ${dimension}`);
     return database.prepare(`
       SELECT ${column} AS value, COUNT(*) AS count
       FROM search_documents
@@ -413,23 +388,17 @@ function createFts5SearchProjection(options = {}) {
   }
 
   function close() {
-    if (typeof database.close === 'function') {
-      database.close();
-    }
+    if (typeof database.close === 'function') database.close();
   }
 
-  return {
-    close,
-    database,
-    facets,
-    rebuild,
-    search,
-    upsert,
-  };
+  return { close, database, facets, rebuild, search, upsert };
 }
 
 module.exports = {
   buildFtsQuery,
   createFts5SearchProjection,
   projectSearchDocument,
+  resolveProvenance,
+  resolveReviewState,
+  resolveTransport,
 };
