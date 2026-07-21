@@ -8,17 +8,19 @@
 
 ## v0.8.0
 
-**Status: release candidate**
+**Status: released**
 
 v0.8.0は、蓄積されたCanonical Eventを語句、文脈、relation、transport、provenance、review state、地域語彙から探索し、問いの再利用へ接続するリリースです。
 
-### Release candidate record
+### Release record
 
+- released: 2026-07-22
+- tag: `v0.8.0`
+- tag target: `d04e4354325ebd68f270f844cd7130a47ae4e660`
+- GitHub Release title: `Toitoi v0.8.0 — Search, Vocabulary, and Reuse`
 - implementation PR: [#36](https://github.com/nkkmd/Toitoi/pull/36)
-- release-ready head: `550b12460a772b5f559124b46ff4d7436f29dd5c`
-- final clean CI: run #628 succeeded
-- tag: pending
-- GitHub Release: pending
+- implementation merged to `main` as `d04e4354325ebd68f270f844cd7130a47ae4e660`
+- final pre-merge CI: run #654 succeeded
 
 ### Highlights
 
@@ -30,13 +32,14 @@ v0.8.0は、蓄積されたCanonical Eventを語句、文脈、relation、transp
 - `GET /api/v1/search/contexts`
 - `GET /api/v1/inquiries/:id/related`
 - `exact_identity`、`explicit_relation`、`related_candidate`の明示分類
-- explicit relationをlexical candidateより優先する関連問い取得
+- outgoing relationとincoming lineage childを含むexplicit relation優先の関連問い取得
 - Core／Domain／Local Vocabulary contract
 - locality、provenance、review state、人間確認境界を保持するmapping claim
 - `GET /api/v1/vocabulary/terms`
 - `GET /api/v1/vocabulary/mappings`
 - search／context exploration frontend ViewModelとHTML renderer
 - fixed reference dataset、ranking／filter regression、replay-equivalence validation
+- canonical `provenance.sources[]`とpublication human review decisionの検索projection対応
 
 ### Reuse path
 
@@ -57,20 +60,22 @@ Canonical storage
 - lexical similarity、context overlap、semantic relation、Vocabulary mappingからidentityを自動統合しない
 - local termはshared termへsilent normalizationしない
 - mapping claimはsource／target、relation、locality、provenance、review stateを保持する
--既存の`draft → in_review → approved → published`境界を変更しない
+- 既存の`draft → in_review → approved → published`境界を変更しない
 
 ### Validation
 
 - protocol Vocabulary contract
 - FTS5 projection mapping、primary／summary search、filter、facet、upsert
+- canonical `provenance.sources[]` transport／source indexing
+- publication human review-state indexing
 - search HTTP APIとclassification
 - fixed reference ranking／filter dataset
 - Vocabulary HTTP API
-- explicit relation優先のrelated inquiry API
+- outgoing relationとincoming lineage childを含むrelated inquiry API
 - replay前後のsearch result／facet同値性
 - frontend ViewModel／renderer
 - complete workspace regression
-- GitHub Actions run #628 succeeded
+- GitHub Actions run #654 succeeded
 
 ### Known limitations
 
@@ -79,7 +84,7 @@ Canonical storage
 - production RAG、graph inference、大規模graph visualizationは非対象
 - automatic identity mergeは行わない
 - live external transport availabilityはdefault CIの保証範囲外
-- 生成・派生・関連付けされた問いの農業上の正しさは保証しない
+- 生成・派生・関連付け・mappingされた問いの農業上の正しさは保証しない
 
 詳細は[`V0.8.0_RELEASE_PLAN.md`](./V0.8.0_RELEASE_PLAN.md)、[`V0.8.0_RELEASE_RUNBOOK.md`](./V0.8.0_RELEASE_RUNBOOK.md)、[`V0.8.0_GITHUB_RELEASE.md`](./V0.8.0_GITHUB_RELEASE.md)を参照してください。
 
@@ -117,55 +122,3 @@ v0.7.0は、既存のlineage inspectionを、semantic relationを明示して問
 詳細は[`V0.7.0_RELEASE_PLAN.md`](./V0.7.0_RELEASE_PLAN.md)、[`V0.7.0_RELEASE_RUNBOOK.md`](./V0.7.0_RELEASE_RUNBOOK.md)、[`V0.7.0_GITHUB_RELEASE.md`](./V0.7.0_GITHUB_RELEASE.md)を参照してください。
 
 ---
-
-## v0.6.0
-
-**Status: released**
-
-v0.6.0は、Standard API、AI annotation review、Inquiry Draft、publication guard、append-only storage、multi-transport runtimeをmobile-first SPA／PWAとoffline Golden Pathへ統合しました。
-
-### Highlights
-
-- mobile-first observation input and installable PWA shell
-- IndexedDB-backed local observation persistence
-- durable explicit synchronization queue
-- AI annotation accept／edit／reject and selected-candidate promotion
-- Inquiry Draft submit／approve／reject／publish workflow
-- approved Draftだけを許可するpublication guard
-- canonical storageとmulti-transport delivery
-
-詳細は[`V0.6.0_RELEASE_PLAN.md`](./V0.6.0_RELEASE_PLAN.md)、[`V0.6.0_RELEASE_RUNBOOK.md`](./V0.6.0_RELEASE_RUNBOOK.md)、[`V0.6.0_GITHUB_RELEASE.md`](./V0.6.0_GITHUB_RELEASE.md)を参照してください。
-
----
-
-## v0.5.0
-
-**Status: released**
-
-v0.5.0は、v0.4.0の非同期AI annotation基盤を、監査可能な複数問い候補生成へ拡張しました。
-
-### Highlights
-
-- llama.cpp OpenAI-compatible production inference provider
-- versioned `generate_inquiries` annotation contract
-- multiple validated inquiry candidates per observation
-- append-only annotation accept／edit／reject mutations
-- accepted／edited candidate promotion to Inquiry Draft
-- low-resource profile for 4GB-class systems
-
----
-
-## v0.4.0
-
-**Status: released**
-
-v0.4.0 introduced the asynchronous AI assistance layer behind Canonical Event ingest and persistence.
-
-### Highlights
-
-- duplicate-aware AI job queue
-- bounded retry and restart recovery
-- summary／tag annotation contracts
-- append-only job and annotation persistence
-- provider-neutral deterministic worker boundary
-- Standard API AI inspection views
