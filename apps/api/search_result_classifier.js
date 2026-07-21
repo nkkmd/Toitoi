@@ -31,7 +31,7 @@ function classifySearchResult(options = {}) {
   }
 
   const relatedTo = nonEmpty(options.relatedTo) ? options.relatedTo.trim() : null;
-  if (relatedTo && relationTerms(event).includes(relatedTo)) {
+  if (options.explicitRelation === true || (relatedTo && relationTerms(event).includes(relatedTo))) {
     return Object.freeze({
       classification: 'explicit_relation',
       reason: 'declared_semantic_edge',
