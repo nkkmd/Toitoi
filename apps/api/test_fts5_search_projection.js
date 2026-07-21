@@ -72,7 +72,7 @@ function primarySearchContract() {
   const projection = createFts5SearchProjection();
   try {
     assert.deepStrictEqual(projection.rebuild(buildFixtures()), { indexed: 2 });
-    const textResult = projection.search({ q: 'east weeds' });
+    const textResult = projection.search({ q: 'moisture weeds' });
     assert.strictEqual(textResult.total, 1);
     assert.strictEqual(textResult.results[0].id, 'inquiry-east-weeds');
     assert.strictEqual(textResult.results[0].classification, 'related_candidate');
