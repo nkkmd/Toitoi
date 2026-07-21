@@ -7,7 +7,7 @@
 
 **Digital Agroecology Commons powered by protocol-independent Canonical Events**
 
-**Current release candidate: v0.8.0**
+**Current release: v0.8.0**
 
 *[日本語は下に続きます]*
 
@@ -39,13 +39,14 @@ Implemented capabilities:
 - `GET /api/v1/search/contexts`
 - `GET /api/v1/inquiries/:id/related`
 - explicit result classes: `exact_identity`, `explicit_relation`, and `related_candidate`
-- explicit relations ordered before lexical candidates
+- outgoing relations and incoming lineage children ordered before lexical candidates
 - Core, Domain, and Local Vocabulary contracts
 - vocabulary mapping claims with provenance, review state, locality, and human-confirmation boundaries
 - `GET /api/v1/vocabulary/terms`
 - `GET /api/v1/vocabulary/mappings`
 - frontend search/context ViewModel and HTML renderer
 - fixed reference dataset, ranking/filter regression, and replay-equivalence validation
+- canonical `provenance.sources[]` and publication human review-state indexing
 
 Canonical storage remains the source of truth. The FTS5 database is derived and rebuildable. Search results, relation edges, and vocabulary mappings never merge Canonical Event identity.
 
@@ -157,7 +158,7 @@ These endpoints are operational project infrastructure. Deterministic release te
 
 ## Scope and limitations
 
-v0.8.0 is an experimental reference release candidate, not a production-grade hosted product.
+v0.8.0 is an experimental reference release, not a production-grade hosted product.
 
 - production authentication, authorization, rate limiting, and multi-user tenancy are not implemented
 - the AI queue remains local and single-process rather than distributed
@@ -182,7 +183,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) and [LICENSE_POLICY.md](./LICENSE_POLIC
 
 **プロトコル非依存のCanonical Eventを基盤とする、デジタル・アグロエコロジー・コモンズ**
 
-**現在のリリース候補: v0.8.0**
+**現在のリリース: v0.8.0**
 
 Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、普遍的な「答え」ではなく、地域固有の観察から生まれる**問い**を共有・検討・派生・探索する分散型プロトコル・プラットフォームです。
 
@@ -199,13 +200,14 @@ v0.8.0では、蓄積された問いを語句・文脈・地域・relation・pro
 - `GET /api/v1/search/contexts`
 - `GET /api/v1/inquiries/:id/related`
 - `exact_identity`、`explicit_relation`、`related_candidate`の分離
-- explicit relationをlexical candidateより優先する関連問い表示
+- outgoing relationとincoming lineage childをlexical candidateより優先する関連問い表示
 - Core／Domain／Local Vocabulary contract
 - locality、provenance、review state、人間確認境界を保持するmapping claim
 - `GET /api/v1/vocabulary/terms`
 - `GET /api/v1/vocabulary/mappings`
 - 検索・文脈探索用frontend ViewModel／renderer
 - 固定reference dataset、ranking／filter回帰、replay同値性テスト
+- canonical `provenance.sources[]`とpublication human review decisionの検索projection対応
 
 Canonical storageが正本です。FTS5は再構築可能な派生データであり、類似性、semantic relation、vocabulary mappingだけでCanonical identityを統合しません。
 
@@ -244,7 +246,7 @@ corepack pnpm --filter @toitoi/api start
 
 ## 既知の制約
 
-v0.8.0は実験的なreference release candidateです。production-gradeの認証・認可・rate limiting・multi-user tenancy、distributed AI queue、無人background publication、embeddings、vector database、production RAG、graph inference、大規模graph visualization、automatic identity mergeは対象外です。地域語彙はmapping claimによって接続し、silent normalizationしません。生成・派生・関連付けされた問いの農業上の妥当性は保証しません。
+v0.8.0は実験的なreference releaseです。production-gradeの認証・認可・rate limiting・multi-user tenancy、distributed AI queue、無人background publication、embeddings、vector database、production RAG、graph inference、大規模graph visualization、automatic identity mergeは対象外です。地域語彙はmapping claimによって接続し、silent normalizationしません。生成・派生・関連付けされた問いの農業上の妥当性は保証しません。
 
 ## ライセンス
 
