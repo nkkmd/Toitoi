@@ -1,4 +1,4 @@
-' strict';
+'use strict';
 
 (function initDerivationUi() {
   const form = document.querySelector('#derivation-form');
