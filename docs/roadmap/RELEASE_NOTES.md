@@ -8,9 +8,17 @@
 
 ## v0.7.0
 
-**Status: release-ready**
+**Status: released**
 
 v0.7.0は、既存のlineage inspectionを、semantic relationを明示して問いを育てる第一級のauthoring workflowへ拡張するリリースです。
+
+### Release record
+
+- released: 2026-07-21
+- tag: `v0.7.0`
+- tag target: `79013aad304c0778f49dab67678cbf0ef6ee9fd0`
+- GitHub Release title: `Toitoi v0.7.0 — Inquiry Derivation and Genealogy`
+- implementation merged to `main` as `b1ba070c1bf9cfc4c21be74a4cd9d4e479640959`
 
 ### Highlights
 
