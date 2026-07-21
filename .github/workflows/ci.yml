@@ -47,8 +47,17 @@ jobs:
       - name: Validate v0.8.0 protocol vocabulary
         run: node packages/protocol/test_vocabulary.js
 
-      - name: Validate v0.8.0 FTS5 projection
-        run: node apps/api/test_fts5_search_projection.js
+      - name: Validate v0.8.0 FTS5 projection mapping
+        run: node apps/api/test_fts5_search_projection.js projection
+
+      - name: Validate v0.8.0 FTS5 lexical search
+        run: node apps/api/test_fts5_search_projection.js search
+
+      - name: Validate v0.8.0 FTS5 filters and facets
+        run: node apps/api/test_fts5_search_projection.js filters
+
+      - name: Validate v0.8.0 FTS5 upsert
+        run: node apps/api/test_fts5_search_projection.js upsert
 
       - name: Validate v0.8.0 search classification
         run: node apps/api/test_search_result_classifier.js
