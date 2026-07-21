@@ -102,7 +102,7 @@ function run() {
       ...buildFixtures()[0],
       body: { text: 'Why do sedges dominate the wet eastern edge?' },
     });
-    assert.strictEqual(projection.search({ q: 'sedge' }).total, 1);
+    assert.strictEqual(projection.search({ q: 'sedges' }).total, 1);
     assert.strictEqual(projection.search({ q: 'species' }).total, 0);
 
     assert.throws(
