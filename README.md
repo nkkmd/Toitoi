@@ -7,7 +7,7 @@
 
 **Digital Agroecology Commons powered by protocol-independent Canonical Events**
 
-**Current release line: v0.7.0 release candidate**
+**Current release line: v0.7.0**
 
 *[日本語は下に続きます]*
 
@@ -177,7 +177,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) and [LICENSE_POLICY.md](./LICENSE_POLIC
 
 **プロトコル非依存のCanonical Eventを基盤とする、デジタル・アグロエコロジー・コモンズ**
 
-**現在のリリース系列: v0.7.0 release candidate**
+**現在のリリース系列: v0.7.0**
 
 Toitoi（トイトイ）は、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、普遍的な「答え」ではなく、地域固有の観察から生まれる**問い**を共有・検討・派生させる分散型プロトコル・プラットフォームです。
 
