@@ -22,6 +22,9 @@ function createApiClient({ baseUrl = '', fetchImpl = globalThis.fetch } = {}) {
     promoteAnnotation(annotationId, body = {}) {
       return post(`/api/v1/ai/annotations/${encodeURIComponent(annotationId)}/promote`, body);
     },
+    deriveInquiry(sourceInquiryId, body = {}) {
+      return post(`/api/v1/inquiries/${encodeURIComponent(sourceInquiryId)}/derive`, body);
+    },
     getDraft(draftId) { return request(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}`); },
     submitDraft(draftId, body = {}) { return post(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/submit`, body); },
     approveDraft(draftId, body = {}) { return post(`/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/approve`, body); },

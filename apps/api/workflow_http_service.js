@@ -6,6 +6,7 @@ const {
   approveInquiryDraft,
   rejectInquiryDraft,
   assertPublishableInquiryDraft,
+  createDerivedInquiryDraft,
 } = require('@toitoi/protocol');
 const { promoteInquiryCandidate } = require('@toitoi/ai');
 
@@ -86,6 +87,33 @@ function createMemoryWorkflowService({
       return clone(draft);
     },
 
+    deriveInquiry(sourceInquiryId, input = {}) {
+      const candidate = input.candidate && typeof input.candidate === 'object'
+        ? input.candidate
+        : {
+          type: 'inquiry',
+          body: {
+            text: requiredString(input.text, 'text'),
+            language: requiredString(input.language || 'und', 'language'),
+          },
+          contexts: input.contexts && typeof input.contexts === 'object' ? clone(input.contexts) : {},
+        };
+      const draft = createDerivedInquiryDraft({
+        id: input.id || nextId('tt:draft:inquiry-'),
+        sourceInquiryId,
+        relationType: requiredString(input.relationType, 'relationType'),
+        relationDetails: input.relationDetails || {},
+        relationConfirmedByHuman: input.relationConfirmedByHuman,
+        strictRelationValidation: true,
+        candidate,
+        createdAt: input.createdAt || now(),
+        authorId: input.authorId,
+        ai: input.aiSuggestion || input.ai,
+      });
+      drafts.set(draft.id, draft);
+      return clone(draft);
+    },
+
     getDraft(id) {
       const draft = drafts.get(id);
       return draft ? clone(draft) : null;
@@ -129,14 +157,17 @@ function createMemoryWorkflowService({
       const candidate = assertPublishableInquiryDraft(draft);
       const publishedAt = input.createdAt || now();
       const publicationId = input.id || nextId('tt:evt:inquiry-');
+      const derivationSources = draft.derivation
+        ? (draft.derivation.sourceInquiryIds || [draft.derivation.sourceInquiryId])
+        : [];
       const publication = {
         ...clone(candidate),
         id: publicationId,
         createdAt: publishedAt,
-        lineage: draft.derivation ? [{
-          sourceId: draft.derivation.sourceInquiryId,
+        lineage: draft.derivation ? derivationSources.map(sourceId => ({
+          sourceId,
           relationType: draft.derivation.relationType,
-        }] : [],
+        })) : [],
         meta: {
           ...(candidate.meta || {}),
           publication: {
@@ -144,6 +175,7 @@ function createMemoryWorkflowService({
             approvedBy: draft.review.reviewerId,
             approvedAt: draft.review.reviewedAt,
             publishedAt,
+            derivation: draft.derivation ? clone(draft.derivation) : null,
           },
         },
       };
@@ -188,6 +220,12 @@ function createWorkflowHttpService({ workflowService }) {
       if (promotion) {
         if (method !== 'POST') return json(405, { message: 'Method not allowed' });
         return json(201, await workflowService.promoteAnnotation(decodeURIComponent(promotion[1]), body()));
+      }
+
+      const derivation = pathname.match(/^\/api\/v1\/inquiries\/([^/]+)\/derive$/);
+      if (derivation) {
+        if (method !== 'POST') return json(405, { message: 'Method not allowed' });
+        return json(201, await workflowService.deriveInquiry(decodeURIComponent(derivation[1]), body()));
       }
 
       const draft = pathname.match(/^\/api\/v1\/inquiry-drafts\/([^/]+)(?:\/(submit|approve|reject|publish))?$/);

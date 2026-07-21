@@ -1,14 +1,14 @@
 # Toitoi Foundation Implementation Status
 
-**Status: current index / historical implementation record** | **Last updated: 2026-07-20**
+**Status: current index / historical implementation record** | **Last updated: 2026-07-21**
 
 ## 目的
 
-この文書は、[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)の現在の位置づけと、v0.6.0時点の基盤到達点を明確にします。
+この文書は、[`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)の現在の位置づけと、v0.7.0 release candidate時点の基盤到達点を明確にします。
 
 `IMPLEMENTATION_PLAN.md`は、Canonical Event、adapter／normalizer、storage／replay、Indexer、Standard API、multi-protocol、canonical identity、identity claim、Lingonberry、registry-driven runtime selectionを段階的に実装した履歴です。
 
-Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inquiry Draft、human review、publication guard、frontend render boundary、primary transport operational smokeが追加されました。v0.3.0ではlineage tree、context exploration、reviewed derived inquiry publicationを統合し、v0.4.0では非同期AI annotation layerを接続しました。v0.5.0では実モデル互換provider、複数問い候補、annotation review mutation、Inquiry Draft promotionを統合しました。v0.6.0では、これらをmobile-first SPA／PWA、IndexedDB offline storage、明示的同期、workflow mutation、canonical storage、multi-transport publicationへ接続しました。
+Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inquiry Draft、human review、publication guard、frontend render boundary、primary transport operational smokeが追加されました。v0.3.0ではlineage tree、context exploration、reviewed derived inquiry publicationを統合し、v0.4.0では非同期AI annotation layerを接続しました。v0.5.0では実モデル互換provider、複数問い候補、annotation review mutation、Inquiry Draft promotionを統合しました。v0.6.0では、これらをmobile-first SPA／PWA、IndexedDB offline storage、明示的同期、workflow mutation、canonical storage、multi-transport publicationへ接続しました。v0.7.0では、semantic relation付きの問い派生を第一級操作へ引き上げ、relation別validation、mobile authoring、統合系譜表示、transport replay fixtureを追加しました。
 
 今後の新規機能優先順位は`IMPLEMENTATION_PLAN.md`のphase番号を延長して管理せず、次を正本とします。
 
@@ -66,6 +66,7 @@ Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inqu
 - derived inquiryのsemantic relationを`lineage`へ記録
 - workflow、AI関与、human reviewをpublication metadataへ記録
 - canonical storage IDとtransport delivery resultの追跡
+- canonical identity、semantic relation、context similarityの明示的分離
 
 ### Access and reference experience
 
@@ -75,7 +76,7 @@ Phase 18までの基盤はv0.1.0で接続され、v0.2.0ではGolden Path、Inqu
 - Inquiry Draft／human review／publication guard
 - transport-independent frontend model
 - mobile-first SPA／PWA application shell
-- v0.2.0〜v0.6.0のcross-feature Golden Paths
+- v0.2.0〜v0.7.0のcross-feature Golden Pathsと回帰fixture
 
 ### Asynchronous AI assistance
 
@@ -110,30 +111,43 @@ AI annotationはCanonical Eventとは分離され、`unreviewed`／`rejected`状
 - source lineage、AI involvement、human approval、storage ID、transport resultの表示
 - unattended background publicationを行わないService Worker boundary
 
+### v0.7.0 inquiry derivation and genealogy
+
+- 8種類のfirst-class semantic relation vocabulary
+- relation type別の入力補助とstrict validation
+- `POST /api/v1/inquiries/:id/derive`
+- existing inquiryからderived Inquiry Draftを作るmobile-first form
+- AI-suggested relationとhuman-confirmed relationの分離
+- synthesisにおける複数source inquiry保持
+- existing Draft review／publication guardへの接続
+- lineage、context、provenance、identity、AI、human reviewの統合presentation model
+- transport projection、re-ingest、storage replay後のlineage復元fixture
+- similarityを根拠とするautomatic identity mergeの禁止
+
 ## 現在のリリース基準点
 
-v0.6.0の正本:
+v0.7.0 release candidateの正本:
 
-- [`V0.6.0_RELEASE_PLAN.md`](./V0.6.0_RELEASE_PLAN.md)
-- [`V0.6.0_RELEASE_RUNBOOK.md`](./V0.6.0_RELEASE_RUNBOOK.md)
-- [`V0.6.0_GITHUB_RELEASE.md`](./V0.6.0_GITHUB_RELEASE.md)
+- [`V0.7.0_RELEASE_PLAN.md`](./V0.7.0_RELEASE_PLAN.md)
+- [`V0.7.0_RELEASE_RUNBOOK.md`](./V0.7.0_RELEASE_RUNBOOK.md)
+- [`V0.7.0_GITHUB_RELEASE.md`](./V0.7.0_GITHUB_RELEASE.md)
 - [`RELEASE_NOTES.md`](./RELEASE_NOTES.md)
-- [PR #33](https://github.com/nkkmd/Toitoi/pull/33)
+- [PR #35](https://github.com/nkkmd/Toitoi/pull/35)
 
-v0.6.0以降の工程:
+v0.7.0以降の工程:
 
 - [`V1.0.0_ROADMAP.md`](./V1.0.0_ROADMAP.md)
 
 ## 次の基盤課題
 
-v0.7.0以降は[`V1.0.0_ROADMAP.md`](./V1.0.0_ROADMAP.md)を正本とします。直近の主な課題は次のとおりです。
+v0.8.0以降は[`V1.0.0_ROADMAP.md`](./V1.0.0_ROADMAP.md)を正本とします。直近の主な課題は次のとおりです。
 
-- inquiry derivationを一般利用者向けの第一級操作にする
-- relation typeごとのvalidationと入力補助
-- lineage／context／provenanceを統合した系譜ビュー
+- SQLite FTS5による横断検索
+- context、relation、transport、provenance、review state filter
+- Core／Domain／Local Vocabularyとmapping claim
+- exact identityとrelated candidateのUI／API分離
 - production authentication／authorization／rate limiting
 - shared persistent workflow repositoryとmulti-user boundary
-- model installationとlive local-inference operational guidance
 - Conformance Suiteとschema migration tooling
 - AI quality evaluationとdomain-specific review protocol
 

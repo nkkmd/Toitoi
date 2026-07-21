@@ -34,10 +34,12 @@ function run() {
   assert.deepStrictEqual(DERIVATION_TYPES, [
     'derived_from',
     'translated_from',
-    'annotates',
-    'reframes',
-    'revises',
+    'observed_alongside',
+    'contrasts_with',
     'synthesizes',
+    'reframes',
+    'annotates',
+    'revises',
   ]);
 
   const draft = createDerivedInquiryDraft({

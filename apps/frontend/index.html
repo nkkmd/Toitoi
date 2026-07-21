@@ -56,6 +56,28 @@
         <div id="publication-result"></div>
       </section>
     </section>
+
+    <section aria-labelledby="derivation-heading">
+      <h2 id="derivation-heading">既存の問いを派生する</h2>
+      <p>canonical identityとは統合せず、意味関係を明示した新しいInquiry Draftを作成します。</p>
+      <form id="derivation-form" class="stack">
+        <label>派生元Canonical Event ID<input name="sourceInquiryId" required placeholder="tt:evt:inquiry-..."></label>
+        <label>relation種別<select name="relationType" required></select></label>
+        <p id="derivation-guidance" class="meta"></p>
+        <div id="derivation-details" class="stack"></div>
+        <label>派生する問い<textarea name="inquiryText" required rows="4"></textarea></label>
+        <label>言語<input name="language" value="ja"></label>
+        <label>作成者ID<input name="authorId" value="human:field-worker"></label>
+        <details><summary>AIによるrelation候補（任意）</summary>
+          <label>AI候補relation<input name="aiSuggestedRelationType"></label>
+          <label>AI候補の説明<textarea name="aiSuggestionNote" rows="2"></textarea></label>
+        </details>
+        <label><input type="checkbox" name="relationConfirmedByHuman" required> relation種別と派生元を人間が確認しました</label>
+        <button type="submit">派生Inquiry Draftを作成</button>
+      </form>
+      <p id="derivation-status" aria-live="polite"></p>
+      <pre id="derivation-result"></pre>
+    </section>
   </main>
   <dialog id="publish-dialog">
     <form id="publish-form" method="dialog" class="stack">
@@ -70,7 +92,9 @@
   <script src="./offline_store.js"></script>
   <script src="./field_app.js"></script>
   <script src="./api_client.js"></script>
+  <script src="./derivation_form_model.js"></script>
   <script src="./app.js"></script>
   <script src="./workflow_ui.js"></script>
+  <script src="./derivation_ui.js"></script>
 </body>
 </html>
