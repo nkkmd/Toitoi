@@ -13,6 +13,8 @@ const {
 } = require('@toitoi/ai');
 const { createStandardApiService } = require('./standard_api_service');
 const { createSearchHttpService } = require('./search_http_service');
+const { createVocabularyHttpService } = require('./vocabulary_http_service');
+const { createRelatedInquiryHttpService } = require('./related_inquiry_http_service');
 const { createToitoiApiService } = require('./toitoi_api_service');
 const { createMemoryWorkflowService } = require('./workflow_http_service');
 const { createCanonicalPublisher } = require('./canonical_publisher');
@@ -126,6 +128,14 @@ function createToitoiApiServer(options = {}) {
     getIndexSnapshot,
     filename: resolveSearchIndexFile(options),
   });
+  const vocabularyService = options.vocabularyService || createVocabularyHttpService({
+    terms: options.vocabularyTerms || [],
+    mappings: options.vocabularyMappings || [],
+  });
+  const relatedInquiryService = options.relatedInquiryService || createRelatedInquiryHttpService({
+    getIndexSnapshot,
+    searchService,
+  });
   const aiRuntime = createAiRuntimeFromOptions(options);
   const canonicalPublisher = options.canonicalPublisher || (storageDir
     ? createCanonicalPublisher({
@@ -146,6 +156,8 @@ function createToitoiApiServer(options = {}) {
   const service = createToitoiApiService({
     standardService,
     searchService,
+    vocabularyService,
+    relatedInquiryService,
     aiInspectionService: aiRuntime.inspectionService,
     aiReviewService: aiRuntime.reviewService,
     workflowService,
@@ -182,7 +194,7 @@ function startServer(options = {}) {
       : 'ai-inspection:disabled';
     const workflowStatus = resolveStorageDir(options) ? 'workflow:enabled' : 'workflow:disabled';
     const searchStatus = resolveSearchIndexFile(options) === ':memory:' ? 'search:memory' : 'search:persistent';
-    console.log(`Toitoi API listening on http://127.0.0.1:${port} (${aiStatus}, ${workflowStatus}, ${searchStatus})`);
+    console.log(`Toitoi API listening on http://127.0.0.1:${port} (${aiStatus}, ${workflowStatus}, ${searchStatus}, vocabulary:enabled, related:enabled)`);
   });
   return server;
 }
