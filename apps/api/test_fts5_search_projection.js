@@ -68,7 +68,7 @@ function projectionContract() {
   assert.match(projected.tagsText, /weeds/);
 }
 
-function searchContract() {
+function primarySearchContract() {
   const projection = createFts5SearchProjection();
   try {
     assert.deepStrictEqual(projection.rebuild(buildFixtures()), { indexed: 2 });
@@ -77,6 +77,15 @@ function searchContract() {
     assert.strictEqual(textResult.results[0].id, 'inquiry-east-weeds');
     assert.strictEqual(textResult.results[0].classification, 'related_candidate');
     assert.strictEqual(textResult.results[0].signals.lexical, true);
+  } finally {
+    projection.close();
+  }
+}
+
+function summarySearchContract() {
+  const projection = createFts5SearchProjection();
+  try {
+    projection.rebuild(buildFixtures());
     const summaryResult = projection.search({ q: 'drainage compaction' });
     assert.strictEqual(summaryResult.total, 1);
     assert.strictEqual(summaryResult.results[0].id, 'inquiry-north-soil');
@@ -126,7 +135,8 @@ function upsertContract() {
 
 const scenarios = {
   projection: projectionContract,
-  search: searchContract,
+  'search-primary': primarySearchContract,
+  'search-summary': summarySearchContract,
   filters: filterFacetContract,
   upsert: upsertContract,
 };
