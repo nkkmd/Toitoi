@@ -10,6 +10,19 @@ function json(statusCode, body) {
   };
 }
 
+function termLayer(term) {
+  return term && (term.layer || term.scope) || '';
+}
+
+function termLanguages(term) {
+  if (!term || typeof term !== 'object') return [];
+  if (typeof term.language === 'string' && term.language) return [term.language];
+  if (term.labels && typeof term.labels === 'object' && !Array.isArray(term.labels)) {
+    return Object.keys(term.labels);
+  }
+  return [];
+}
+
 function createVocabularyHttpService(options = {}) {
   const terms = Array.isArray(options.terms) ? options.terms.slice() : [];
   const mappings = Array.isArray(options.mappings) ? options.mappings.slice() : [];
@@ -21,12 +34,12 @@ function createVocabularyHttpService(options = {}) {
     const pathname = parsed.pathname.replace(/\/+$/, '') || '/';
 
     if (pathname === '/api/v1/vocabulary/terms') {
-      const layer = parsed.searchParams.get('layer');
+      const layer = parsed.searchParams.get('layer') || parsed.searchParams.get('scope');
       const language = parsed.searchParams.get('language');
       const locality = parsed.searchParams.get('locality');
       const results = terms.filter(term => {
-        if (layer && term.layer !== layer) return false;
-        if (language && term.language !== language) return false;
+        if (layer && termLayer(term) !== layer) return false;
+        if (language && !termLanguages(term).includes(language)) return false;
         if (locality && term.locality !== locality) return false;
         return true;
       });
@@ -56,4 +69,4 @@ function createVocabularyHttpService(options = {}) {
   return Object.freeze({ handleRequest, mappings, terms });
 }
 
-module.exports = { createVocabularyHttpService };
+module.exports = { createVocabularyHttpService, termLanguages, termLayer };
