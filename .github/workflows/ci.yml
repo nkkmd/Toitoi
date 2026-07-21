@@ -47,23 +47,32 @@ jobs:
       - name: Validate v0.8.0 protocol vocabulary
         run: node packages/protocol/test_vocabulary.js
 
-      - name: Validate v0.8.0 search core
-        run: |
-          node apps/api/test_fts5_search_projection.js
-          node apps/api/test_search_result_classifier.js
-          node apps/api/test_v0_8_0_search_api.js
-          node apps/api/test_v0_8_0_search_reference_dataset.js
+      - name: Validate v0.8.0 FTS5 projection
+        run: node apps/api/test_fts5_search_projection.js
 
-      - name: Validate v0.8.0 reuse and replay
-        run: |
-          node apps/api/test_vocabulary_http_service.js
-          node apps/api/test_related_inquiry_api.js
-          node apps/api/test_search_replay_equivalence.js
+      - name: Validate v0.8.0 search classification
+        run: node apps/api/test_search_result_classifier.js
 
-      - name: Validate v0.8.0 frontend exploration
-        run: |
-          node apps/frontend/test_search_exploration_view_model.js
-          node apps/frontend/test_search_exploration_renderer.js
+      - name: Validate v0.8.0 search HTTP API
+        run: node apps/api/test_v0_8_0_search_api.js
+
+      - name: Validate v0.8.0 reference ranking
+        run: node apps/api/test_v0_8_0_search_reference_dataset.js
+
+      - name: Validate v0.8.0 vocabulary HTTP API
+        run: node apps/api/test_vocabulary_http_service.js
+
+      - name: Validate v0.8.0 related inquiry API
+        run: node apps/api/test_related_inquiry_api.js
+
+      - name: Validate v0.8.0 replay equivalence
+        run: node apps/api/test_search_replay_equivalence.js
+
+      - name: Validate v0.8.0 frontend view model
+        run: node apps/frontend/test_search_exploration_view_model.js
+
+      - name: Validate v0.8.0 frontend renderer
+        run: node apps/frontend/test_search_exploration_renderer.js
 
       - name: Run tests
         run: corepack pnpm test
