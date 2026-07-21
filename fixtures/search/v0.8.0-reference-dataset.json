@@ -1,0 +1,70 @@
+{
+  "version": "0.8.0",
+  "events": [
+    {
+      "id": "q-soil-moisture-shikoku",
+      "type": "inquiry",
+      "createdAt": "2026-07-01T00:00:00.000Z",
+      "body": { "text": "Why does soil moisture remain high after rain?" },
+      "labels": ["soil", "moisture"],
+      "contexts": {
+        "region": "Shikoku",
+        "climate_zone": "warm-temperate",
+        "soil_type": "loam",
+        "crop_family": "rice",
+        "season": "summer"
+      },
+      "provenance": { "sourceProtocol": "nostr", "sourceId": "nostr:q1" },
+      "review": { "state": "approved" }
+    },
+    {
+      "id": "q-soil-dry-tohoku",
+      "type": "inquiry",
+      "createdAt": "2026-07-02T00:00:00.000Z",
+      "body": { "text": "Why does this soil dry quickly after rain?" },
+      "labels": ["soil", "drainage"],
+      "contexts": {
+        "region": "Tohoku",
+        "climate_zone": "cool-temperate",
+        "soil_type": "sandy",
+        "crop_family": "wheat",
+        "season": "spring"
+      },
+      "provenance": { "sourceProtocol": "atproto", "sourceId": "atproto:q2" },
+      "review": { "state": "proposed" }
+    },
+    {
+      "id": "q-weed-shikoku",
+      "type": "inquiry",
+      "createdAt": "2026-07-03T00:00:00.000Z",
+      "body": { "text": "Why do sedges appear along the wet field edge?" },
+      "labels": ["weed", "sedges"],
+      "contexts": {
+        "region": "Shikoku",
+        "climate_zone": "warm-temperate",
+        "soil_type": "loam",
+        "crop_family": "rice",
+        "season": "summer"
+      },
+      "provenance": { "sourceProtocol": "lingonberry", "sourceId": "lingonberry:q3" },
+      "review": { "state": "approved" }
+    }
+  ],
+  "queries": [
+    {
+      "name": "soil moisture in Shikoku",
+      "options": { "q": "soil moisture", "region": "Shikoku" },
+      "expectedIds": ["q-soil-moisture-shikoku"]
+    },
+    {
+      "name": "approved Shikoku inquiries",
+      "options": { "region": "Shikoku", "review_state": "approved" },
+      "expectedIds": ["q-weed-shikoku", "q-soil-moisture-shikoku"]
+    },
+    {
+      "name": "transport filter",
+      "options": { "transport": "atproto" },
+      "expectedIds": ["q-soil-dry-tohoku"]
+    }
+  ]
+}
