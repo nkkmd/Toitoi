@@ -26,11 +26,19 @@ function buildFixtures() {
         season: 'summer',
       },
       provenance: {
-        sourceProtocol: 'nostr',
-        sourceId: 'nostr:one',
-        authorId: 'human:farmer-a',
+        sources: [
+          {
+            protocol: 'nostr',
+            sourceId: 'nostr:one',
+            authorId: 'human:farmer-a',
+          },
+        ],
       },
-      review: { state: 'approved' },
+      meta: {
+        publication: {
+          humanReview: { decision: 'approved' },
+        },
+      },
     },
     {
       id: 'inquiry-north-soil',
@@ -65,6 +73,9 @@ function projectionContract() {
   assert.strictEqual(projected.region, 'Shikoku');
   assert.strictEqual(projected.climate, 'warm-temperate');
   assert.strictEqual(projected.transport, 'nostr');
+  assert.strictEqual(projected.reviewState, 'approved');
+  assert.match(projected.provenance, /nostr:one/);
+  assert.match(projected.provenance, /human:farmer-a/);
   assert.match(projected.tagsText, /weeds/);
 }
 
@@ -108,6 +119,14 @@ function filterFacetContract() {
     assert.strictEqual(filtered.total, 1);
     assert.strictEqual(filtered.results[0].id, 'inquiry-east-weeds');
     assert.strictEqual(filtered.results[0].signals.structuredFilters, true);
+    assert.deepStrictEqual(projection.facets('transport'), [
+      { value: 'lingonberry', count: 1 },
+      { value: 'nostr', count: 1 },
+    ]);
+    assert.deepStrictEqual(projection.facets('review_state'), [
+      { value: 'approved', count: 1 },
+      { value: 'in_review', count: 1 },
+    ]);
     assert.deepStrictEqual(projection.facets('region'), [
       { value: 'Shikoku', count: 1 },
       { value: 'Tohoku', count: 1 },
