@@ -9,7 +9,7 @@ const {
   buildHealthReport,
   createActor,
   stableError,
-} = require('@toitoi/operations');
+} = require('../../packages/operations');
 
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
