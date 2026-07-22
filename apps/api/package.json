@@ -11,7 +11,8 @@
     "@toitoi/ai": "workspace:*",
     "@toitoi/atproto": "workspace:*",
     "@toitoi/lingonberry": "workspace:*",
-    "@toitoi/protocol": "workspace:*",
-    "@toitoi/nostr": "workspace:*"
+    "@toitoi/nostr": "workspace:*",
+    "@toitoi/operations": "workspace:*",
+    "@toitoi/protocol": "workspace:*"
   }
 }
