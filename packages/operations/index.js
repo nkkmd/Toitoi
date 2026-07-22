@@ -1,6 +1,12 @@
 'use strict';
 
 const crypto = require('crypto');
+const {
+  MigrationRegistry,
+  buildBackupManifest,
+  sha256File,
+  verifyBackupManifest,
+} = require('./recovery');
 
 const ROLE_CAPABILITIES = Object.freeze({
   reader: ['read'],
@@ -17,9 +23,7 @@ function normalizeRoles(roles) {
 
 function createActor(input = {}) {
   const id = typeof input.id === 'string' ? input.id.trim() : '';
-  if (!id) {
-    throw new TypeError('actor.id must be a non-empty string');
-  }
+  if (!id) throw new TypeError('actor.id must be a non-empty string');
   return Object.freeze({ id, roles: normalizeRoles(input.roles), attributes: { ...(input.attributes || {}) } });
 }
 
@@ -60,9 +64,7 @@ function digestRequest(value) {
 }
 
 class IdempotencyStore {
-  constructor() {
-    this.records = new Map();
-  }
+  constructor() { this.records = new Map(); }
 
   execute({ actorId, operation, key, request }, handler) {
     if (!actorId || !operation || !key) throw new TypeError('actorId, operation, and key are required');
@@ -125,9 +127,7 @@ class AuditLog {
     return record;
   }
 
-  list() {
-    return this.entries.slice();
-  }
+  list() { return this.entries.slice(); }
 
   verify() {
     let previousHash = null;
@@ -166,4 +166,8 @@ module.exports = {
   FixedWindowRateLimiter,
   AuditLog,
   buildHealthReport,
+  MigrationRegistry,
+  buildBackupManifest,
+  sha256File,
+  verifyBackupManifest,
 };
