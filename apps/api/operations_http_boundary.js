@@ -57,7 +57,8 @@ function createOperationsHttpBoundary(options = {}) {
     windowMs: Number.isInteger(options.rateWindowMs) ? options.rateWindowMs : 60_000,
   });
   const healthChecks = options.healthChecks || {};
-  const authenticationRequired = options.authenticationRequired !== false;
+  const authenticationRequired = options.authenticationRequired === true;
+  const developmentActor = createActor({ id: 'development-runtime', roles: ['operator'] });
 
   async function handleRequest(request, next) {
     const requestId = requestIdFor(request);
@@ -70,21 +71,22 @@ function createOperationsHttpBoundary(options = {}) {
       const report = buildHealthReport(healthChecks);
       return jsonResponse(report.ready ? 200 : 503, { ...report, requestId });
     }
+
+    const parsedActor = parseActor(request);
+    if (authenticationRequired && !parsedActor) {
+      return jsonResponse(401, stableError('authentication_required', 'Actor identity headers are required.', { requestId }), {
+        'www-authenticate': 'ToitoiActor',
+      });
+    }
+    const actor = parsedActor || developmentActor;
+
     if (request.method === 'GET' && pathname === '/api/v1/audit') {
-      const actor = parseActor(request);
       const decision = authorize(actor, 'operate');
       if (!decision.allowed) return jsonResponse(403, stableError('forbidden', 'Operator authority is required.', { requestId }));
       return jsonResponse(200, { entries: auditLog.list(), verified: auditLog.verify(), requestId });
     }
 
-    const actor = parseActor(request);
-    if (authenticationRequired && !actor) {
-      return jsonResponse(401, stableError('authentication_required', 'Actor identity headers are required.', { requestId }), {
-        'www-authenticate': 'ToitoiActor',
-      });
-    }
-
-    const subject = actor ? actor.id : 'anonymous';
+    const subject = actor.id;
     const rate = rateLimiter.consume(subject);
     if (!rate.allowed) {
       return jsonResponse(429, stableError('rate_limited', 'The request rate limit was exceeded.', { requestId }), {
@@ -114,16 +116,18 @@ function createOperationsHttpBoundary(options = {}) {
 
     if (!MUTATION_METHODS.has(String(request.method || '').toUpperCase())) return execute();
     const key = header(request.headers, 'idempotency-key');
-    if (typeof key !== 'string' || key.trim() === '') {
+    if (authenticationRequired && (typeof key !== 'string' || key.trim() === '')) {
       return jsonResponse(400, stableError('idempotency_key_required', 'Mutation requests require an Idempotency-Key header.', { requestId }));
     }
+    if (typeof key !== 'string' || key.trim() === '') return execute();
+
     const replay = idempotencyStore.execute({
       actorId: subject,
       operation: `${request.method} ${pathname}`,
       key: key.trim(),
       request: { body: request.body || null, url: request.url || pathname },
     }, execute);
-    if (replay.conflict) return jsonResponse(409, { ...replay.error, requestId });
+    if (replay.conflict) return jsonResponse(409, replay.error);
     const result = await replay.result;
     return {
       ...result,
