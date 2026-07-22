@@ -1,6 +1,7 @@
 'use strict';
 
 const { createAiHttpService } = require('./ai_http_service');
+const { createOperationsHttpBoundary } = require('./operations_http_boundary');
 const { createStandardApiService } = require('./standard_api_service');
 const { createWorkflowHttpService } = require('./workflow_http_service');
 
@@ -18,6 +19,18 @@ function createToitoiApiService(options = {}) {
   const workflowService = options.workflowService
     ? createWorkflowHttpService({ workflowService: options.workflowService })
     : null;
+  const operationsBoundary = options.operationsBoundary || (options.operationsEnabled
+    ? createOperationsHttpBoundary({
+      authenticationRequired: options.authenticationRequired,
+      rateLimit: options.rateLimit,
+      rateWindowMs: options.rateWindowMs,
+      healthChecks: options.healthChecks || {
+        standardApi: { ok: Boolean(standardService) },
+        workflow: { ok: !options.workflowRequired || Boolean(workflowService) },
+        search: { ok: !options.searchRequired || Boolean(searchService) },
+      },
+    })
+    : null);
 
   function fallback(request) {
     if (relatedInquiryService) {
@@ -39,13 +52,17 @@ function createToitoiApiService(options = {}) {
     return standardService.handleRequest(request);
   }
 
-  function handleRequest(request = {}) {
+  function route(request = {}) {
     if (!workflowService) return fallback(request);
     const workflowResult = workflowService.handleRequest(request);
     if (workflowResult && typeof workflowResult.then === 'function') {
       return workflowResult.then((resolved) => resolved || fallback(request));
     }
     return workflowResult || fallback(request);
+  }
+
+  function handleRequest(request = {}) {
+    return operationsBoundary ? operationsBoundary.handleRequest(request, route) : route(request);
   }
 
   return Object.freeze({
@@ -56,6 +73,7 @@ function createToitoiApiService(options = {}) {
     relatedInquiryService,
     aiService,
     workflowService,
+    operationsBoundary,
   });
 }
 

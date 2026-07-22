@@ -161,6 +161,14 @@ function createToitoiApiServer(options = {}) {
     aiInspectionService: aiRuntime.inspectionService,
     aiReviewService: aiRuntime.reviewService,
     workflowService,
+    operationsEnabled: true,
+    operationsBoundary: options.operationsBoundary,
+    authenticationRequired: options.authenticationRequired === true
+      || process.env.TOITOI_AUTH_REQUIRED === 'true',
+    rateLimit: options.rateLimit,
+    rateWindowMs: options.rateWindowMs,
+    workflowRequired: Boolean(storageDir),
+    searchRequired: true,
   });
 
   return http.createServer(async (request, response) => {
@@ -194,7 +202,10 @@ function startServer(options = {}) {
       : 'ai-inspection:disabled';
     const workflowStatus = resolveStorageDir(options) ? 'workflow:enabled' : 'workflow:disabled';
     const searchStatus = resolveSearchIndexFile(options) === ':memory:' ? 'search:memory' : 'search:persistent';
-    console.log(`Toitoi API listening on http://127.0.0.1:${port} (${aiStatus}, ${workflowStatus}, ${searchStatus}, vocabulary:enabled, related:enabled)`);
+    const authStatus = options.authenticationRequired === true || process.env.TOITOI_AUTH_REQUIRED === 'true'
+      ? 'auth:required'
+      : 'auth:development';
+    console.log(`Toitoi API listening on http://127.0.0.1:${port} (${aiStatus}, ${workflowStatus}, ${searchStatus}, ${authStatus}, vocabulary:enabled, related:enabled)`);
   });
   return server;
 }
