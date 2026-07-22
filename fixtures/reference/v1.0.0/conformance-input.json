@@ -1,0 +1,244 @@
+{
+  "events": [
+    {
+      "id": "tt:evt:v1-observation-east-side-weeds",
+      "schemaVersion": "0.1.0",
+      "type": "observation",
+      "createdAt": "2026-07-22T00:00:00.000Z",
+      "body": {
+        "text": "畑の東側だけ雑草の種類が違う。東側にはスゲに似た草が多く、西側には少ない。",
+        "language": "ja"
+      },
+      "contexts": {
+        "region": "reference-region-a",
+        "field_zone": "east-edge",
+        "season": "summer"
+      },
+      "provenance": {
+        "sources": [
+          {
+            "protocol": "local-capture",
+            "sourceId": "offline-observation:v1-east-side-weeds"
+          }
+        ]
+      },
+      "rawRef": {
+        "protocol": "local-capture",
+        "sourceId": "offline-observation:v1-east-side-weeds"
+      }
+    },
+    {
+      "id": "tt:evt:v1-inquiry-east-side-weeds",
+      "schemaVersion": "0.1.0",
+      "type": "inquiry",
+      "createdAt": "2026-07-22T00:09:00.000Z",
+      "body": {
+        "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+        "language": "ja"
+      },
+      "contexts": {
+        "region": "reference-region-a",
+        "field_zone": "east-edge",
+        "season": "summer"
+      },
+      "lineage": [
+        {
+          "type": "derived_from",
+          "target": "tt:evt:v1-observation-east-side-weeds"
+        }
+      ],
+      "provenance": {
+        "sources": [
+          {
+            "protocol": "toitoi-workflow",
+            "sourceId": "draft:v1-east-side-weeds"
+          }
+        ]
+      }
+    }
+  ],
+  "roundTrips": [
+    {
+      "name": "nostr",
+      "original": {
+        "id": "tt:evt:v1-inquiry-east-side-weeds",
+        "schemaVersion": "0.1.0",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:09:00.000Z",
+        "body": {
+          "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+          "language": "ja"
+        },
+        "contexts": {
+          "region": "reference-region-a",
+          "field_zone": "east-edge",
+          "season": "summer"
+        },
+        "lineage": [
+          {
+            "type": "derived_from",
+            "target": "tt:evt:v1-observation-east-side-weeds"
+          }
+        ],
+        "provenance": {
+          "sources": [
+            {
+              "protocol": "toitoi-workflow",
+              "sourceId": "draft:v1-east-side-weeds"
+            }
+          ]
+        }
+      },
+      "restored": {
+        "id": "tt:evt:v1-inquiry-east-side-weeds",
+        "schemaVersion": "0.1.0",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:09:00.000Z",
+        "body": {
+          "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+          "language": "ja"
+        },
+        "contexts": {
+          "region": "reference-region-a",
+          "field_zone": "east-edge",
+          "season": "summer"
+        },
+        "lineage": [
+          {
+            "type": "derived_from",
+            "target": "tt:evt:v1-observation-east-side-weeds"
+          }
+        ],
+        "provenance": {
+          "sources": [
+            {
+              "protocol": "toitoi-workflow",
+              "sourceId": "draft:v1-east-side-weeds"
+            }
+          ]
+        },
+        "transportMetadata": {
+          "relay": "wss://example.invalid"
+        }
+      }
+    }
+  ],
+  "replay": {
+    "live": [
+      {
+        "id": "tt:evt:v1-observation-east-side-weeds",
+        "schemaVersion": "0.1.0",
+        "type": "observation",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "body": {
+          "text": "畑の東側だけ雑草の種類が違う。東側にはスゲに似た草が多く、西側には少ない。",
+          "language": "ja"
+        },
+        "contexts": {
+          "region": "reference-region-a",
+          "field_zone": "east-edge",
+          "season": "summer"
+        },
+        "provenance": {
+          "sources": [
+            {
+              "protocol": "local-capture",
+              "sourceId": "offline-observation:v1-east-side-weeds"
+            }
+          ]
+        },
+        "rawRef": {
+          "protocol": "local-capture",
+          "sourceId": "offline-observation:v1-east-side-weeds"
+        }
+      },
+      {
+        "id": "tt:evt:v1-inquiry-east-side-weeds",
+        "schemaVersion": "0.1.0",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:09:00.000Z",
+        "body": {
+          "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+          "language": "ja"
+        },
+        "contexts": {
+          "region": "reference-region-a",
+          "field_zone": "east-edge",
+          "season": "summer"
+        },
+        "lineage": [
+          {
+            "type": "derived_from",
+            "target": "tt:evt:v1-observation-east-side-weeds"
+          }
+        ],
+        "provenance": {
+          "sources": [
+            {
+              "protocol": "toitoi-workflow",
+              "sourceId": "draft:v1-east-side-weeds"
+            }
+          ]
+        }
+      }
+    ],
+    "replayed": [
+      {
+        "id": "tt:evt:v1-inquiry-east-side-weeds",
+        "schemaVersion": "0.1.0",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:09:00.000Z",
+        "body": {
+          "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+          "language": "ja"
+        },
+        "contexts": {
+          "region": "reference-region-a",
+          "field_zone": "east-edge",
+          "season": "summer"
+        },
+        "lineage": [
+          {
+            "type": "derived_from",
+            "target": "tt:evt:v1-observation-east-side-weeds"
+          }
+        ],
+        "provenance": {
+          "sources": [
+            {
+              "protocol": "toitoi-workflow",
+              "sourceId": "draft:v1-east-side-weeds"
+            }
+          ]
+        }
+      },
+      {
+        "id": "tt:evt:v1-observation-east-side-weeds",
+        "schemaVersion": "0.1.0",
+        "type": "observation",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "body": {
+          "text": "畑の東側だけ雑草の種類が違う。東側にはスゲに似た草が多く、西側には少ない。",
+          "language": "ja"
+        },
+        "contexts": {
+          "region": "reference-region-a",
+          "field_zone": "east-edge",
+          "season": "summer"
+        },
+        "provenance": {
+          "sources": [
+            {
+              "protocol": "local-capture",
+              "sourceId": "offline-observation:v1-east-side-weeds"
+            }
+          ]
+        },
+        "rawRef": {
+          "protocol": "local-capture",
+          "sourceId": "offline-observation:v1-east-side-weeds"
+        }
+      }
+    ]
+  }
+}
