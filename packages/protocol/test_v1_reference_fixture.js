@@ -64,11 +64,15 @@ function run() {
     fixture.annotation.id,
     'draft must retain its reviewed annotation',
   );
+  assert.strictEqual(fixture.annotation.review.decision, 'accept-with-edit');
+  assert.strictEqual(fixture.inquiryDraft.reviewState, 'approved');
   assert.notStrictEqual(
-    fixture.annotation.review.status,
-    fixture.inquiryDraft.reviewState,
-    'annotation review and publication review must remain distinct states',
+    fixture.annotation.review.reviewedBy,
+    fixture.inquiryDraft.reviewedBy,
+    'annotation review and publication approval must be independently attributable',
   );
+  assert.strictEqual(fixture.publishedInquiry.meta.annotationReview, 'accepted-with-edit');
+  assert.strictEqual(fixture.publishedInquiry.meta.publicationReview, 'approved');
 
   const publishedTargets = fixture.publishedInquiry.lineage.map(edge => edge.target);
   assert.deepStrictEqual(publishedTargets, [fixture.observation.id]);
