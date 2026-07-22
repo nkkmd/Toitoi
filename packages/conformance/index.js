@@ -23,8 +23,11 @@ function semanticBody(event) {
   return null;
 }
 
-function validateCanonicalEvent(event) {
+function validateCanonicalEvent(event, options = {}) {
+  const compatibilityProfile = options.compatibilityProfile || null;
+  const allowV090 = compatibilityProfile === 'v0.9.0';
   const errors = [];
+
   if (!isObject(event)) {
     return {
       valid: false,
@@ -32,7 +35,10 @@ function validateCanonicalEvent(event) {
     };
   }
 
-  for (const field of ['id', 'schemaVersion', 'type', 'createdAt', 'provenance']) {
+  const requiredFields = allowV090
+    ? ['id', 'type', 'createdAt', 'provenance']
+    : ['id', 'schemaVersion', 'type', 'createdAt', 'provenance'];
+  for (const field of requiredFields) {
     if (!(field in event)) {
       errors.push({ path: `$.${field}`, code: 'required', message: `${field} is required.` });
     }
@@ -41,8 +47,18 @@ function validateCanonicalEvent(event) {
     errors.push({ path: '$.body', code: 'required', message: 'body is required; content is accepted only as a legacy compatibility alias.' });
   }
 
-  if ('id' in event && (typeof event.id !== 'string' || !/^tt:evt:\S+$/.test(event.id))) {
-    errors.push({ path: '$.id', code: 'format', message: 'id must use the tt:evt:<opaque-id> form.' });
+  if ('id' in event) {
+    const validId = typeof event.id === 'string'
+      && (allowV090 ? event.id.trim() !== '' : /^tt:evt:\S+$/.test(event.id));
+    if (!validId) {
+      errors.push({
+        path: '$.id',
+        code: 'format',
+        message: allowV090
+          ? 'id must be a non-empty legacy or canonical identifier.'
+          : 'id must use the tt:evt:<opaque-id> form.',
+      });
+    }
   }
   if ('schemaVersion' in event && (typeof event.schemaVersion !== 'string' || event.schemaVersion.trim() === '')) {
     errors.push({ path: '$.schemaVersion', code: 'type', message: 'schemaVersion must be a non-empty string.' });
@@ -68,14 +84,14 @@ function validateCanonicalEvent(event) {
 
   if ('provenance' in event && !isObject(event.provenance)) {
     errors.push({ path: '$.provenance', code: 'type', message: 'provenance must be an object.' });
-  } else if (isObject(event.provenance)) {
+  } else if (isObject(event.provenance) && !allowV090) {
     const sources = event.provenance.sources;
     if (!Array.isArray(sources) || sources.length === 0) {
       errors.push({ path: '$.provenance.sources', code: 'required', message: 'provenance.sources must contain at least one source.' });
     }
   }
 
-  return { valid: errors.length === 0, errors };
+  return { valid: errors.length === 0, errors, compatibilityProfile };
 }
 
 function checkCanonicalIdPreserved(before, after) {
@@ -106,7 +122,7 @@ function checkProvenanceRawBoundary(event) {
 function semanticProjection(event) {
   return {
     id: event.id,
-    schemaVersion: event.schemaVersion,
+    schemaVersion: event.schemaVersion || null,
     type: event.type,
     body: semanticBody(event),
     contexts: event.contexts || {},
@@ -137,10 +153,10 @@ function checkReplayEquivalence(liveEvents, replayedEvents) {
   };
 }
 
-function runConformanceSuite({ events = [], roundTrips = [], replay = null } = {}) {
+function runConformanceSuite({ events = [], roundTrips = [], replay = null, compatibilityProfile = null } = {}) {
   const checks = [];
   for (const event of events) {
-    const result = validateCanonicalEvent(event);
+    const result = validateCanonicalEvent(event, { compatibilityProfile });
     checks.push({ name: `canonical:${event && event.id ? event.id : 'unknown'}`, passed: result.valid, details: result });
     checks.push({ name: `raw-boundary:${event && event.id ? event.id : 'unknown'}`, ...checkProvenanceRawBoundary(event) });
   }
@@ -150,6 +166,7 @@ function runConformanceSuite({ events = [], roundTrips = [], replay = null } = {
   if (replay) checks.push({ name: 'replay-equivalence', ...checkReplayEquivalence(replay.live, replay.replayed) });
   return {
     conformanceVersion: '1.0.0',
+    compatibilityProfile,
     passed: checks.every(check => check.passed === true),
     totals: {
       checks: checks.length,
