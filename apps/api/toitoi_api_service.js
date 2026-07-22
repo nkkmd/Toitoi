@@ -19,16 +19,18 @@ function createToitoiApiService(options = {}) {
   const workflowService = options.workflowService
     ? createWorkflowHttpService({ workflowService: options.workflowService })
     : null;
-  const operationsBoundary = options.operationsBoundary || createOperationsHttpBoundary({
-    authenticationRequired: options.authenticationRequired,
-    rateLimit: options.rateLimit,
-    rateWindowMs: options.rateWindowMs,
-    healthChecks: options.healthChecks || {
-      standardApi: { ok: Boolean(standardService) },
-      workflow: { ok: !options.workflowRequired || Boolean(workflowService) },
-      search: { ok: !options.searchRequired || Boolean(searchService) },
-    },
-  });
+  const operationsBoundary = options.operationsBoundary || (options.operationsEnabled
+    ? createOperationsHttpBoundary({
+      authenticationRequired: options.authenticationRequired,
+      rateLimit: options.rateLimit,
+      rateWindowMs: options.rateWindowMs,
+      healthChecks: options.healthChecks || {
+        standardApi: { ok: Boolean(standardService) },
+        workflow: { ok: !options.workflowRequired || Boolean(workflowService) },
+        search: { ok: !options.searchRequired || Boolean(searchService) },
+      },
+    })
+    : null);
 
   function fallback(request) {
     if (relatedInquiryService) {
@@ -60,7 +62,7 @@ function createToitoiApiService(options = {}) {
   }
 
   function handleRequest(request = {}) {
-    return operationsBoundary.handleRequest(request, route);
+    return operationsBoundary ? operationsBoundary.handleRequest(request, route) : route(request);
   }
 
   return Object.freeze({
