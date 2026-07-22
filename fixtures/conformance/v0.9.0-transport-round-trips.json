@@ -1,0 +1,175 @@
+{
+  "events": [
+    {
+      "id": "toitoi:v0.9.0:shared-inquiry",
+      "type": "inquiry",
+      "schemaVersion": "1.0.0",
+      "createdAt": "2026-07-22T00:00:00.000Z",
+      "content": {
+        "text": "Why do weed species differ only on the eastern side of the field?"
+      },
+      "contexts": {
+        "region": "Shikoku",
+        "climate_zone": "warm-temperate",
+        "soil_type": "loam",
+        "crop_family": "rice",
+        "season": "summer"
+      },
+      "relationships": [
+        {
+          "type": "derived_from",
+          "targetId": "toitoi:v0.9.0:observation"
+        }
+      ],
+      "phase": "reviewed",
+      "provenance": {
+        "rawRef": "raw:v0.9.0:shared-inquiry",
+        "sources": [
+          {
+            "protocol": "localfs",
+            "sourceId": "fixture:v0.9.0"
+          }
+        ]
+      }
+    }
+  ],
+  "roundTrips": [
+    {
+      "name": "nostr",
+      "original": {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "schemaVersion": "1.0.0",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": {
+          "text": "Why do weed species differ only on the eastern side of the field?"
+        },
+        "contexts": {
+          "region": "Shikoku",
+          "climate_zone": "warm-temperate",
+          "soil_type": "loam",
+          "crop_family": "rice",
+          "season": "summer"
+        },
+        "relationships": [
+          {
+            "type": "derived_from",
+            "targetId": "toitoi:v0.9.0:observation"
+          }
+        ],
+        "phase": "reviewed",
+        "provenance": {
+          "rawRef": "raw:v0.9.0:shared-inquiry",
+          "sources": [
+            {
+              "protocol": "nostr",
+              "sourceId": "nostr:v0.9.0"
+            }
+          ]
+        }
+      },
+      "restored": {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "schemaVersion": "1.0.0",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": {
+          "text": "Why do weed species differ only on the eastern side of the field?"
+        },
+        "contexts": {
+          "region": "Shikoku",
+          "climate_zone": "warm-temperate",
+          "soil_type": "loam",
+          "crop_family": "rice",
+          "season": "summer"
+        },
+        "relationships": [
+          {
+            "type": "derived_from",
+            "targetId": "toitoi:v0.9.0:observation"
+          }
+        ],
+        "phase": "reviewed",
+        "provenance": {
+          "rawRef": "raw:v0.9.0:shared-inquiry",
+          "sources": [
+            {
+              "protocol": "nostr",
+              "sourceId": "nostr:v0.9.0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "lingonberry",
+      "original": {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": { "text": "Why do weed species differ only on the eastern side of the field?" },
+        "contexts": { "region": "Shikoku", "climate_zone": "warm-temperate", "soil_type": "loam", "crop_family": "rice", "season": "summer" },
+        "relationships": [{ "type": "derived_from", "targetId": "toitoi:v0.9.0:observation" }],
+        "phase": "reviewed",
+        "provenance": { "rawRef": "raw:v0.9.0:shared-inquiry", "sources": [{ "protocol": "lingonberry", "sourceId": "lingonberry:v0.9.0" }] }
+      },
+      "restored": {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": { "text": "Why do weed species differ only on the eastern side of the field?" },
+        "contexts": { "region": "Shikoku", "climate_zone": "warm-temperate", "soil_type": "loam", "crop_family": "rice", "season": "summer" },
+        "relationships": [{ "type": "derived_from", "targetId": "toitoi:v0.9.0:observation" }],
+        "phase": "reviewed",
+        "provenance": { "rawRef": "raw:v0.9.0:shared-inquiry", "sources": [{ "protocol": "lingonberry", "sourceId": "lingonberry:v0.9.0" }] }
+      }
+    },
+    {
+      "name": "atproto",
+      "original": {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": { "text": "Why do weed species differ only on the eastern side of the field?" },
+        "contexts": { "region": "Shikoku", "climate_zone": "warm-temperate", "soil_type": "loam", "crop_family": "rice", "season": "summer" },
+        "relationships": [{ "type": "derived_from", "targetId": "toitoi:v0.9.0:observation" }],
+        "phase": "reviewed",
+        "provenance": { "rawRef": "raw:v0.9.0:shared-inquiry", "sources": [{ "protocol": "atproto", "sourceId": "atproto:v0.9.0" }] }
+      },
+      "restored": {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": { "text": "Why do weed species differ only on the eastern side of the field?" },
+        "contexts": { "region": "Shikoku", "climate_zone": "warm-temperate", "soil_type": "loam", "crop_family": "rice", "season": "summer" },
+        "relationships": [{ "type": "derived_from", "targetId": "toitoi:v0.9.0:observation" }],
+        "phase": "reviewed",
+        "provenance": { "rawRef": "raw:v0.9.0:shared-inquiry", "sources": [{ "protocol": "atproto", "sourceId": "atproto:v0.9.0" }] }
+      }
+    }
+  ],
+  "replay": {
+    "live": [
+      {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": { "text": "Why do weed species differ only on the eastern side of the field?" },
+        "contexts": { "region": "Shikoku" },
+        "relationships": [],
+        "provenance": { "rawRef": "raw:v0.9.0:shared-inquiry" }
+      }
+    ],
+    "replayed": [
+      {
+        "id": "toitoi:v0.9.0:shared-inquiry",
+        "type": "inquiry",
+        "createdAt": "2026-07-22T00:00:00.000Z",
+        "content": { "text": "Why do weed species differ only on the eastern side of the field?" },
+        "contexts": { "region": "Shikoku" },
+        "relationships": [],
+        "provenance": { "rawRef": "raw:v0.9.0:shared-inquiry" }
+      }
+    ]
+  }
+}
