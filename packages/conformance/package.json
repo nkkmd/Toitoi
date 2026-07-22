@@ -4,7 +4,10 @@
   "private": true,
   "type": "commonjs",
   "main": "index.js",
+  "bin": {
+    "toitoi-conformance": "cli.js"
+  },
   "scripts": {
-    "test": "node test_conformance.js"
+    "test": "node ../../scripts/run-tests.js"
   }
 }
