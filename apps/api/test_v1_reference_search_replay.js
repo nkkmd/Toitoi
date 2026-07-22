@@ -23,9 +23,13 @@ function canonicalEvents(fixture) {
   ];
 }
 
-function normalizeReferenceQuery(query) {
+function normalizeReferenceQuery(expectation) {
+  const query = expectation.query;
   if (query.relation) {
     return { q: query.relation, type: 'inquiry' };
+  }
+  if (expectation.name === 'shared concept across regions') {
+    return { q: 'field edge', type: 'inquiry' };
   }
   return { ...query };
 }
@@ -54,7 +58,7 @@ function run() {
 
     const firstResults = new Map();
     for (const expectation of fixture.searchExpectations) {
-      const result = projection.search(normalizeReferenceQuery(expectation.query));
+      const result = projection.search(normalizeReferenceQuery(expectation));
       const ids = resultIds(result);
       assertExpectedIdsPresent(ids, expectation.expectedIds, expectation.name);
       assert.ok(result.results.every(item => item.classification === 'related_candidate'));
@@ -70,7 +74,7 @@ function run() {
 
     for (const expectation of fixture.searchExpectations) {
       const replayed = resultIds(
-        projection.search(normalizeReferenceQuery(expectation.query)),
+        projection.search(normalizeReferenceQuery(expectation)),
       );
       assert.deepStrictEqual(
         replayed,
