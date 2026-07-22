@@ -1,16 +1,19 @@
 # Toitoi Standard API
 
-**Status: v0.8.0 released** | **Last updated: 2026-07-22**
+**Status: v0.9.0 implementation baseline** | **Last updated: 2026-07-22**
 
-`apps/api/` は、transport-independentなcanonical read view、検索・文脈探索、Vocabulary、AI inspection／review、Inquiry Draft workflow、semantic derivation、Canonical Event publicationを提供するStandard API reference implementationです。
+`apps/api/` は、transport-independentなcanonical read view、検索・Vocabulary、AI inspection／review、Inquiry Draft workflow、semantic derivation、Canonical Event publication、およびv0.9.0の共同運用境界を提供するStandard API reference implementationです。
 
-protocol固有のraw event shapeを利用者向けAPIへ露出せず、Nostr、Lingonberry、ATProtoの違いをruntime／storage／converter層へ閉じ込めます。Canonical storageが正本であり、SQLite FTS5は再構築可能な派生projectionです。
+Canonical storageが正本であり、SQLite FTS5、queue index、metrics、health viewは再構築可能な派生状態です。protocol固有のraw event shapeは利用者向けAPIへ露出しません。
 
 ## Main endpoints
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/health` | runtimeとstorage selectionの確認 |
+| `GET` | `/health` | protocol runtimeとstorage selection |
+| `GET` | `/health/live` | process liveness |
+| `GET` | `/health/ready` | dependency readiness |
+| `GET` | `/api/v1/audit` | operator向けaudit inspection |
 | `GET` | `/api/v1/protocols` | protocol registryとcapability一覧 |
 | `GET` | `/api/v1/inquiries` | canonical inquiry一覧 |
 | `GET` | `/api/v1/inquiries/:id` | 単一Canonical Event |
@@ -31,53 +34,52 @@ protocol固有のraw event shapeを利用者向けAPIへ露出せず、Nostr、L
 | `POST` | `/api/v1/inquiry-drafts/:id/publish` | approved DraftをCanonical Eventとして公開 |
 | `GET` | `/api/v1/publications/:id` | publication結果を取得 |
 
-## v0.8.0 search projection
+## v0.9.0 operations boundary
 
-`fts5_search_projection.js`はCanonical Eventを次の検索documentへ投影します。
+実HTTP serverでは`operations_http_boundary.js`が次を担当します。
 
-- canonical ID
-- event type
-- inquiry／observation text
-- accepted summary
-- tags／labels
-- context keys／values
-- relation types／targets
-- transport／provenance
-- review state
-- creation timestamp
+- actor identityの抽出
+- role／capability authorization
+- stable JSON error envelope
+- request ID
+- fixed-window rate limiting
+- mutation idempotency
+- append-only hash-chained audit record
+- liveness／readiness endpoint
 
-対象例:
+ロール:
 
-```text
-GET /api/v1/search?q=soil+moisture&region=Shikoku&review_state=approved
-GET /api/v1/search?soil_type=loam&crop_family=rice&transport=nostr
-GET /api/v1/search/contexts?dimension=region
+- `reader`
+- `contributor`
+- `reviewer`
+- `publisher`
+- `moderator`
+- `operator`
+
+認証強制モード:
+
+```bash
+TOITOI_AUTH_REQUIRED=true \
+TOITOI_STORAGE_DIR=/path/to/storage \
+TOITOI_AI_STORAGE_DIR=/path/to/ai-storage \
+TOITOI_SEARCH_INDEX_FILE=/path/to/search.sqlite \
+TOITOI_PROTOCOL=nostr \
+corepack pnpm --filter @toitoi/api start
 ```
 
-検索結果は`related_candidate`として返され、関連inquiry APIでは次の順序を維持します。
+参照認証header:
 
 ```text
-explicit_relation
-  → related_candidate
+X-Toitoi-Actor-Id: actor-123
+X-Toitoi-Roles: contributor,reviewer
+Idempotency-Key: mutation-unique-key
 ```
 
-`exact_identity`、`explicit_relation`、`related_candidate`は別分類です。`identityMerged`は`false`であり、類似性やrelationを根拠にCanonical identityを統合しません。
+`Idempotency-Key`は認証強制モードのmutationで必須です。同じactor、operation、key、request digestの再送は保存済み結果を返し、異なるrequestでkeyを再利用すると`idempotency_conflict`になります。
 
-Canonical `provenance.sources[]`のprotocol／source identifierと、`meta.publication.humanReview.decision`のreview stateを検索projectionへ取り込みます。関連inquiry APIはoutgoing relationに加えてincoming lineage childもexplicit relationとして返します。
+このheader providerはdeterministic reference implementationです。OAuth／OIDC provider certificationはv0.9.0の対象外です。
 
-## Vocabulary API
-
-Vocabulary termは`core`、`domain`、`local`のscopeを持ちます。APIでは互換性のため`layer` queryも受け付けます。
-
-```text
-GET /api/v1/vocabulary/terms?scope=local&locality=Shikoku
-GET /api/v1/vocabulary/terms?layer=domain&language=ja
-GET /api/v1/vocabulary/mappings?status=proposed
-```
-
-Mapping claimはsource／target termを別identifierとして保持し、relation、locality、provenance、review state、人間確認状態を失いません。MappingはCanonical Event identityを生成しません。
-
-## Workflow boundary
+## Workflow and authority boundaries
 
 ```text
 observation ingest or existing published inquiry
@@ -90,7 +92,29 @@ observation ingest or existing published inquiry
   → multi-transport outbound delivery
 ```
 
-検索、Vocabulary、AI annotation acceptance、relation confirmationはいずれもpublication approvalではありません。
+次は別の判断です。
+
+- annotation acceptance
+- relation confirmation
+- publication approval
+- moderation
+- operator authority
+
+検索結果、Vocabulary mapping、AI提案、relation候補はpublication approvalやCanonical identity mergeを意味しません。
+
+## Search and Vocabulary
+
+FTS5 projectionはinquiry／observation text、accepted summary、tag、label、context、relation、transport、provenance、review state、timestampを検索対象にします。
+
+```text
+GET /api/v1/search?q=soil+moisture&region=Shikoku&review_state=approved
+GET /api/v1/search?soil_type=loam&crop_family=rice&transport=nostr
+GET /api/v1/search/contexts?dimension=region
+GET /api/v1/vocabulary/terms?scope=local&locality=Shikoku
+GET /api/v1/vocabulary/mappings?status=proposed
+```
+
+`exact_identity`、`explicit_relation`、`related_candidate`は別分類です。類似性、relation、Vocabulary mappingからCanonical identityを自動統合しません。
 
 ## Runtime configuration
 
@@ -102,10 +126,11 @@ TOITOI_PROTOCOL=nostr \
 corepack pnpm --filter @toitoi/api start
 ```
 
-- `TOITOI_STORAGE_DIR`: canonical append-only storage、replay、workflow publicationを有効化
-- `TOITOI_AI_STORAGE_DIR`: AI job／annotation inspectionとreview mutationを有効化
+- `TOITOI_STORAGE_DIR`: canonical append-only storage、replay、workflow publication
+- `TOITOI_AI_STORAGE_DIR`: AI job／annotation inspectionとreview mutation
 - `TOITOI_SEARCH_INDEX_FILE`: persistent FTS5 projection。省略時は`:memory:`
-- `TOITOI_PROTOCOL`: `nostr`、`lingonberry`、`atproto`からruntimeを選択
+- `TOITOI_PROTOCOL`: `nostr`、`lingonberry`、`atproto`
+- `TOITOI_AUTH_REQUIRED`: `true`でactor認証、権限、mutation idempotencyを強制
 
 multi-transport fan-in read runtime:
 
@@ -117,53 +142,59 @@ TOITOI_TRANSPORT_SOURCES='[
 ]' corepack pnpm --filter @toitoi/api start
 ```
 
+## Durable operation and conformance
+
+v0.9.0ではAPI外の運用基盤として次を追加しています。
+
+- `packages/operations/durable_queue.js`
+- `packages/operations/recovery.js`
+- `packages/conformance/cli.js`
+- `fixtures/conformance/v0.9.0-transport-round-trips.json`
+
+Conformance Suite:
+
+```bash
+corepack pnpm --filter @toitoi/conformance exec \
+  toitoi-conformance --input fixtures/conformance/v0.9.0-transport-round-trips.json --pretty
+```
+
 ## Implementation entry points
 
-- `server_v0_4.js`: integrated HTTP serverとsearch／vocabulary runtime wiring
+- `server_v0_4.js`: integrated HTTP serverとoperations boundary wiring
+- `operations_http_boundary.js`: actor、authorization、rate limit、idempotency、audit、health
 - `toitoi_api_service.js`: Standard API／search／vocabulary／AI／workflow routing
 - `fts5_search_projection.js`: rebuildable SQLite FTS5 projection
 - `search_http_service.js`: search／facet routes
 - `related_inquiry_http_service.js`: explicit relation優先のrelated inquiry route
-- `search_result_classifier.js`: match classification boundary
 - `vocabulary_http_service.js`: Vocabulary term／mapping routes
-- `standard_api_service.js`: canonical read routing
 - `workflow_http_service.js`: observation、promotion、derivation、review、publication
 - `canonical_publisher.js`: canonical storageとmulti-transport outbound adapter
-- `packages/protocol/vocabulary.js`: Vocabulary／mapping claim contract
 
 ## Test
 
 ```bash
 corepack pnpm --filter @toitoi/api test
+corepack pnpm --filter @toitoi/operations test
+corepack pnpm --filter @toitoi/conformance test
 corepack pnpm test
 ```
 
-v0.8.0 validation includes:
-
-- FTS5 projection、lexical search、filter、facet、upsert
-- canonical provenance-source indexingとpublication review-state indexing
-- search HTTP routingとresult classification
-- fixed reference ranking/filter dataset
-- Vocabulary contractとHTTP endpoint
-- outgoing relationとincoming lineage childを含むrelated inquiry
-- replay前後のsearch result／facet同値性
-- v0.7.0以前のworkspace regression
-- final pre-merge GitHub Actions run #654
+v0.9.0 validation includes authority separation、stable errors、idempotency、rate limiting、audit integrity、health endpoints、durable queue recovery、dead-letter handling、backup verification、migration behavior、Conformance CLI、three-transport semantic fixtures、replay equivalence、およびv0.8.0以前のworkspace regressionです。
 
 ## Limitations
 
-- authentication、authorization、rate limitingは未実装
-- workflow mutationはproduction access controlを備えないreference contract
-- FTS5はderived projectionであり、canonical persistence authorityではない
+- reference authentication is header-based and not OAuth／OIDC certified
+- idempotency storeとrate limiterはdeployment-specific durable adapterへ置換可能なreference process components
+- durable queueはsingle-node JSONLでありdistributed queueではない
+- FTS5はderived lexical／structured projection
 - embeddings、vector database、production RAG、graph inferenceは非対象
-- automatic identity mergeは行わない
-- AI relation自動確定と無人公開は非対応
+- automatic identity merge、AI relation自動確定、無人公開は行わない
 
 ## Related documents
 
-- [Frontend SPA/PWA](../frontend/README.md)
-- [v0.8.0 Release Plan](../../docs/roadmap/V0.8.0_RELEASE_PLAN.md)
-- [v0.8.0 Release Runbook](../../docs/roadmap/V0.8.0_RELEASE_RUNBOOK.md)
-- [v0.8.0 GitHub Release Content](../../docs/roadmap/V0.8.0_GITHUB_RELEASE.md)
+- [v0.9.0 Release Plan](../../docs/roadmap/V0.9.0_RELEASE_PLAN.md)
+- [v0.9.0 Release Runbook](../../docs/roadmap/V0.9.0_RELEASE_RUNBOOK.md)
+- [Single-node durability](../../docs/operations/V0.9.0_SINGLE_NODE_DURABILITY.md)
+- [Governance](../../docs/governance/TOITOI_GOVERNANCE.md)
 - [Roadmap to v1.0.0](../../docs/roadmap/V1.0.0_ROADMAP.md)
 - [Canonical Identity and Provenance](../../docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md)
