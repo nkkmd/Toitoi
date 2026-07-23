@@ -66,7 +66,7 @@ assertBilingualDocument('CONTRIBUTING.md', {
 assertBilingualDocument('SECURITY.md', {
   englishHeading: '# Security and Sensitive Information',
   japaneseHeading: '# セキュリティと機微情報',
-  requiredLiterals: ['Canonical Event identity','OAuth/OIDC','Idempotency-Key'],
+  requiredLiterals: ['Canonical Event identity','OAuth/OIDC','private key'],
 });
 
 console.log('documentation language policy checks passed');
