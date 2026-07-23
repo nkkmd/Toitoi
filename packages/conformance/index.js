@@ -17,22 +17,81 @@ function canonicalDigest(value) {
   return crypto.createHash('sha256').update(JSON.stringify(normalize(value))).digest('hex');
 }
 
-function validateCanonicalEvent(event) {
+function semanticBody(event) {
+  if (isObject(event?.body)) return event.body;
+  if (isObject(event?.content)) return event.content;
+  return null;
+}
+
+function validateCanonicalEvent(event, options = {}) {
+  const compatibilityProfile = options.compatibilityProfile || null;
+  const allowV090 = compatibilityProfile === 'v0.9.0';
   const errors = [];
-  if (!isObject(event)) return { valid: false, errors: [{ path: '$', code: 'type', message: 'Canonical Event must be an object.' }] };
-  for (const field of ['id', 'type', 'createdAt', 'content', 'provenance']) {
-    if (!(field in event)) errors.push({ path: `$.${field}`, code: 'required', message: `${field} is required.` });
+
+  if (!isObject(event)) {
+    return {
+      valid: false,
+      errors: [{ path: '$', code: 'type', message: 'Canonical Event must be an object.' }],
+    };
   }
-  if ('id' in event && (typeof event.id !== 'string' || event.id.trim() === '')) errors.push({ path: '$.id', code: 'type', message: 'id must be a non-empty string.' });
-  if ('type' in event && (typeof event.type !== 'string' || event.type.trim() === '')) errors.push({ path: '$.type', code: 'type', message: 'type must be a non-empty string.' });
-  if ('createdAt' in event && Number.isNaN(Date.parse(event.createdAt))) errors.push({ path: '$.createdAt', code: 'format', message: 'createdAt must be an ISO-compatible timestamp.' });
-  if ('content' in event && !isObject(event.content)) errors.push({ path: '$.content', code: 'type', message: 'content must be an object.' });
-  if ('provenance' in event && !isObject(event.provenance)) errors.push({ path: '$.provenance', code: 'type', message: 'provenance must be an object.' });
-  if ('schemaVersion' in event && typeof event.schemaVersion !== 'string') errors.push({ path: '$.schemaVersion', code: 'type', message: 'schemaVersion must be a string.' });
-  if (isObject(event.provenance) && 'rawRef' in event.provenance && typeof event.provenance.rawRef !== 'string') {
-    errors.push({ path: '$.provenance.rawRef', code: 'type', message: 'rawRef must be a string when present.' });
+
+  const requiredFields = allowV090
+    ? ['id', 'type', 'createdAt', 'provenance']
+    : ['id', 'schemaVersion', 'type', 'createdAt', 'provenance'];
+  for (const field of requiredFields) {
+    if (!(field in event)) {
+      errors.push({ path: `$.${field}`, code: 'required', message: `${field} is required.` });
+    }
   }
-  return { valid: errors.length === 0, errors };
+  if (!('body' in event) && !('content' in event)) {
+    errors.push({ path: '$.body', code: 'required', message: 'body is required; content is accepted only as a legacy compatibility alias.' });
+  }
+
+  if ('id' in event) {
+    const validId = typeof event.id === 'string'
+      && (allowV090 ? event.id.trim() !== '' : /^tt:evt:\S+$/.test(event.id));
+    if (!validId) {
+      errors.push({
+        path: '$.id',
+        code: 'format',
+        message: allowV090
+          ? 'id must be a non-empty legacy or canonical identifier.'
+          : 'id must use the tt:evt:<opaque-id> form.',
+      });
+    }
+  }
+  if ('schemaVersion' in event && (typeof event.schemaVersion !== 'string' || event.schemaVersion.trim() === '')) {
+    errors.push({ path: '$.schemaVersion', code: 'type', message: 'schemaVersion must be a non-empty string.' });
+  }
+  if ('type' in event && (typeof event.type !== 'string' || event.type.trim() === '')) {
+    errors.push({ path: '$.type', code: 'type', message: 'type must be a non-empty string.' });
+  }
+  if ('createdAt' in event && Number.isNaN(Date.parse(event.createdAt))) {
+    errors.push({ path: '$.createdAt', code: 'format', message: 'createdAt must be an ISO-compatible timestamp.' });
+  }
+
+  const body = semanticBody(event);
+  if (!isObject(body)) {
+    errors.push({ path: '$.body', code: 'type', message: 'body must be an object.' });
+  } else if ('body' in event) {
+    if (typeof body.text !== 'string' || body.text.trim() === '') {
+      errors.push({ path: '$.body.text', code: 'required', message: 'body.text must be a non-empty string.' });
+    }
+    if (typeof body.language !== 'string' || body.language.trim() === '') {
+      errors.push({ path: '$.body.language', code: 'required', message: 'body.language must be a non-empty language tag.' });
+    }
+  }
+
+  if ('provenance' in event && !isObject(event.provenance)) {
+    errors.push({ path: '$.provenance', code: 'type', message: 'provenance must be an object.' });
+  } else if (isObject(event.provenance) && !allowV090) {
+    const sources = event.provenance.sources;
+    if (!Array.isArray(sources) || sources.length === 0) {
+      errors.push({ path: '$.provenance.sources', code: 'required', message: 'provenance.sources must contain at least one source.' });
+    }
+  }
+
+  return { valid: errors.length === 0, errors, compatibilityProfile };
 }
 
 function checkCanonicalIdPreserved(before, after) {
@@ -46,19 +105,32 @@ function checkCanonicalIdPreserved(before, after) {
 function checkProvenanceRawBoundary(event) {
   const provenance = event && event.provenance;
   if (!isObject(provenance)) return { passed: false, reason: 'missing_provenance' };
-  if ('raw' in provenance) return { passed: false, reason: 'embedded_raw_payload' };
-  return { passed: typeof provenance.rawRef === 'string' || Array.isArray(provenance.sources), reason: null };
+  if ('raw' in provenance || 'raw' in (event || {})) return { passed: false, reason: 'embedded_raw_payload' };
+
+  const topLevelRawRef = isObject(event?.rawRef)
+    && typeof event.rawRef.protocol === 'string'
+    && typeof event.rawRef.sourceId === 'string';
+  const legacyRawRef = typeof provenance.rawRef === 'string';
+  const sources = Array.isArray(provenance.sources) && provenance.sources.length > 0;
+
+  return {
+    passed: topLevelRawRef || legacyRawRef || sources,
+    reason: topLevelRawRef || legacyRawRef || sources ? null : 'missing_raw_reference_or_sources',
+  };
 }
 
 function semanticProjection(event) {
   return {
     id: event.id,
+    schemaVersion: event.schemaVersion || null,
     type: event.type,
-    content: event.content,
+    body: semanticBody(event),
     contexts: event.contexts || {},
     relationships: event.relationships || [],
+    lineage: event.lineage || [],
     phase: event.phase || null,
     provenance: event.provenance || {},
+    rawRef: event.rawRef || null,
   };
 }
 
@@ -74,13 +146,17 @@ function checkReplayEquivalence(liveEvents, replayedEvents) {
     .sort((a, b) => String(a.id).localeCompare(String(b.id)));
   const expected = project(liveEvents);
   const actual = project(replayedEvents);
-  return { passed: canonicalDigest(expected) === canonicalDigest(actual), expectedDigest: canonicalDigest(expected), actualDigest: canonicalDigest(actual) };
+  return {
+    passed: canonicalDigest(expected) === canonicalDigest(actual),
+    expectedDigest: canonicalDigest(expected),
+    actualDigest: canonicalDigest(actual),
+  };
 }
 
-function runConformanceSuite({ events = [], roundTrips = [], replay = null } = {}) {
+function runConformanceSuite({ events = [], roundTrips = [], replay = null, compatibilityProfile = null } = {}) {
   const checks = [];
   for (const event of events) {
-    const result = validateCanonicalEvent(event);
+    const result = validateCanonicalEvent(event, { compatibilityProfile });
     checks.push({ name: `canonical:${event && event.id ? event.id : 'unknown'}`, passed: result.valid, details: result });
     checks.push({ name: `raw-boundary:${event && event.id ? event.id : 'unknown'}`, ...checkProvenanceRawBoundary(event) });
   }
@@ -89,9 +165,14 @@ function runConformanceSuite({ events = [], roundTrips = [], replay = null } = {
   }
   if (replay) checks.push({ name: 'replay-equivalence', ...checkReplayEquivalence(replay.live, replay.replayed) });
   return {
-    conformanceVersion: '0.9.0',
+    conformanceVersion: '1.0.0',
+    compatibilityProfile,
     passed: checks.every(check => check.passed === true),
-    totals: { checks: checks.length, passed: checks.filter(check => check.passed === true).length, failed: checks.filter(check => check.passed !== true).length },
+    totals: {
+      checks: checks.length,
+      passed: checks.filter(check => check.passed === true).length,
+      failed: checks.filter(check => check.passed !== true).length,
+    },
     checks,
   };
 }
