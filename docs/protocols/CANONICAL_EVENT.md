@@ -1,150 +1,186 @@
 # Canonical Event
 
-**Status: stable** | **Last updated: 2026-06-25**
+**Status: stable**  
+**Language status:** English and Japanese sections are maintained as equivalent.  
+**Last synchronized:** 2026-07-23
+
+## Purpose
+
+Canonical Event is Toitoi's protocol-independent semantic record. It is the replayable internal reference used by storage, indexing, the Standard API, AI workflows, review, derivation, and transport projection.
+
+Transport-specific records such as Nostr events and ATProto records are projections of a Canonical Event. They do not define Canonical identity.
+
+## Position in the system
+
+```text
+Raw protocol record
+  -> adapter / normalizer
+  -> Canonical Event
+  -> storage / API / AI / search / replay
+
+Canonical Event
+  -> converter / transport adapter
+  -> protocol-specific representation
+```
+
+Canonical storage is authoritative. Search indexes, facets, metrics, health views, and related-inquiry candidates are rebuildable derived state.
+
+## Core principles
+
+1. A Canonical Event is not a copy of a transport schema.
+2. Canonical identity is stable across transport projection and replay.
+3. Raw protocol data and Canonical data are stored separately.
+4. Published events are append-only; corrections and reinterpretations create new events connected by lineage.
+5. Ingest and replay use the same canonicalization rules.
+6. Similarity, vocabulary mapping, transport delivery, and semantic relations do not merge Canonical identity automatically.
+7. AI output is not publication approval or agronomic correctness.
+
+## Minimal shape
+
+```json
+{
+  "id": "tt:evt:550e8400e29b41d4a716446655440000",
+  "schemaVersion": "0.1.0",
+  "type": "inquiry",
+  "createdAt": "2026-05-19T00:00:00Z",
+  "body": {
+    "text": "Why do weed communities differ across parts of the field?",
+    "language": "en"
+  },
+  "provenance": {
+    "sources": [
+      {
+        "protocol": "lingonberry",
+        "sourceId": "draft:toitoi-example-0001"
+      }
+    ]
+  }
+}
+```
+
+The machine-verifiable contract is `schemas/canonical-event.schema.json`, published as `https://toitoi.cultivationdata.net/schemas/v1/canonical-event.schema.json`.
+
+The repository release is `v1.0.0`, while the stable Canonical Event wire identifier remains `schemaVersion: "0.1.0"`. These versions have different responsibilities and must not be conflated.
+
+## Required fields
+
+- `id`: opaque transport-independent identifier in the form `tt:evt:<opaque-id>`
+- `schemaVersion`: Canonical Event wire-schema version
+- `type`: semantic event type
+- `createdAt`: ISO 8601 timestamp
+- `body`: natural-language representation with `text` and `language`
+- `provenance.sources`: at least one source reference
+
+## Optional fields
+
+- `contexts`: abstracted locality and contextual metadata
+- `relationships`: semantic relationships
+- `phase`: optional learning or maturity phase
+- `trigger`: event-generation trigger
+- `dsl`: optional explanatory projection
+- `lineage`: derivation and revision edges
+- `identityClaims`: optional verifiable identity claims
+- `rawRef`: reference to separately stored raw protocol data
+- `labels`: transport-projection labels
+- `meta`: non-semantic implementation metadata
+
+Unknown top-level fields are permitted for forward compatibility. Closed nested objects such as `body`, `provenance`, and `rawRef` accept only fields declared by the schema. `contexts` and `meta` remain intentionally extensible.
+
+## Event types
+
+The current schema recognizes:
+
+- `inquiry`
+- `observation`
+- `annotation`
+- `response`
+- `synthesis`
+
+## Lineage
+
+Lineage connects distinct Canonical Events. It does not represent transport copies of the same event.
+
+Normative v1 lineage relation values are:
+
+- `derived_from`
+- `translated_from`
+- `observed_alongside`
+- `contrasts_with`
+- `synthesizes`
+- `reframes`
+- `annotates`
+- `revises`
+
+`synthesis` is an event `type`; `synthesizes` is the lineage relation.
+
+## Provenance and raw data
+
+`provenance.sources[]` records where an event came from and is required. Each source contains at least:
+
+- `protocol`
+- `sourceId`
+
+`rawRef` points to raw protocol data stored outside the Canonical Event. Raw payloads must not be embedded in `event.raw` or `provenance.raw`.
+
+## Authority and identity boundaries
+
+- authentication identity, actor identity, transport identity, and Canonical Event identity remain distinct;
+- AI annotation acceptance, relation confirmation, publication approval, moderation, and operator actions remain separate decisions;
+- transport failure changes delivery state but does not invalidate Canonical persistence;
+- vocabulary mappings are explicit claims and do not silently normalize local language;
+- generated, derived, related, or mapped content is not guaranteed to be agriculturally correct.
+
+## Compatibility
+
+Native v1 validation uses the strict Canonical Event contract. Legacy v0.9 shapes are accepted only through the explicit `v0.9.0` Conformance compatibility profile. Compatibility handling must not weaken strict v1 validation.
+
+## Related documents
+
+- `schemas/canonical-event.schema.json`
+- `docs/reference/V1_CONTRACT_INDEX.md`
+- `docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md`
+- `docs/architecture/ARCHITECTURE_OVERVIEW.md`
+- `docs/protocols/NOSTR_INQUIRY_SCHEMA.md`
+- `docs/protocols/ATPROTO_INQUIRY_SCHEMA.md`
+
+---
+
+# Canonical Event
+
+**状態: stable**  
+**言語状態:** 英語版と日本語版は同等の内容として管理します。  
+**最終同期日:** 2026-07-23
 
 ## 目的
 
-このドキュメントは、Toitoi の内部中心モデルである Canonical Event を定義します。
+Canonical Eventは、Toitoiにおけるprotocol-independentなsemantic recordです。storage、index、Standard API、AI workflow、review、derivation、transport projectionで使用する、replay可能な内部基準です。
 
-Canonical Event は、
+Nostr EventやATProto Recordなどのtransport固有recordはCanonical Eventのprojectionであり、Canonical identityを定義しません。
 
-- semantic layer
-- protocol-independent representation
-- replayable な内部基準
-
-として扱われます。
-
-Nostr Event や将来の ATProto Record は、Canonical Event の transport への projection です。
-
-各 transport 側の詳細な shape は [NOSTR_INQUIRY_SCHEMA.md](./NOSTR_INQUIRY_SCHEMA.md) と [ATPROTO_INQUIRY_SCHEMA.md](./ATPROTO_INQUIRY_SCHEMA.md) を参照してください。
-
----
-
-## 位置づけ
-
-Toitoi の基本構造は次の通りです。
+## システム上の位置
 
 ```text
-Raw Protocol Events
-  ↓ adapter / normalizer
-Canonicalized Events
-  ↓ indexer / API / AI
-Standardized Access
-```
+Raw protocol record
+  -> adapter / normalizer
+  -> Canonical Event
+  -> storage / API / AI / search / replay
 
-書き込み側では、
-
-```text
 Canonical Event
-  ↓ converter
-Protocol-specific Representation
+  -> converter / transport adapter
+  -> protocol-specific representation
 ```
 
-の順で外部へ出します。
-
-このときの transport への projection では、`lineage` に由来する `e` タグを `dsl:*` タグより前に出力し、同一入力に対する再現性を高めます。
-
-### Event Model の要点
-
-Toitoi の event model は append-only です。公開後の event は破壊的に更新せず、修正や再解釈は新しい event と lineage relation で表現します。
-
-- raw event: transport からそのまま取得した生の protocol event
-- normalized event: raw event を検証し、protocol 固有の差異を整理した中間表現
-- canonicalized event: normalized event を Canonical Event に変換した結果
-- derived index: 検索・参照用の派生構造
-- storage snapshot: raw / canonical / ingest log を保持した replay 基盤
-
-保存は append-only を基本にし、raw event と canonicalized event を分けて保持します。これにより、canonicalization ルール変更後の再処理、index の再生成、履歴監査が可能になります。
-
-### Protocol Abstraction の要点
-
-Toitoi は現在 Nostr を最初の operational transport としますが、内部構造は protocol-independent を目指します。
-
-- Adapter / Normalizer は validate / verify / dedupe / ordering / normalize / canonicalize を担う
-- Converter は Canonical Event と protocol-specific representation の相互変換を担う
-- Transport は relay / PDS / filesystem 等への配送と保存を担う
-- Indexer は Canonical Event から派生構造を作る
-- Standard API は protocol schema ではなく意味アクセスを返す
-
-delete / replace / ordering / trust は transport 由来の判断として扱い、semantic layer へ直接持ち込まない。
-
----
-
-## 用語
-
-このドキュメントでは、次の用語を固定して使います。
-
-### raw event
-
-- transport からそのまま取得した生の protocol event
-- 署名検証、重複排除、順序付けの前段階にある
-
-### normalized event
-
-- raw event を検証し、protocol 固有の差異を整理した中間表現
-- まだ semantic な正規化は完了していない
-
-### canonical event
-
-- Toitoi 内部の意味的共通表現
-- protocol schema の写しではない
-- replay 可能な内部基準として扱う
-
-### canonicalized event
-
-- normalized event を Canonical Event に変換した結果
-- 以後の index / API / AI はこの層を前提に扱う
-
-### derived index
-
-- Canonical Event から派生した検索・参照用の補助構造
-- 意味論そのものではない
-
----
+Canonical storageが正本です。search index、facet、metrics、health view、related-inquiry candidateは再構築可能なderived stateです。
 
 ## 基本原則
 
-1. Canonical Event は protocol schema の写しにしない
-2. Canonical Event は semantic stability を優先する
-3. raw event と canonicalized event を分けて保持する
-4. index は Canonical Event から派生する補助構造として扱う
-5. ingest と replay は同じ canonicalization ルールで動かす
-
-### Identity と派生の分離
-
-- `id` は Canonical Event draft の時点で確定し、converter の前後で維持する
-- 同じ意味内容を複数 transport に投影する場合は、同じ `id` を使う
-- `lineage` は別イベントへの派生関係を表すものであり、transport ごとの投影差分を表すためのものではない
-- 同一性が曖昧な case は、別 event として残し、必要に応じて relation / lineage でつなぐ
-- DSL は補助的な projection であり、identity の主たる根拠にしない
-
----
-
-## Canonical Event が担うもの
-
-- inquiry / observation / annotation などの意味的型
-- 自然言語本体
-- locality の抽象化された context
-- semantic relationship
-- lineage
-- optional な DSL projection
-- provenance
-- identityClaims
-- source references
-
----
-
-## Canonical Event が直接担わないもの
-
-- Nostr `kind`
-- Nostr `sig`
-- relay ごとの配送状態
-- protocol-specific serialization
-- transport 固有の ordering ルールそのもの
-
-これらは transport layer または adapter / normalizer layer の責務です。
-
----
+1. Canonical Eventはtransport schemaの写しではありません。
+2. Canonical identityはtransport projectionとreplayを通して維持されます。
+3. raw protocol dataとCanonical dataは分離して保存します。
+4. 公開eventはappend-onlyであり、訂正や再解釈はlineageで接続した新しいeventとして表現します。
+5. ingestとreplayは同じcanonicalization ruleを使います。
+6. similarity、Vocabulary mapping、transport delivery、semantic relationはCanonical identityを自動統合しません。
+7. AI outputはpublication approvalでも農業上の正しさでもありません。
 
 ## 最小構造
 
@@ -155,7 +191,7 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
   "type": "inquiry",
   "createdAt": "2026-05-19T00:00:00Z",
   "body": {
-    "text": "雑草の生え方が場所によって違うのはなぜ？",
+    "text": "畑の場所によって雑草群落が違うのはなぜ？",
     "language": "ja"
   },
   "provenance": {
@@ -169,70 +205,37 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 }
 ```
 
-この例は Lingonberry の source を使った最小構造です。
-この例は `schemas/canonical-event.schema.json` の `required` に合わせた最小構造です。
+機械可読な契約は`schemas/canonical-event.schema.json`です。公開識別子は`https://toitoi.cultivationdata.net/schemas/v1/canonical-event.schema.json`です。
 
-## スキーマ補足
+repository releaseは`v1.0.0`ですが、stableなCanonical Event wire identifierは`schemaVersion: "0.1.0"`のままです。両者の責務は異なり、混同してはいけません。
 
-`schemas/canonical-event.schema.json` は、このドキュメントの最小構造を機械可読にしたものです。公開上の識別子は `https://toitoi.cultivationdata.net/schemas/v1/canonical-event.schema.json` です。
+## 必須field
 
-実装上は、次の任意フィールドを追加できます。
+- `id`: `tt:evt:<opaque-id>`形式のopaqueでtransport-independentなidentifier
+- `schemaVersion`: Canonical Event wire schemaの版
+- `type`: semantic event type
+- `createdAt`: ISO 8601 timestamp
+- `body`: `text`と`language`を持つ自然言語表現
+- `provenance.sources`: 1件以上のsource reference
 
-- `trigger`
-- `labels`
-- `meta`
-- `rawRef`
-- `identityClaims`
-- `dsl.models[].meta`
+## 任意field
 
-`provenance.sources[]` は、どの protocol event から来たかを追跡するための必須情報です。
-`rawRef` は raw event または raw payload の参照先を保持するための専用フィールドです。
-`provenance` は来歴、`rawRef` は再取得・再 canonicalize のための参照を担います。
-`identityClaims` は canonical event に対応する third-party verifiable claim を保持する任意フィールドです。
-`id` は opaque な `tt:evt:<opaque-id>` を使います。
+- `contexts`: 抽象化したlocalityとcontext metadata
+- `relationships`: semantic relationship
+- `phase`: 任意の学習・成熟段階
+- `trigger`: event生成契機
+- `dsl`: 任意の説明projection
+- `lineage`: derivationとrevisionのedge
+- `identityClaims`: 任意のverifiable identity claim
+- `rawRef`: 分離保存されたraw protocol dataへの参照
+- `labels`: transport projection用label
+- `meta`: 非semanticなimplementation metadata
 
-### schema の並び
+forward compatibilityのため未知のtop-level fieldを許容します。`body`、`provenance`、`rawRef`などのclosed nested objectではschema宣言fieldのみを許容します。`contexts`と`meta`は意図的にextensibleです。
 
-`schemas/canonical-event.schema.json` の `properties` に合わせると、Canonical Event の補足は次の順で読むと整理しやすくなります。
+## Event type
 
-1. `id`
-2. `schemaVersion`
-3. `type`
-4. `createdAt`
-5. `body`
-6. `contexts`
-7. `relationships`
-8. `phase`
-9. `trigger`
-10. `dsl`
-11. `lineage`
-12. `provenance`
-13. `identityClaims`
-14. `rawRef`
-15. `labels`
-16. `meta`
-
-この順番は実装の入力順を強制するものではなく、仕様の読み順を schema と揃えるためのものです。
-
----
-
-## フィールド方針
-
-### `id`
-
-- transport-independent であること
-- protocol を跨いでも安定すること
-- event hash や URI に直接従属しないこと
-
-### `schemaVersion`
-
-- Canonical Event の schema 契約の版を示す
-- 現行の最小構造では `0.1.0` を使う
-- Markdown の版番号ではなく、JSON Schema の契約値として扱う
-
-### `type`
-
-代表例:
+現行schemaは次を認識します。
 
 - `inquiry`
 - `observation`
@@ -240,151 +243,49 @@ delete / replace / ordering / trust は transport 由来の判断として扱い
 - `response`
 - `synthesis`
 
-### `createdAt`
+## Lineage
 
-- ISO 8601 の UTC timestamp
-- event が生成された時点を示す
-- 後からの replay や一覧表示の基準になる
+lineageは異なるCanonical Eventを接続します。同一eventのtransport copyを表すものではありません。
 
-### `body`
-
-- 自然言語の主表現
-- boundary object を保持する
-
-### `contexts`
-
-- raw data そのものではなく抽象化された locality
-
-### `relationships`
-
-- semantic relation の最小構造
-- transport pair をそのままコピーするのではなく、意味的に正規化された形を優先する
-
-### `phase`
-
-- 到達段階や熟達度の補助情報
-- 必須ではなく、必要な event にだけ付与する
-
-### `trigger`
-
-- event が立ち上がった契機を補助的に表す
-- `category` と `value` の最小構造で保持する
-
-### `dsl`
-
-- 補助的な説明モデル
-- `models` 配列を持ち、必要なときだけ付与する
-
-### `lineage`
+v1の正式なlineage relationは次です。
 
 - `derived_from`
-- `synthesis`
+- `translated_from`
+- `observed_alongside`
+- `contrasts_with`
+- `synthesizes`
+- `reframes`
 - `annotates`
 - `revises`
 
-などの関係を保持する
+`synthesis`はevent `type`であり、`synthesizes`はlineage relationです。
 
-### `provenance`
+## Provenanceとraw data
 
-- どの protocol event から来たか
-- canonicalization に必要だった source を追えること
-- `sources` 配列で source reference を保持すること
-
-`sources` の各要素は少なくとも次を持ちます。
+`provenance.sources[]`はeventの由来を記録する必須fieldです。各sourceは少なくとも次を持ちます。
 
 - `protocol`
 - `sourceId`
 
-必要に応じて `relay` や `kind` を補助情報として持てます。
+`rawRef`はCanonical Eventの外部に分離保存したraw protocol dataを参照します。raw payloadを`event.raw`や`provenance.raw`へ埋め込んではいけません。
 
-### `identityClaims`
+## Authorityとidentityの境界
 
-- canonical event に対応する third-party verifiable claim
-- 必要なときだけ追加する任意フィールド
+- authentication identity、actor identity、transport identity、Canonical Event identityを分離します。
+- AI annotation acceptance、relation confirmation、publication approval、moderation、operator actionは別の判断です。
+- transport failureはdelivery stateを変えますがCanonical persistenceを無効化しません。
+- Vocabulary mappingは明示的claimであり、local languageを暗黙にnormalizeしません。
+- generated、derived、related、mapped contentの農業上の正しさは保証されません。
 
-### `rawRef`
+## Compatibility
 
-- raw event または raw payload への参照
-- provenance と分離して、再取得・再 canonicalize 用の入口を明示する
-- protocol ごとの参照形を吸収する
+native v1 validationはstrict Canonical Event contractを使います。legacy v0.9 shapeは明示的な`v0.9.0` Conformance compatibility profileでのみ受理します。compatibility handlingによってstrict v1 validationを弱めてはいけません。
 
-`rawRef` は少なくとも次を持ちます。
+## 関連文書
 
-- `protocol`
-- `sourceId`
-
-必要に応じて次の補助情報を持てます。
-
-- `relay`
-- `storage`
-- `storageId`
-- `payloadHash`
-
-### `labels`
-
-- transport projection で使う補助ラベル
-- 必須ではなく、検索や表示の補助として扱う
-
-### `meta`
-
-- 非 semantic な実装メタデータ
-- 保存や運用のための補足情報を入れる
-
----
-
-## raw event との関係
-
-Canonical Event を中心に据えても、raw protocol event は保持します。
-
-理由:
-
-- 監査可能性
-- 再処理可能性
-- canonicalization ルール変更時の再構築
-- transport provenance の追跡
-
-そのため、実装では次を分けます。
-
-```text
-raw event
-normalized event
-canonicalized event
-derived index
-```
-
----
-
-## JSONL との関係
-
-Canonical Event は JSONL で直列化できます。
-
-ただし、
-
-- `JSONL` は保存形式
-- `Canonical Event` は意味モデル
-
-であり、同義ではありません。
-
-このドキュメントは保存形式よりも内部モデルを優先して定義します。
-
----
-
-## Indexer との関係
-
-Indexer は Canonical Event を入力として、以下の補助構造を作ります。
-
-- full-text index
-- time index
-- lineage traversal
-- embeddings
-- graph construction
-
-これらはすべて派生物であり、Canonical Event の意味論を置き換えません。
-
----
-
-## 関連
-
-- [NOSTR_INQUIRY_SCHEMA.md](./NOSTR_INQUIRY_SCHEMA.md)
-- [../architecture/AI_SYSTEM_OVERVIEW.md](../architecture/AI_SYSTEM_OVERVIEW.md)
-- [../architecture/STANDARD_API_MVP.md](../architecture/STANDARD_API_MVP.md)
+- `schemas/canonical-event.schema.json`
+- `docs/reference/V1_CONTRACT_INDEX.md`
+- `docs/concepts/CANONICAL_IDENTITY_AND_PROVENANCE.md`
+- `docs/architecture/ARCHITECTURE_OVERVIEW.md`
+- `docs/protocols/NOSTR_INQUIRY_SCHEMA.md`
+- `docs/protocols/ATPROTO_INQUIRY_SCHEMA.md`
