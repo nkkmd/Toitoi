@@ -21,20 +21,22 @@ function assertBilingualDocument(relativePath, {
   assert.ok(content.includes(englishHeading), `${relativePath}: missing English heading`);
   assert.ok(content.includes(japaneseHeading), `${relativePath}: missing Japanese heading`);
   assert.ok(
-    content.includes('Language status: English and Japanese sections are maintained as equivalent.'),
+    /Language status:\*\* English and Japanese sections are maintained as equivalent\./.test(content),
     `${relativePath}: missing English synchronization marker`,
   );
   assert.ok(
-    content.includes('言語状態:'),
+    /言語状態:\*\* 英語版と日本語版は同等の内容として管理します。/.test(content),
     `${relativePath}: missing Japanese synchronization marker`,
   );
-  assert.ok(content.includes('Last synchronized:'), `${relativePath}: missing synchronization date`);
-  assert.ok(content.includes('最終同期日:'), `${relativePath}: missing Japanese synchronization date`);
+  assert.ok(/Last synchronized:\*\* \d{4}-\d{2}-\d{2}/.test(content), `${relativePath}: missing synchronization date`);
+  assert.ok(/最終同期日:\*\* \d{4}-\d{2}-\d{2}/.test(content), `${relativePath}: missing Japanese synchronization date`);
 
-  const separatorIndex = content.indexOf('\n---\n');
+  const japaneseHeadingIndex = content.indexOf(japaneseHeading);
+  assert.ok(japaneseHeadingIndex > 0, `${relativePath}: invalid Japanese section position`);
+  const separatorIndex = content.lastIndexOf('\n---\n', japaneseHeadingIndex);
   assert.ok(separatorIndex > 0, `${relativePath}: missing English/Japanese separator`);
   const english = content.slice(0, separatorIndex);
-  const japanese = content.slice(separatorIndex + 5);
+  const japanese = content.slice(japaneseHeadingIndex);
 
   for (const literal of requiredLiterals) {
     assert.ok(english.includes(literal), `${relativePath}: English section missing ${literal}`);
