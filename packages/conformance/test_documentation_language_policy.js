@@ -41,6 +41,12 @@ assert.ok(policy.includes('## Class A registry'));
 assert.ok(policy.includes('# Toitoi 文書言語ポリシー'));
 assert.ok(policy.includes('docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md'));
 
+assertBilingualDocument('README.md', {
+  englishHeading: '# Toitoi 🌱',
+  japaneseHeading: '# Toitoi 🌱',
+  requiredLiterals: ['DOCUMENTATION_LANGUAGE_POLICY.md','ARCHITECTURE_OVERVIEW.md','CANONICAL_EVENT.md','V1.0.0_OPERATIONS_RUNBOOK.md','SECURITY.md','corepack pnpm test','fixtures/reference/v1.0.0/conformance-input.json'],
+});
+
 assertBilingualDocument('docs/reference/V1.0.0_SETUP_AND_DEMO.md', {
   englishHeading: '# Toitoi v1.0.0 Reference Setup and Demo',
   japaneseHeading: '# Toitoi v1.0.0 参照環境のセットアップとデモ',
