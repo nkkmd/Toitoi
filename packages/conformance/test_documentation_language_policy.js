@@ -21,7 +21,9 @@ function assertBilingualDocument(relativePath, { englishHeading, japaneseHeading
   assert.ok(/Last synchronized:\*{0,2}\s*\d{4}-\d{2}-\d{2}/.test(content), `${relativePath}: missing synchronization date`);
   assert.ok(/最終同期日:\*{0,2}\s*\d{4}-\d{2}-\d{2}/.test(content), `${relativePath}: missing Japanese synchronization date`);
 
-  const japaneseHeadingIndex = content.indexOf(japaneseHeading);
+  const japaneseHeadingIndex = englishHeading === japaneseHeading
+    ? content.lastIndexOf(japaneseHeading)
+    : content.indexOf(japaneseHeading);
   assert.ok(japaneseHeadingIndex > 0, `${relativePath}: invalid Japanese section position`);
   const separatorIndex = content.lastIndexOf('\n---\n', japaneseHeadingIndex);
   assert.ok(separatorIndex > 0, `${relativePath}: missing English/Japanese separator`);
