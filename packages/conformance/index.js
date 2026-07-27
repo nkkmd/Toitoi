@@ -2,6 +2,15 @@
 
 const crypto = require('crypto');
 
+const NATIVE_SCHEMA_VERSION = '0.1.0';
+const NATIVE_EVENT_TYPES = new Set([
+  'inquiry',
+  'observation',
+  'annotation',
+  'response',
+  'synthesis',
+]);
+
 function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
@@ -37,14 +46,19 @@ function validateCanonicalEvent(event, options = {}) {
 
   const requiredFields = allowV090
     ? ['id', 'type', 'createdAt', 'provenance']
-    : ['id', 'schemaVersion', 'type', 'createdAt', 'provenance'];
+    : ['id', 'schemaVersion', 'type', 'createdAt', 'body', 'provenance'];
   for (const field of requiredFields) {
     if (!(field in event)) {
       errors.push({ path: `$.${field}`, code: 'required', message: `${field} is required.` });
     }
   }
-  if (!('body' in event) && !('content' in event)) {
-    errors.push({ path: '$.body', code: 'required', message: 'body is required; content is accepted only as a legacy compatibility alias.' });
+
+  if (allowV090 && !('body' in event) && !('content' in event)) {
+    errors.push({
+      path: '$.body',
+      code: 'required',
+      message: 'body or the v0.9.0 content compatibility alias is required.',
+    });
   }
 
   if ('id' in event) {
@@ -60,20 +74,43 @@ function validateCanonicalEvent(event, options = {}) {
       });
     }
   }
-  if ('schemaVersion' in event && (typeof event.schemaVersion !== 'string' || event.schemaVersion.trim() === '')) {
-    errors.push({ path: '$.schemaVersion', code: 'type', message: 'schemaVersion must be a non-empty string.' });
+
+  if ('schemaVersion' in event) {
+    if (typeof event.schemaVersion !== 'string' || event.schemaVersion.trim() === '') {
+      errors.push({
+        path: '$.schemaVersion',
+        code: 'type',
+        message: 'schemaVersion must be a non-empty string.',
+      });
+    } else if (!allowV090 && event.schemaVersion !== NATIVE_SCHEMA_VERSION) {
+      errors.push({
+        path: '$.schemaVersion',
+        code: 'const',
+        message: `native v1 requires schemaVersion ${NATIVE_SCHEMA_VERSION}.`,
+      });
+    }
   }
-  if ('type' in event && (typeof event.type !== 'string' || event.type.trim() === '')) {
-    errors.push({ path: '$.type', code: 'type', message: 'type must be a non-empty string.' });
+
+  if ('type' in event) {
+    if (typeof event.type !== 'string' || event.type.trim() === '') {
+      errors.push({ path: '$.type', code: 'type', message: 'type must be a non-empty string.' });
+    } else if (!allowV090 && !NATIVE_EVENT_TYPES.has(event.type)) {
+      errors.push({
+        path: '$.type',
+        code: 'enum',
+        message: `native v1 type must be one of: ${[...NATIVE_EVENT_TYPES].join(', ')}.`,
+      });
+    }
   }
+
   if ('createdAt' in event && Number.isNaN(Date.parse(event.createdAt))) {
     errors.push({ path: '$.createdAt', code: 'format', message: 'createdAt must be an ISO-compatible timestamp.' });
   }
 
-  const body = semanticBody(event);
+  const body = allowV090 ? semanticBody(event) : event.body;
   if (!isObject(body)) {
     errors.push({ path: '$.body', code: 'type', message: 'body must be an object.' });
-  } else if ('body' in event) {
+  } else if (!allowV090 || 'body' in event) {
     if (typeof body.text !== 'string' || body.text.trim() === '') {
       errors.push({ path: '$.body.text', code: 'required', message: 'body.text must be a non-empty string.' });
     }
