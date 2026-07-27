@@ -55,6 +55,8 @@ const quickstartClassARegistry = [
   'docs/quickstart/EDGE_AI_QUICKSTART.md',
 ];
 
+const completeClassARegistry = [...classARegistry, ...quickstartClassARegistry];
+
 const policy = read('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md');
 for (const relativePath of classARegistry) {
   assert.ok(policy.includes(`\`${relativePath}\``), `policy registry missing ${relativePath}`);
@@ -79,6 +81,17 @@ for (const relativePath of quickstartClassARegistry) {
 }
 assert.ok(quickstartDecision.includes('Nostr, Lingonberry, and ATProto'));
 assert.ok(quickstartDecision.includes('Nostr、Lingonberry、ATProto'));
+
+const preReview = read('docs/reviews/V1.0.0_CLASS_A_SEMANTIC_PRE_REVIEW.md');
+const releaseRecord = read('docs/roadmap/V1.0.0_RELEASE_RECORD.md');
+for (const relativePath of completeClassARegistry) {
+  assert.ok(preReview.includes(`\`${relativePath}\``), `semantic pre-review missing ${relativePath}`);
+  assert.ok(releaseRecord.includes(`\`${relativePath}\``), `release record human review set missing ${relativePath}`);
+}
+assert.ok(preReview.includes('human sign-off pending'));
+assert.ok(preReview.includes('must not be represented as human approval'));
+assert.ok(releaseRecord.includes('AI-assisted semantic pre-review: complete'));
+assert.ok(releaseRecord.includes('human semantic-equivalence review: pending'));
 
 assertBilingualDocument('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md', {
   englishHeading: '# Toitoi Documentation Language Policy',
