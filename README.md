@@ -10,7 +10,7 @@
 **Latest public release: v0.9.0**  
 **v1.0.0 candidate implementation: PR #39**  
 **Language status:** English and Japanese sections are maintained as equivalent.  
-**Last synchronized:** 2026-07-23
+**Last synchronized:** 2026-07-27
 
 *[日本語は下に続きます]*
 
@@ -49,6 +49,12 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm test
 ```
 
+External developers should continue with the bilingual [Developer Quick Starts](./docs/quickstart/README.md):
+
+- [Transport Quick Start: Nostr, Lingonberry, and ATProto](./docs/quickstart/TRANSPORT_QUICKSTART.md)
+- [Indexer and Standard API Quick Start](./docs/quickstart/INDEXER_API_QUICKSTART.md)
+- [Edge AI Quick Start](./docs/quickstart/EDGE_AI_QUICKSTART.md)
+
 Start the reference API:
 
 ```bash
@@ -70,7 +76,9 @@ corepack pnpm --filter @toitoi/conformance exec \
 
 ## Main documentation
 
+- [Developer Quick Starts](./docs/quickstart/README.md)
 - [Documentation Language Policy](./docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md)
+- [v1.0.0 Quick Start Class A Decision](./docs/governance/V1.0.0_QUICKSTART_CLASS_A_DECISION.md)
 - [Architecture Overview](./docs/architecture/ARCHITECTURE_OVERVIEW.md)
 - [Canonical Event](./docs/protocols/CANONICAL_EVENT.md)
 - [v1 Contract Index](./docs/reference/V1_CONTRACT_INDEX.md)
@@ -113,7 +121,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md), and [LIC
 **最新の公開リリース: v0.9.0**  
 **v1.0.0候補実装: PR #39**  
 **言語状態:** 英語版と日本語版は同等の内容として管理します。  
-**最終同期日:** 2026-07-23
+**最終同期日:** 2026-07-27
 
 Toitoiは、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、普遍的な「答え」ではなく、地域固有の観察から生まれる**問い**を共有・検討・派生・探索する分散型protocol platform／digital commonsです。
 
@@ -148,6 +156,12 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm test
 ```
 
+外部開発者は、英日併記の[Developer Quick Starts](./docs/quickstart/README.md)へ進んでください。
+
+- [Transport Quick Start: Nostr、Lingonberry、ATProto](./docs/quickstart/TRANSPORT_QUICKSTART.md)
+- [Indexer・Standard API Quick Start](./docs/quickstart/INDEXER_API_QUICKSTART.md)
+- [Edge AI Quick Start](./docs/quickstart/EDGE_AI_QUICKSTART.md)
+
 reference APIを起動します。
 
 ```bash
@@ -169,7 +183,9 @@ corepack pnpm --filter @toitoi/conformance exec \
 
 ## 主要文書
 
+- [Developer Quick Starts](./docs/quickstart/README.md)
 - [文書言語ポリシー](./docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md)
+- [v1.0.0 Quick Start Class A登録決定](./docs/governance/V1.0.0_QUICKSTART_CLASS_A_DECISION.md)
 - [アーキテクチャ概要](./docs/architecture/ARCHITECTURE_OVERVIEW.md)
 - [Canonical Event](./docs/protocols/CANONICAL_EVENT.md)
 - [v1 Contract Index](./docs/reference/V1_CONTRACT_INDEX.md)
