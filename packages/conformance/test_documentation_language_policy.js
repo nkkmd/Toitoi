@@ -36,10 +36,40 @@ function assertBilingualDocument(relativePath, { englishHeading, japaneseHeading
   }
 }
 
+const classARegistry = [
+  'docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md',
+  'README.md',
+  'docs/architecture/ARCHITECTURE_OVERVIEW.md',
+  'docs/protocols/CANONICAL_EVENT.md',
+  'docs/reference/V1.0.0_SETUP_AND_DEMO.md',
+  'docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md',
+  'CONTRIBUTING.md',
+  'SECURITY.md',
+  'docs/roadmap/RELEASE_NOTES.md',
+];
+
 const policy = read('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md');
-assert.ok(policy.includes('## Class A registry'));
-assert.ok(policy.includes('# Toitoi 文書言語ポリシー'));
-assert.ok(policy.includes('docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md'));
+for (const relativePath of classARegistry) {
+  assert.ok(policy.includes(`\`${relativePath}\``), `policy registry missing ${relativePath}`);
+  assert.equal(fs.existsSync(path.join(repositoryRoot, relativePath)), true, `registered Class A file missing: ${relativePath}`);
+}
+assert.equal(policy.includes('docs/architecture/ARCHITECTURE.md` or'), false, 'ambiguous architecture registry path remains');
+assert.equal(policy.includes('SECURITY.md` or'), false, 'ambiguous security registry path remains');
+assert.ok(policy.includes('Class A status is assigned only by inclusion in the Class A registry.'));
+assert.ok(policy.includes('Class Aへの分類は、Class A registryへの登録によってのみ確定します。'));
+assert.ok(policy.includes('## Versioned Class A document lifecycle'));
+assert.ok(policy.includes('## version付きClass A文書の世代管理'));
+assert.ok(policy.includes('## Human semantic-equivalence review'));
+assert.ok(policy.includes('## human semantic-equivalence review'));
+assert.ok(policy.includes('reviewer identity'));
+assert.ok(policy.includes('reviewed commit SHA'));
+assert.ok(policy.includes('docs/roadmap/V1.0.0_RELEASE_RECORD.md'));
+
+assertBilingualDocument('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md', {
+  englishHeading: '# Toitoi Documentation Language Policy',
+  japaneseHeading: '# Toitoi 文書言語ポリシー',
+  requiredLiterals: ['ARCHITECTURE_OVERVIEW.md','V1.0.0_RELEASE_RECORD.md','reviewed commit SHA','Class A registry'],
+});
 
 assertBilingualDocument('README.md', {
   englishHeading: '# Toitoi 🌱',
