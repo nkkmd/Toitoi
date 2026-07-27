@@ -18,6 +18,15 @@ const fixture = JSON.parse(fs.readFileSync(
 ));
 const event = fixture.publishedInquiry;
 
+function assertInvalidAt(candidate, expectedPath, message) {
+  const validation = validateCanonicalEvent(candidate);
+  assert.strictEqual(validation.valid, false, message);
+  assert.ok(
+    validation.errors.some(error => error.path === expectedPath),
+    `${message}: expected an error at ${expectedPath}, got ${JSON.stringify(validation.errors)}`,
+  );
+}
+
 assert.strictEqual(validateCanonicalEvent(event).valid, true);
 assert.strictEqual(validateCanonicalEvent({}).valid, false);
 assert.strictEqual(validateCanonicalEvent({ ...event, id: 'legacy-id' }).valid, false);
@@ -49,10 +58,35 @@ assert.strictEqual(
   false,
   'native v1 must reject event types outside the Canonical Event enum',
 );
-assert.strictEqual(
-  validateCanonicalEvent({ ...event, provenance: { sources: [] } }).valid,
-  false,
+assertInvalidAt(
+  { ...event, provenance: { sources: [] } },
+  '$.provenance.sources',
   'native v1 must reject empty provenance.sources',
+);
+assertInvalidAt(
+  { ...event, provenance: { sources: [{}] } },
+  '$.provenance.sources[0].protocol',
+  'native v1 must reject a provenance source without protocol',
+);
+assertInvalidAt(
+  { ...event, provenance: { sources: [{ protocol: 'nostr' }] } },
+  '$.provenance.sources[0].sourceId',
+  'native v1 must reject a provenance source without sourceId',
+);
+assertInvalidAt(
+  { ...event, provenance: { sources: [{ protocol: '   ', sourceId: 'source-1' }] } },
+  '$.provenance.sources[0].protocol',
+  'native v1 must reject an empty provenance source protocol',
+);
+assertInvalidAt(
+  { ...event, provenance: { sources: [{ protocol: 'nostr', sourceId: '' }] } },
+  '$.provenance.sources[0].sourceId',
+  'native v1 must reject an empty provenance source sourceId',
+);
+assertInvalidAt(
+  { ...event, provenance: { sources: ['nostr:source-1'] } },
+  '$.provenance.sources[0]',
+  'native v1 must reject a non-object provenance source',
 );
 
 assert.strictEqual(checkCanonicalIdPreserved(event, { ...event }).passed, true);
@@ -61,6 +95,10 @@ assert.strictEqual(checkProvenanceRawBoundary(event).passed, true);
 assert.deepStrictEqual(checkProvenanceRawBoundary({ ...event, provenance: { ...event.provenance, raw: { secret: true } } }), {
   passed: false,
   reason: 'embedded_raw_payload',
+});
+assert.deepStrictEqual(checkProvenanceRawBoundary({ ...event, provenance: { sources: [{}] } }), {
+  passed: false,
+  reason: 'missing_raw_reference_or_sources',
 });
 
 const restored = JSON.parse(JSON.stringify(event));
