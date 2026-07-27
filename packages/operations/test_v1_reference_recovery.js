@@ -99,6 +99,12 @@ async function run() {
       registry.plan(0, 2).map(migration => migration.version),
       [1, 2],
     );
+    assert.throws(
+      () => registry.plan(2, 1),
+      /downgrade migrations are not supported; restore a verified pre-migration backup into a separate root/,
+    );
+    assert.throws(() => registry.plan(-1, 1), /currentVersion must be a non-negative integer/);
+    assert.throws(() => registry.plan(0, 1.5), /targetVersion must be a non-negative integer/);
 
     const dryRun = await registry.apply({
       currentVersion: 0,
@@ -121,10 +127,19 @@ async function run() {
       ...fixture.recoveryExpectations.rebuildableDerivedState,
     ]);
 
+    await assert.rejects(
+      registry.apply({ currentVersion: 2, targetVersion: 1, context: { log: migrationLog } }),
+      /downgrade migrations are not supported/,
+    );
+    assert.deepEqual(migrationLog, [
+      'v1',
+      ...fixture.recoveryExpectations.rebuildableDerivedState,
+    ]);
+
     fs.appendFileSync(path.join(restoreRoot, 'canonical/events.json'), 'corruption', 'utf8');
     assert.equal(verifyBackupManifest(manifest, restoreRoot).passed, false);
 
-    console.log('v1.0.0 reference backup, restore, and migration tests passed');
+    console.log('v1.0.0 reference backup, restore, migration, and rollback-boundary tests passed');
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
     fs.rmSync(restoreRoot, { recursive: true, force: true });
