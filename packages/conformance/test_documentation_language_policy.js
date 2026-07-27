@@ -48,6 +48,13 @@ const classARegistry = [
   'docs/roadmap/RELEASE_NOTES.md',
 ];
 
+const quickstartClassARegistry = [
+  'docs/quickstart/README.md',
+  'docs/quickstart/TRANSPORT_QUICKSTART.md',
+  'docs/quickstart/INDEXER_API_QUICKSTART.md',
+  'docs/quickstart/EDGE_AI_QUICKSTART.md',
+];
+
 const policy = read('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md');
 for (const relativePath of classARegistry) {
   assert.ok(policy.includes(`\`${relativePath}\``), `policy registry missing ${relativePath}`);
@@ -65,6 +72,14 @@ assert.ok(policy.includes('reviewer identity'));
 assert.ok(policy.includes('reviewed commit SHA'));
 assert.ok(policy.includes('docs/roadmap/V1.0.0_RELEASE_RECORD.md'));
 
+const quickstartDecision = read('docs/governance/V1.0.0_QUICKSTART_CLASS_A_DECISION.md');
+for (const relativePath of quickstartClassARegistry) {
+  assert.ok(quickstartDecision.includes(`\`${relativePath}\``), `quickstart registry amendment missing ${relativePath}`);
+  assert.equal(fs.existsSync(path.join(repositoryRoot, relativePath)), true, `registered quickstart Class A file missing: ${relativePath}`);
+}
+assert.ok(quickstartDecision.includes('Nostr, Lingonberry, and ATProto'));
+assert.ok(quickstartDecision.includes('Nostr、Lingonberry、ATProto'));
+
 assertBilingualDocument('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md', {
   englishHeading: '# Toitoi Documentation Language Policy',
   japaneseHeading: '# Toitoi 文書言語ポリシー',
@@ -75,6 +90,30 @@ assertBilingualDocument('README.md', {
   englishHeading: '# Toitoi 🌱',
   japaneseHeading: '# Toitoi 🌱',
   requiredLiterals: ['DOCUMENTATION_LANGUAGE_POLICY.md','ARCHITECTURE_OVERVIEW.md','CANONICAL_EVENT.md','V1.0.0_OPERATIONS_RUNBOOK.md','SECURITY.md','corepack pnpm test','fixtures/reference/v1.0.0/conformance-input.json'],
+});
+
+assertBilingualDocument('docs/quickstart/README.md', {
+  englishHeading: '# Toitoi Developer Quick Starts',
+  japaneseHeading: '# Toitoi 外部開発者向けQuick Start',
+  requiredLiterals: ['TRANSPORT_QUICKSTART.md','INDEXER_API_QUICKSTART.md','EDGE_AI_QUICKSTART.md','corepack pnpm install --frozen-lockfile'],
+});
+
+assertBilingualDocument('docs/quickstart/TRANSPORT_QUICKSTART.md', {
+  englishHeading: '# Transport Quick Start',
+  japaneseHeading: '# Transport Quick Start',
+  requiredLiterals: ['@toitoi/nostr-transport','@toitoi/lingonberry-transport','@toitoi/atproto-transport','TOITOI_TRANSPORT_SOURCES','Canonical identity'],
+});
+
+assertBilingualDocument('docs/quickstart/INDEXER_API_QUICKSTART.md', {
+  englishHeading: '# Indexer and Standard API Quick Start',
+  japaneseHeading: '# Indexer・Standard API Quick Start',
+  requiredLiterals: ['PORT=3000','/health/live','/health/ready','TOITOI_TRANSPORT_SOURCES','@toitoi/conformance'],
+});
+
+assertBilingualDocument('docs/quickstart/EDGE_AI_QUICKSTART.md', {
+  englishHeading: '# Edge AI Quick Start',
+  japaneseHeading: '# Edge AI Quick Start',
+  requiredLiterals: ['TOITOI_AI_STORAGE_DIR','ai-inspection:enabled','@toitoi/ai test','llama-server','publication approval'],
 });
 
 assertBilingualDocument('docs/reference/V1.0.0_SETUP_AND_DEMO.md', {
