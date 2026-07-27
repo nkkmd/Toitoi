@@ -15,6 +15,16 @@ function isObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function isValidProvenanceSource(source) {
+  return isObject(source)
+    && isNonEmptyString(source.protocol)
+    && isNonEmptyString(source.sourceId);
+}
+
 function canonicalDigest(value) {
   const normalize = input => {
     if (Array.isArray(input)) return input.map(normalize);
@@ -125,6 +135,31 @@ function validateCanonicalEvent(event, options = {}) {
     const sources = event.provenance.sources;
     if (!Array.isArray(sources) || sources.length === 0) {
       errors.push({ path: '$.provenance.sources', code: 'required', message: 'provenance.sources must contain at least one source.' });
+    } else {
+      sources.forEach((source, index) => {
+        if (!isObject(source)) {
+          errors.push({
+            path: `$.provenance.sources[${index}]`,
+            code: 'type',
+            message: 'each provenance source must be an object.',
+          });
+          return;
+        }
+        if (!isNonEmptyString(source.protocol)) {
+          errors.push({
+            path: `$.provenance.sources[${index}].protocol`,
+            code: 'required',
+            message: 'provenance source protocol must be a non-empty string.',
+          });
+        }
+        if (!isNonEmptyString(source.sourceId)) {
+          errors.push({
+            path: `$.provenance.sources[${index}].sourceId`,
+            code: 'required',
+            message: 'provenance source sourceId must be a non-empty string.',
+          });
+        }
+      });
     }
   }
 
@@ -145,10 +180,12 @@ function checkProvenanceRawBoundary(event) {
   if ('raw' in provenance || 'raw' in (event || {})) return { passed: false, reason: 'embedded_raw_payload' };
 
   const topLevelRawRef = isObject(event?.rawRef)
-    && typeof event.rawRef.protocol === 'string'
-    && typeof event.rawRef.sourceId === 'string';
-  const legacyRawRef = typeof provenance.rawRef === 'string';
-  const sources = Array.isArray(provenance.sources) && provenance.sources.length > 0;
+    && isNonEmptyString(event.rawRef.protocol)
+    && isNonEmptyString(event.rawRef.sourceId);
+  const legacyRawRef = isNonEmptyString(provenance.rawRef);
+  const sources = Array.isArray(provenance.sources)
+    && provenance.sources.length > 0
+    && provenance.sources.every(isValidProvenanceSource);
 
   return {
     passed: topLevelRawRef || legacyRawRef || sources,
