@@ -1,4 +1,5 @@
 {
+  "compatibilityProfile": "v0.9.0",
   "events": [
     {
       "id": "toitoi:v0.9.0:shared-inquiry",

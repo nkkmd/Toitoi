@@ -12,24 +12,23 @@ function run() {
   });
 
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'toitoi-conformance-'));
-  const input = path.join(directory, 'fixture.json');
+  const input = path.resolve(
+    __dirname,
+    '../../fixtures/reference/v1.0.0/conformance-input.json',
+  );
   const output = path.join(directory, 'report.json');
-  fs.writeFileSync(input, JSON.stringify({
-    events: [{
-      id: 'fixture-1',
-      type: 'inquiry',
-      createdAt: '2026-07-22T00:00:00.000Z',
-      content: { text: 'Why?' },
-      provenance: { rawRef: 'raw:fixture-1' },
-    }],
-  }), 'utf8');
 
   assert.strictEqual(main(['--input', input, '--output', output, '--pretty']), 0);
   const report = JSON.parse(fs.readFileSync(output, 'utf8'));
   assert.strictEqual(report.passed, true);
-  assert.strictEqual(report.conformanceVersion, '0.9.0');
+  assert.strictEqual(report.conformanceVersion, '1.0.0');
+  assert.strictEqual(report.compatibilityProfile, null);
+  assert.strictEqual(report.totals.failed, 0);
+  assert.ok(report.checks.some(check => check.name === 'round-trip:nostr' && check.passed));
+  assert.ok(report.checks.some(check => check.name === 'replay-equivalence' && check.passed));
+
   fs.rmSync(directory, { recursive: true, force: true });
-  console.log('conformance CLI tests passed');
+  console.log('conformance CLI v1 external fixture tests passed');
 }
 
 run();

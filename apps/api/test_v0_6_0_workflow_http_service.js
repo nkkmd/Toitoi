@@ -76,6 +76,7 @@ async function run() {
   assert.equal(promoted.statusCode, 201);
   assert.equal(promoted.body.status, 'draft');
   assert.equal(promoted.body.derivation.sourceInquiryId, 'tt:evt:observation-1');
+  assert.equal(promoted.body.review, undefined, 'accepted AI annotation must not create publication approval');
 
   const draftId = promoted.body.id;
   const earlyPublish = await request(http, 'POST', `/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/publish`, {});
@@ -84,16 +85,26 @@ async function run() {
   const submitted = await request(http, 'POST', `/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/submit`, {});
   assert.equal(submitted.body.status, 'in_review');
 
+  const missingReviewer = await request(http, 'POST', `/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/approve`, {});
+  assert.equal(missingReviewer.statusCode, 400);
+  assert.match(missingReviewer.body.message, /reviewerId is required/);
+
   const approved = await request(http, 'POST', `/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/approve`, {
     reviewerId: 'human:reviewer', note: '公開対象を確認した',
   });
   assert.equal(approved.body.status, 'approved');
   assert.equal(approved.body.review.reviewerId, 'human:reviewer');
+  assert.notEqual(
+    annotation.reviewedBy,
+    approved.body.review.reviewerId,
+    'reference fixture demonstrates independently attributable annotation and publication decisions',
+  );
 
   const published = await request(http, 'POST', `/api/v1/inquiry-drafts/${encodeURIComponent(draftId)}/publish`, {});
   assert.equal(published.statusCode, 201);
   assert.equal(published.body.type, 'inquiry');
   assert.equal(published.body.meta.publication.draftId, draftId);
+  assert.equal(published.body.meta.publication.approvedBy, 'human:reviewer');
   assert.equal(published.body.meta.publication.storage.batchId, 'batch-1');
   assert.equal(published.body.meta.publication.delivery.delivered[0].protocol, 'nostr');
   assert.equal(published.body.lineage[0].sourceId, 'tt:evt:observation-1');
@@ -105,7 +116,7 @@ async function run() {
   const missing = await request(http, 'POST', '/api/v1/ai/annotations/missing/promote', {});
   assert.equal(missing.statusCode, 404);
 
-  console.log('v0.6.0 workflow HTTP service passed');
+  console.log('v0.6.0 workflow HTTP service and independent attribution boundary passed');
 }
 
 run().catch((error) => { console.error(error); process.exitCode = 1; });

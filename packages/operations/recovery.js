@@ -33,15 +33,26 @@ function verifyBackupManifest(manifest, root = manifest.root) {
   return { passed: checks.every(check => check.passed), checks };
 }
 
+function assertMigrationVersion(value, name) {
+  if (!Number.isInteger(value) || value < 0) {
+    throw new TypeError(`${name} must be a non-negative integer`);
+  }
+}
+
 class MigrationRegistry {
   constructor(migrations = []) {
     this.migrations = migrations.slice().sort((a, b) => a.version - b.version);
   }
 
   plan(currentVersion, targetVersion = null) {
+    assertMigrationVersion(currentVersion, 'currentVersion');
     const target = targetVersion === null
       ? (this.migrations.length ? this.migrations[this.migrations.length - 1].version : currentVersion)
       : targetVersion;
+    assertMigrationVersion(target, 'targetVersion');
+    if (target < currentVersion) {
+      throw new RangeError('downgrade migrations are not supported; restore a verified pre-migration backup into a separate root');
+    }
     return this.migrations.filter(migration => migration.version > currentVersion && migration.version <= target);
   }
 

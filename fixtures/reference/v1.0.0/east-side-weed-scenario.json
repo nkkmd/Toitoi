@@ -1,0 +1,258 @@
+{
+  "fixtureVersion": "1.0.0",
+  "scenarioId": "toitoi-v1-east-side-weed",
+  "title": "East-side weed difference reference scenario",
+  "observation": {
+    "id": "tt:evt:v1-observation-east-side-weeds",
+    "schemaVersion": "0.1.0",
+    "type": "observation",
+    "createdAt": "2026-07-22T00:00:00.000Z",
+    "body": {
+      "text": "畑の東側だけ雑草の種類が違う。東側にはスゲに似た草が多く、西側には少ない。",
+      "language": "ja"
+    },
+    "contexts": {
+      "region": "reference-region-a",
+      "field_zone": "east-edge",
+      "climate_zone": "warm-temperate",
+      "soil_type": "loam",
+      "crop": "soybean",
+      "season": "summer",
+      "local_terms": ["東べり", "スゲに似た草"]
+    },
+    "labels": ["weed", "field-edge", "microclimate", "soil-moisture"],
+    "provenance": {
+      "sources": [
+        {
+          "protocol": "local-capture",
+          "sourceId": "offline-observation:v1-east-side-weeds",
+          "createdAt": "2026-07-22T00:00:00.000Z"
+        }
+      ]
+    },
+    "rawRef": {
+      "protocol": "local-capture",
+      "sourceId": "offline-observation:v1-east-side-weeds",
+      "storage": "reference-fixture",
+      "storageId": "raw/observation-east-side-weeds.json"
+    }
+  },
+  "annotation": {
+    "id": "annotation:v1-east-side-weeds",
+    "jobId": "job:v1-east-side-weeds",
+    "kind": "inquiry-generation",
+    "status": "accepted-with-edit",
+    "inputEventId": "tt:evt:v1-observation-east-side-weeds",
+    "provider": "deterministic-fixture",
+    "model": "toitoi-fixture-inquiry-generator",
+    "modelVersion": "1.0.0",
+    "promptVersion": "v1-reference-2026-07-22",
+    "rawOutput": {
+      "candidates": [
+        "畑の東側だけ土壌水分や日照条件が異なり、雑草の種類に差が出ているのはなぜか？",
+        "東側のスゲに似た草の分布は、排水経路や微地形とどのように関係しているか？"
+      ]
+    },
+    "review": {
+      "decision": "accept-with-edit",
+      "reviewedBy": "actor:reference-reviewer",
+      "reviewedAt": "2026-07-22T00:05:00.000Z",
+      "selectedCandidate": 0,
+      "editedText": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？"
+    }
+  },
+  "inquiryDraft": {
+    "id": "draft:v1-east-side-weeds",
+    "sourceObservationId": "tt:evt:v1-observation-east-side-weeds",
+    "sourceAnnotationId": "annotation:v1-east-side-weeds",
+    "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+    "language": "ja",
+    "reviewState": "approved",
+    "submittedBy": "actor:reference-contributor",
+    "reviewedBy": "actor:reference-publisher",
+    "submittedAt": "2026-07-22T00:06:00.000Z",
+    "reviewedAt": "2026-07-22T00:08:00.000Z"
+  },
+  "publishedInquiry": {
+    "id": "tt:evt:v1-inquiry-east-side-weeds",
+    "schemaVersion": "0.1.0",
+    "type": "inquiry",
+    "createdAt": "2026-07-22T00:09:00.000Z",
+    "body": {
+      "text": "畑の東側だけ土壌水分、日照、微地形の条件が異なり、雑草の種類に差が出ているのはなぜか？",
+      "language": "ja"
+    },
+    "contexts": {
+      "region": "reference-region-a",
+      "field_zone": "east-edge",
+      "climate_zone": "warm-temperate",
+      "soil_type": "loam",
+      "crop": "soybean",
+      "season": "summer",
+      "local_terms": ["東べり", "スゲに似た草"]
+    },
+    "lineage": [
+      {
+        "type": "derived_from",
+        "target": "tt:evt:v1-observation-east-side-weeds"
+      }
+    ],
+    "labels": ["weed", "field-edge", "microclimate", "soil-moisture"],
+    "provenance": {
+      "sources": [
+        {
+          "protocol": "toitoi-workflow",
+          "sourceId": "draft:v1-east-side-weeds",
+          "createdAt": "2026-07-22T00:09:00.000Z"
+        }
+      ]
+    },
+    "meta": {
+      "annotationId": "annotation:v1-east-side-weeds",
+      "annotationReview": "accepted-with-edit",
+      "publicationReview": "approved",
+      "publishedBy": "actor:reference-publisher"
+    }
+  },
+  "relatedInquiry": {
+    "id": "tt:evt:v1-inquiry-wet-edge-sedges",
+    "schemaVersion": "0.1.0",
+    "type": "inquiry",
+    "createdAt": "2026-07-10T00:00:00.000Z",
+    "body": {
+      "text": "Why do sedges appear mainly along the wetter eastern edge of this field?",
+      "language": "en"
+    },
+    "contexts": {
+      "region": "reference-region-b",
+      "field_zone": "east-edge",
+      "climate_zone": "cool-temperate",
+      "soil_type": "silty-clay",
+      "crop": "maize",
+      "season": "summer",
+      "local_terms": ["wet edge", "sedges"]
+    },
+    "labels": ["weed", "sedges", "field-edge", "drainage"],
+    "provenance": {
+      "sources": [
+        {
+          "protocol": "atproto",
+          "sourceId": "at://did:plc:reference/app.toitoi.inquiry/wet-edge-sedges",
+          "uri": "at://did:plc:reference/app.toitoi.inquiry/wet-edge-sedges",
+          "did": "did:plc:reference",
+          "collection": "app.toitoi.inquiry",
+          "rkey": "wet-edge-sedges",
+          "createdAt": "2026-07-10T00:00:00.000Z"
+        }
+      ]
+    }
+  },
+  "derivedInquiry": {
+    "id": "tt:evt:v1-inquiry-east-edge-comparison",
+    "schemaVersion": "0.1.0",
+    "type": "inquiry",
+    "createdAt": "2026-07-22T00:15:00.000Z",
+    "body": {
+      "text": "異なる地域の圃場東端で、土壌水分と微地形はスゲ類の出現差にどう関係するか？",
+      "language": "ja"
+    },
+    "contexts": {
+      "comparison_scope": "cross-region",
+      "shared_concepts": ["field-edge", "soil-moisture", "microtopography", "sedges"],
+      "source_regions": ["reference-region-a", "reference-region-b"]
+    },
+    "lineage": [
+      {
+        "type": "synthesizes",
+        "target": "tt:evt:v1-inquiry-east-side-weeds"
+      },
+      {
+        "type": "synthesizes",
+        "target": "tt:evt:v1-inquiry-wet-edge-sedges"
+      }
+    ],
+    "labels": ["comparison", "weed", "field-edge", "soil-moisture"],
+    "provenance": {
+      "sources": [
+        {
+          "protocol": "toitoi-workflow",
+          "sourceId": "draft:v1-east-edge-comparison",
+          "createdAt": "2026-07-22T00:15:00.000Z"
+        }
+      ]
+    },
+    "meta": {
+      "relationConfirmedBy": "actor:reference-reviewer",
+      "publicationReview": "approved"
+    }
+  },
+  "vocabularyMappings": [
+    {
+      "localTerm": "東べり",
+      "sharedConcept": "field-edge",
+      "relation": "maps_to",
+      "reviewState": "confirmed",
+      "confirmedBy": "actor:reference-reviewer"
+    },
+    {
+      "localTerm": "スゲに似た草",
+      "sharedConcept": "sedges",
+      "relation": "candidate_translation",
+      "reviewState": "confirmed-with-uncertainty",
+      "confirmedBy": "actor:reference-reviewer"
+    }
+  ],
+  "transportProjections": {
+    "nostr": {
+      "status": "delivered",
+      "canonicalEventId": "tt:evt:v1-inquiry-east-side-weeds",
+      "sourceId": "nostr:v1-east-side-weeds"
+    },
+    "lingonberry": {
+      "status": "delivered",
+      "canonicalEventId": "tt:evt:v1-inquiry-east-side-weeds",
+      "sourceId": "lingonberry:v1-east-side-weeds"
+    },
+    "atproto": {
+      "status": "quarantined",
+      "canonicalEventId": "tt:evt:v1-inquiry-east-side-weeds",
+      "reason": "deterministic fixture simulates unavailable credentials"
+    }
+  },
+  "searchExpectations": [
+    {
+      "name": "local wording",
+      "query": {
+        "q": "東べり"
+      },
+      "expectedIds": ["tt:evt:v1-inquiry-east-side-weeds"]
+    },
+    {
+      "name": "shared concept across regions",
+      "query": {
+        "q": "field edge soil moisture"
+      },
+      "expectedIds": [
+        "tt:evt:v1-inquiry-east-side-weeds",
+        "tt:evt:v1-inquiry-wet-edge-sedges"
+      ]
+    },
+    {
+      "name": "derived comparison lineage",
+      "query": {
+        "relation": "synthesizes"
+      },
+      "expectedIds": ["tt:evt:v1-inquiry-east-edge-comparison"]
+    }
+  ],
+  "recoveryExpectations": {
+    "canonicalEventIds": [
+      "tt:evt:v1-observation-east-side-weeds",
+      "tt:evt:v1-inquiry-east-side-weeds",
+      "tt:evt:v1-inquiry-wet-edge-sedges",
+      "tt:evt:v1-inquiry-east-edge-comparison"
+    ],
+    "rebuildableDerivedState": ["search-index", "context-facets", "related-inquiry-candidates"],
+    "durableState": ["raw-storage", "canonical-storage", "queue-state", "audit-log"]
+  }
+}
