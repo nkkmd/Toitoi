@@ -2,15 +2,16 @@
 
 **Status: normative**  
 **Applies from:** v1.0.0  
-**Last updated:** 2026-07-23
+**Language status:** English and Japanese sections are maintained as equivalent.  
+**Last synchronized:** 2026-07-27
 
 ## Purpose
 
-This policy defines how English and Japanese are used across the Toitoi repository. Its goals are to keep public entry points and operational guidance accessible to both English- and Japanese-speaking users while avoiding unsustainable translation work for detailed implementation documents.
+This policy defines how English and Japanese are used across the Toitoi repository. It keeps public entry points and minimum operational guidance accessible in both languages while avoiding unsustainable translation work for detailed implementation documents.
 
 ## Core rule
 
-Public entry points, core concepts, and the minimum operational procedures required to install, operate, recover, and upgrade Toitoi are maintained in English and Japanese.
+Public entry points, core concepts, and the minimum procedures required to install, operate, recover, and upgrade Toitoi are maintained in English and Japanese.
 
 Detailed technical specifications, implementation records, internal development documents, test fixtures, and package-level engineering notes are maintained in English unless a release owner explicitly classifies them otherwise.
 
@@ -20,7 +21,7 @@ Every maintained documentation file belongs to one of the following classes.
 
 ### Class A — bilingual, English followed by Japanese
 
-Use this class for documents that users, operators, contributors, or evaluators are expected to read before they can safely understand or operate Toitoi.
+Use this class for documents that users, operators, contributors, or evaluators must read to safely understand or operate Toitoi.
 
 Required structure:
 
@@ -32,18 +33,21 @@ English section
 Japanese section containing the same meaning
 ```
 
-Class A includes, at minimum:
+Documents that may qualify for Class A include:
 
-- root `README.md`;
-- project overview and core concept documents;
-- high-level architecture overview;
-- Canonical Event overview;
+- the root project entry point;
+- project and core-concept overviews;
+- the high-level architecture overview;
+- the Canonical Event overview;
 - setup and quick-start guidance;
 - the minimum operations runbook;
-- backup, restore, migration, upgrade, rollback, and failure-recovery procedures;
+- public backup, restore, migration, upgrade, rollback, and recovery guidance;
 - the security and sensitive-information entry point;
 - the contributor entry point;
-- public release notes.
+- public release notes;
+- this documentation-language policy.
+
+**Class A status is assigned only by inclusion in the Class A registry.** The list above defines eligibility; it does not automatically classify every document in those categories as Class A.
 
 ### Class B — English only
 
@@ -54,19 +58,19 @@ Class B normally includes:
 - JSON Schema and wire-format detail;
 - transport-specific specifications;
 - adapter, converter, normalizer, and package-internal documentation;
-- API endpoint reference details;
-- Conformance fixtures and test-fixture explanations;
+- detailed API endpoint references;
+- Conformance and test-fixture explanations;
 - architecture decision records;
 - implementation plans and release plans;
 - CI and deployment internals;
 - migration implementation details;
-- pilot data collection and internal analysis templates.
+- pilot data-collection and internal-analysis templates.
 
 ### Class C — historical record
 
 Use this class for superseded plans, release records, archived design discussions, and historical implementation notes.
 
-Class C documents are not translated solely for consistency. Their existing language is preserved unless translation is needed to prevent a current operational or contractual misunderstanding.
+Class C documents are not translated solely for consistency. Their existing language is preserved unless a change is needed to prevent a current operational or contractual misunderstanding.
 
 ## Normative authority
 
@@ -89,7 +93,7 @@ Every Class A document must:
 - preserve equivalent headings and operational meaning;
 - keep commands, environment variables, endpoint paths, schema versions, file paths, IDs, and error codes identical in both sections;
 - include a language synchronization marker;
-- be updated in both languages in the same pull request when behavior or meaning changes.
+- update both language sections in the same pull request when behavior or meaning changes.
 
 Recommended marker:
 
@@ -98,14 +102,14 @@ Language status: English and Japanese sections are maintained as equivalent.
 Last synchronized: YYYY-MM-DD
 ```
 
-The Japanese section should contain the corresponding Japanese marker.
+The Japanese section must contain the corresponding Japanese marker.
 
 ## Translation rules
 
 - Translate meaning, not word order.
 - Do not translate identifiers, API paths, environment variables, schema keys, command names, package names, or code.
 - Use one stable Japanese term for each core concept and include the English term when ambiguity is possible.
-- Preserve explicit distinctions such as Canonical identity versus transport identity, annotation review versus publication approval, and durable state versus derived state.
+- Preserve distinctions such as Canonical identity versus transport identity, annotation review versus publication approval, and durable state versus derived state.
 - Do not describe AI output as authoritative knowledge or publication approval.
 - Do not silently strengthen or weaken requirements in one language.
 
@@ -118,36 +122,62 @@ A pull request that modifies a Class A document must either:
 
 A release must not be published when a Class A document contains known material divergence between its English and Japanese sections.
 
-New documents default to Class B unless they are added to the Class A registry below.
+New documents default to Class B unless they are added to the Class A registry.
+
+## Versioned Class A document lifecycle
+
+Release-specific Class A documents, such as setup guides and operations runbooks, remain Class A while that release is the maintained public operating baseline.
+
+When a successor document is designated:
+
+- the registry must be updated through an explicit documentation-governance decision;
+- the current README must point to one unambiguous maintained setup guide and one unambiguous maintained operations runbook;
+- the superseded versioned document may move to Class C;
+- historical versioned documents are not rewritten merely to match a newer release;
+- operational corrections that affect a still-supported historical release must be applied deliberately and recorded.
 
 ## Class A registry
 
-The maintained registry is intentionally small.
+The maintained registry is intentionally small. Inclusion in this table is the authoritative Class A assignment.
 
 | Document | Purpose |
 |---|---|
+| `docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md` | normative documentation-language governance |
 | `README.md` | public project entry point |
-| `docs/architecture/ARCHITECTURE.md` or the designated architecture overview | high-level system model |
+| `docs/architecture/ARCHITECTURE_OVERVIEW.md` | high-level system model |
 | `docs/protocols/CANONICAL_EVENT.md` | Canonical Event overview and contract interpretation |
 | `docs/reference/V1.0.0_SETUP_AND_DEMO.md` | installation and reference workflow |
 | `docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md` | minimum safe operation and recovery |
 | `CONTRIBUTING.md` | contributor entry point |
-| `SECURITY.md` or the designated security entry point | security and sensitive-information reporting |
+| `SECURITY.md` | security and sensitive-information reporting |
 | `docs/roadmap/RELEASE_NOTES.md` | public release history |
 
 Changes to this registry require an explicit documentation-governance decision.
+
+## Human semantic-equivalence review
+
+Automated checks cannot prove semantic equivalence. Before a release is published, a human reviewer must review every registered Class A document at the exact release-candidate commit.
+
+The review must be recorded in the release record and include:
+
+- reviewer identity;
+- review date;
+- reviewed commit SHA;
+- the Class A document set reviewed;
+- whether any material divergence was found;
+- unresolved items or an explicit statement that none remain.
+
+For v1.0.0, the record is `docs/roadmap/V1.0.0_RELEASE_RECORD.md`.
 
 ## Automated checks
 
 Where practical, CI should verify:
 
+- every registered Class A path exists;
 - required English and Japanese section markers exist;
 - synchronization markers exist;
 - critical commands, environment variables, endpoints, versions, and paths appear in both sections;
-- registered Class A files exist;
 - a Class A file is not changed in only one language section without an explicit exception marker.
-
-Automated checks cannot prove semantic equivalence. Human review remains required.
 
 ## v1.0.0 transition
 
@@ -155,7 +185,7 @@ The v1.0.0 documentation migration is tracked in:
 
 `docs/roadmap/V1.0.0_DOCUMENTATION_LANGUAGE_MIGRATION.md`
 
-The migration must prioritize documents required for installation, safe operation, recovery, contract interpretation, and public release. Historical and deeply internal documents do not block v1.0.0 solely because they are not translated.
+The migration prioritizes documents required for installation, safe operation, recovery, contract interpretation, and public release. Historical and deeply internal documents do not block v1.0.0 solely because they are not translated.
 
 ---
 
@@ -163,11 +193,12 @@ The migration must prioritize documents required for installation, safe operatio
 
 **状態: 規範文書**  
 **適用開始:** v1.0.0  
-**最終更新:** 2026-07-23
+**言語状態:** 英語版と日本語版は同等の内容として管理します。  
+**最終同期日:** 2026-07-27
 
 ## 目的
 
-このポリシーは、Toitoiリポジトリ内で英語と日本語をどのように使用するかを定めます。公開上の入口と運用手順を英語・日本語の利用者双方に提供しながら、詳細な実装文書まで無制限に翻訳して保守不能になることを防ぐことが目的です。
+このポリシーは、Toitoiリポジトリ内で英語と日本語をどのように使用するかを定めます。公開上の入口と最小限の運用手順を英語・日本語の双方で提供しながら、詳細な実装文書まで無制限に翻訳して保守不能になることを防ぎます。
 
 ## 基本原則
 
@@ -181,7 +212,7 @@ The migration must prioritize documents required for installation, safe operatio
 
 ### Class A — 英日併記
 
-Toitoiを安全に理解・運用するために、利用者、運用者、contributor、評価者が読むことを想定する文書です。
+Toitoiを安全に理解・運用するために、利用者、運用者、contributor、評価者が読む必要のある文書です。
 
 必須構成:
 
@@ -193,18 +224,21 @@ Toitoiを安全に理解・運用するために、利用者、運用者、contr
 同じ意味を持つ日本語全文
 ```
 
-最低限、次をClass Aとします。
+Class A候補には次が含まれます。
 
-- ルート`README.md`;
+- ルートのプロジェクト入口;
 - プロジェクト概要と主要concept文書;
 - 上位architecture概要;
 - Canonical Event概要;
 - setupおよびquick start;
 - 最小運用runbook;
-- backup、restore、migration、upgrade、rollback、障害復旧手順;
+- 公開用のbackup、restore、migration、upgrade、rollback、障害復旧手順;
 - securityおよび機微情報保護の入口;
 - contributor向け入口;
-- 公開release notes。
+- 公開release notes;
+- この文書言語ポリシー。
+
+**Class Aへの分類は、Class A registryへの登録によってのみ確定します。** 上記は候補範囲を示すものであり、該当カテゴリの全文書を自動的にClass Aとするものではありません。
 
 ### Class B — 英語のみ
 
@@ -227,7 +261,7 @@ source code、schema、fixture、CI、protocol内部へ直接関わる技術者�
 
 旧plan、release record、過去の設計議論、歴史的implementation noteです。
 
-Class C文書は、言語統一だけを目的として翻訳しません。現在の運用や契約に誤解を生じさせる場合に限り、必要な修正または翻訳を行います。
+Class C文書は、言語統一だけを目的として翻訳しません。現在の運用や契約に誤解を生じさせる場合に限り、必要な修正を行います。
 
 ## 規範性の優先順位
 
@@ -281,34 +315,60 @@ Class A文書を変更するpull requestは、次のいずれかを満たす必�
 
 新規文書は、Class A registryへ追加されない限りClass Bをdefaultとします。
 
+## version付きClass A文書の世代管理
+
+setup guideやoperations runbookなどrelease固有のClass A文書は、そのreleaseが保守対象の公開運用基準である間、Class Aとして維持します。
+
+後継文書を指定する場合:
+
+- 明示的なdocumentation governance判断によりregistryを更新する;
+- 現行READMEから、保守対象のsetup guideとoperations runbookをそれぞれ一意に参照する;
+- 旧version文書はClass Cへ移行できる;
+- 新releaseへ合わせるだけの目的で過去のversion付き文書を書き換えない;
+- まだsupport対象の旧releaseに影響する運用訂正は、意図的に適用して記録する。
+
 ## Class A registry
 
-保守可能性を守るため、registryは意図的に小さく維持します。
+保守可能性を守るため、registryは意図的に小さく維持します。この表への登録がClass A分類の正本です。
 
 | 文書 | 目的 |
 |---|---|
+| `docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md` | 文書言語governanceの規範文書 |
 | `README.md` | 公開上のプロジェクト入口 |
-| `docs/architecture/ARCHITECTURE.md`または指定されたarchitecture概要 | 上位system model |
+| `docs/architecture/ARCHITECTURE_OVERVIEW.md` | 上位system model |
 | `docs/protocols/CANONICAL_EVENT.md` | Canonical Event概要とcontract解釈 |
 | `docs/reference/V1.0.0_SETUP_AND_DEMO.md` | 導入とreference workflow |
 | `docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md` | 最小限の安全な運用と復旧 |
 | `CONTRIBUTING.md` | contributor向け入口 |
-| `SECURITY.md`または指定されたsecurity入口 | securityおよび機微情報の報告 |
+| `SECURITY.md` | securityおよび機微情報の報告 |
 | `docs/roadmap/RELEASE_NOTES.md` | 公開release履歴 |
 
 registryの変更には、明示的なdocumentation governance判断が必要です。
+
+## human semantic-equivalence review
+
+自動検査だけで意味の同等性を証明することはできません。release公開前に、human reviewerがexact release-candidate commitにある全Class A文書をreviewしなければなりません。
+
+review結果はrelease recordへ記録し、次を含めます。
+
+- reviewer identity;
+- review date;
+- reviewed commit SHA;
+- reviewしたClass A文書一覧;
+- 重大な不一致が見つかったか;
+- 未解決事項、または未解決事項がないことの明示。
+
+v1.0.0では、`docs/roadmap/V1.0.0_RELEASE_RECORD.md`へ記録します。
 
 ## 自動検査
 
 可能な範囲で、CIは次を検証します。
 
+- registryに登録された全Class A pathが存在する;
 - 必須の英語・日本語section markerが存在する;
 - synchronization markerが存在する;
 - 重要なcommand、環境変数、endpoint、version、pathが両sectionに存在する;
-- registryに記載されたClass A文書が存在する;
 - 明示的な例外markerなしにClass A文書の一方の言語だけが変更されていない。
-
-自動検査だけで意味の同等性を証明することはできません。human reviewは引き続き必要です。
 
 ## v1.0.0への移行
 
