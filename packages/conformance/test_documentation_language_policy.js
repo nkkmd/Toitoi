@@ -91,7 +91,13 @@ for (const relativePath of completeClassARegistry) {
 assert.ok(preReview.includes('human sign-off pending'));
 assert.ok(preReview.includes('must not be represented as human approval'));
 assert.ok(releaseRecord.includes('AI-assisted semantic pre-review: complete'));
-assert.ok(releaseRecord.includes('human semantic-equivalence review: pending'));
+assert.ok(releaseRecord.includes('human semantic-equivalence review: complete'));
+assert.ok(releaseRecord.includes('reviewer identity: `nkkmd`'));
+assert.ok(releaseRecord.includes('material divergence found: `no`'));
+assert.ok(releaseRecord.includes('unresolved items: `none`'));
+assert.ok(releaseRecord.includes('review conclusion: `approved for merge; release publication gates remain separate`'));
+assert.ok(releaseRecord.includes('documentation-language human semantic review: complete'));
+assert.ok(releaseRecord.includes('submitted human review decision: approved'));
 
 assertBilingualDocument('docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md', {
   englishHeading: '# Toitoi Documentation Language Policy',
