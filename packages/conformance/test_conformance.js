@@ -21,6 +21,40 @@ const event = fixture.publishedInquiry;
 assert.strictEqual(validateCanonicalEvent(event).valid, true);
 assert.strictEqual(validateCanonicalEvent({}).valid, false);
 assert.strictEqual(validateCanonicalEvent({ ...event, id: 'legacy-id' }).valid, false);
+
+const { body: nativeBody, ...nativeWithoutBody } = event;
+const legacyContentOnlyEvent = {
+  ...nativeWithoutBody,
+  id: 'legacy-v0.9-event',
+  content: nativeBody,
+};
+assert.strictEqual(
+  validateCanonicalEvent(legacyContentOnlyEvent).valid,
+  false,
+  'native v1 must reject the legacy content alias',
+);
+assert.strictEqual(
+  validateCanonicalEvent(legacyContentOnlyEvent, { compatibilityProfile: 'v0.9.0' }).valid,
+  true,
+  'the explicit v0.9.0 compatibility profile must accept the legacy content alias',
+);
+
+assert.strictEqual(
+  validateCanonicalEvent({ ...event, schemaVersion: '1.0.0' }).valid,
+  false,
+  'native v1 must reject a repository release version used as the wire schema version',
+);
+assert.strictEqual(
+  validateCanonicalEvent({ ...event, type: 'unknown-event-type' }).valid,
+  false,
+  'native v1 must reject event types outside the Canonical Event enum',
+);
+assert.strictEqual(
+  validateCanonicalEvent({ ...event, provenance: { sources: [] } }).valid,
+  false,
+  'native v1 must reject empty provenance.sources',
+);
+
 assert.strictEqual(checkCanonicalIdPreserved(event, { ...event }).passed, true);
 assert.strictEqual(checkCanonicalIdPreserved(event, { ...event, id: 'tt:evt:changed' }).passed, false);
 assert.strictEqual(checkProvenanceRawBoundary(event).passed, true);
