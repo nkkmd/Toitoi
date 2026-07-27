@@ -20,13 +20,26 @@ function canonicalEvents(fixture) {
     fixture.publishedInquiry,
     fixture.relatedInquiry,
     fixture.derivedInquiry,
+    {
+      id: 'tt:evt:v1-relation-word-decoy',
+      schemaVersion: '0.1.0',
+      type: 'inquiry',
+      createdAt: '2026-07-22T00:16:00.000Z',
+      body: {
+        text: 'This text mentions synthesizes but has no synthesis lineage edge.',
+        language: 'en',
+      },
+      provenance: {
+        sources: [{ protocol: 'local-capture', sourceId: 'relation-word-decoy' }],
+      },
+    },
   ];
 }
 
 function normalizeReferenceQuery(expectation) {
   const query = expectation.query;
   if (query.relation) {
-    return { q: query.relation, type: 'inquiry' };
+    return { relation: query.relation, type: 'inquiry' };
   }
   if (expectation.name === 'shared concept across regions') {
     return { q: 'field edge', type: 'inquiry' };
@@ -65,6 +78,16 @@ function run() {
       firstResults.set(expectation.name, ids);
     }
 
+    const relationResult = projection.search({ relation: 'synthesizes', type: 'inquiry' });
+    assert.deepStrictEqual(resultIds(relationResult), [fixture.derivedInquiry.id]);
+    assert.ok(relationResult.results.every(item => item.signals.relation === true));
+    assert.ok(!resultIds(relationResult).includes('tt:evt:v1-relation-word-decoy'));
+
+    const lexicalResult = projection.search({ q: 'synthesizes', type: 'inquiry' });
+    assert.ok(resultIds(lexicalResult).includes(fixture.derivedInquiry.id));
+    assert.ok(resultIds(lexicalResult).includes('tt:evt:v1-relation-word-decoy'));
+    assert.ok(lexicalResult.results.every(item => item.signals.lexical === true));
+
     const regions = projection.facets('region');
     assert.ok(regions.some(facet => facet.value === 'reference-region-a' && facet.count === 2));
     assert.ok(regions.some(facet => facet.value === 'reference-region-b' && facet.count === 1));
@@ -82,6 +105,9 @@ function run() {
         `${expectation.name}: search results changed after replay rebuild`,
       );
     }
+
+    const replayedRelation = projection.search({ relation_type: 'synthesizes', type: 'inquiry' });
+    assert.deepStrictEqual(resultIds(replayedRelation), [fixture.derivedInquiry.id]);
 
     const relatedRegion = projection.search({
       type: 'inquiry',
