@@ -175,6 +175,11 @@ function buildFtsQuery(query) {
   return tokens.length > 0 ? tokens.map(escapeFtsToken).join(' AND ') : null;
 }
 
+function buildColumnFtsQuery(column, query) {
+  const expression = buildFtsQuery(query);
+  return expression ? `${column} : (${expression})` : null;
+}
+
 function normalizeLimit(value, fallback = 20) {
   return Number.isInteger(value) && value >= 0 ? value : fallback;
 }
@@ -284,7 +289,10 @@ function createFts5SearchProjection(options = {}) {
   }
 
   function search(options = {}) {
-    const query = buildFtsQuery(options.query || options.q);
+    const generalQuery = buildFtsQuery(options.query || options.q);
+    const relation = stringValue(options.relation || options.relationType || options.relation_type);
+    const relationQuery = buildColumnFtsQuery('relations_text', relation);
+    const ftsQuery = [generalQuery, relationQuery].filter(Boolean).join(' AND ') || null;
     const filters = {
       eventType: stringValue(options.eventType || options.type),
       region: stringValue(options.region),
@@ -299,9 +307,9 @@ function createFts5SearchProjection(options = {}) {
     const where = [];
     const parameters = [];
 
-    if (query) {
+    if (ftsQuery) {
       where.push('search_documents_fts MATCH ?');
-      parameters.push(query);
+      parameters.push(ftsQuery);
     }
     for (const [column, value] of [
       ['d.event_type', filters.eventType],
@@ -321,7 +329,7 @@ function createFts5SearchProjection(options = {}) {
     }
 
     const predicate = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
-    const rankExpression = query ? 'bm25(search_documents_fts)' : '0';
+    const rankExpression = ftsQuery ? 'bm25(search_documents_fts)' : '0';
     const count = database.prepare(`
       SELECT COUNT(*) AS total
       FROM search_documents_fts
@@ -359,8 +367,9 @@ function createFts5SearchProjection(options = {}) {
         ...row,
         classification: 'related_candidate',
         signals: {
-          lexical: Boolean(query),
-          structuredFilters: Object.values(filters).some(Boolean),
+          lexical: Boolean(generalQuery),
+          relation: Boolean(relationQuery),
+          structuredFilters: Boolean(relationQuery) || Object.values(filters).some(Boolean),
         },
       })),
     };
@@ -395,6 +404,7 @@ function createFts5SearchProjection(options = {}) {
 }
 
 module.exports = {
+  buildColumnFtsQuery,
   buildFtsQuery,
   createFts5SearchProjection,
   projectSearchDocument,
