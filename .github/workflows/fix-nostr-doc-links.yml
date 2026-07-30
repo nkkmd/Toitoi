@@ -1,0 +1,48 @@
+name: Fix Nostr documentation links
+
+on:
+  push:
+    branches:
+      - agent/fix-nostr-document-links
+
+permissions:
+  contents: write
+
+jobs:
+  fix-links:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/fix-nostr-document-links
+          fetch-depth: 0
+
+      - name: Fix relative links and remove compatibility shim
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            infra/transports/nostr/NOSTR_RELAY_SETUP.md
+            infra/transports/nostr/CLEAN_START.md
+            infra/transports/nostr/OPERATION_CHECKLIST.md
+          )
+          for file in "${files[@]}"; do
+            sed -i 's#../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md#../../../docs/operations/NOSTR_STORAGE_AND_REPLAY.md#g' "$file"
+          done
+          rm -f infra/docs/operations/NOSTR_STORAGE_AND_REPLAY.md
+          rm -f .github/workflows/fix-nostr-doc-links.yml
+
+      - name: Commit direct-link corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add infra/transports/nostr/NOSTR_RELAY_SETUP.md \
+                  infra/transports/nostr/CLEAN_START.md \
+                  infra/transports/nostr/OPERATION_CHECKLIST.md \
+                  infra/docs/operations/NOSTR_STORAGE_AND_REPLAY.md \
+                  .github/workflows/fix-nostr-doc-links.yml
+          git commit -m "fix(docs): correct Nostr storage guide links"
+          git push origin HEAD:agent/fix-nostr-document-links
