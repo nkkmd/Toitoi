@@ -1,229 +1,94 @@
-# Toitoi AI System Overview
+# ToitoiのAIシステム概要
 
-**Status: evolving** | **Last updated: 2026-06-24**
+**状態: 実装済み機能と設計方針の案内** | **最終更新: 2026-10-20**
 
 ## 概要
 
-Toitoi における AI は、答えを確定する authority ではありません。
+ToitoiのAIは、観察から問いの候補を作り、内容を整理するための支援機能です。答えの正しさや公開の可否を、AIだけで確定することはありません。
 
-AI は、
+AIで支えたいのは、問いの生成、複数の解釈の保持、地域の文脈に沿った検討、現場での自律的な判断です。例えば「畑の東側だけ雑草の種類が違う」という観察から、水分や日照の違いについて、さらに調べる問いを提案します。
 
-- 観察から問いを生成する
-- 問いを構造化する
-- 複数の解釈を併存させる
-- 反省と再 inquiry を促す
+## 現行の処理の流れ
 
-ための inquiry-support infrastructure として位置づけます。
+1. 観察記録を保存する。
+2. 非同期のAIジョブで、要約・タグ・問いの候補などの注釈を生成する。
+3. 人間がAI注釈を確認し、採用・編集・却下する。
+4. 確認済みの問いの候補から、Inquiry Draft（公開前の下書き）を作成する。
+5. 下書きに対して、独立した公開承認を行う。
+6. 承認済みの下書きをCanonical Eventとして公開・保存する。
+7. 変換器と配信アダプターを通じて、各配信先へ送る。
 
-低リソース端末での実装方針は、[`EDGE_AI_LOW_RESOURCE_PROFILE.md`](./EDGE_AI_LOW_RESOURCE_PROFILE.md) に参考例として分離しています。  
-これは正本の仕様ではなく、Edge AI の設計自由度を示すための一例です。
+AI注釈の採用は公開承認ではありません。推論の失敗で保存済みの観察記録を取り消したり、確認を省略して自動公開したりしません。参照シナリオと現行の仕様は、[参照シナリオ](../reference/V1.0.0_REFERENCE_SCENARIO.md)、[Inquiry Draft](../protocols/INQUIRY_DRAFT.md)、[Canonical Event](../protocols/CANONICAL_EVENT.md)で確認できます。
 
-段階的な導入順や問い生成の最低仕様は、[`AI_ADOPTION_ROADMAP.md`](../roadmap/AI_ADOPTION_ROADMAP.md) にまとめています。
+## AIとCanonical Eventの関係
 
-Phase 15 完了後の Toitoi 本体と組み合わせる場合、AI は multi-transport の差分を直接扱わず、`apps/api/` が返す canonical view と provenance summary を主な入力として使います。  
-transport ごとの差分や identity mapping は、API / infra / ops 側に閉じます。
+AIが扱う中心的な意味のモデルはCanonical Eventです。Nostr、Lingonberry、ATProtoごとの通信形式へ直接合わせる設計にはしません。
 
----
+公開前の出力はAI注釈やInquiry Draftとして管理します。「Canonical Eventの下書き」という設計上の説明を、公開済みイベントと混同してはいけません。公開用IDや来歴の確定、公開承認、配信は、それぞれの担当処理が行います。
 
-## AI の基本姿勢
+読み込み時も、配信先固有の元イベントに直接依存せず、主に次を入力として使います。
 
-Toitoi の AI は、
+- Canonical Event
+- Standard APIが返す共通の参照形式
+- 来歴情報の要約
+- 標準化されたAPI応答
+- 索引作成処理が用意する補助構造
 
-```text
-Observation
-  ↓
-Inquiry
-  ↓
-Multiple Interpretations
-  ↓
-Reflection
-  ↓
-New Inquiry
-```
+配信方式ごとの差や同一性の対応付けは、API・基盤・運用側で扱います。これにより、配信方式を追加する際のAI側の変更を減らせます。
 
-という循環を支えるために存在します。
+## 機能の整理
 
-最適化された単一解を返すことよりも、
+以下は、実装済みの処理と今後の拡張を考えるための役割分担です。すべての層が独立した本番機能として完成していることを示すものではありません。
 
-- inquiry generation
-- interpretive plurality
-- contextual reasoning
-- local autonomy
+### 1. 問いの生成
 
-を優先します。
+センサー値、農家のメモ、圃場の観察、周辺の出来事から、さらに観察・検討する価値のある違いを見つけます。問いの候補、仮説、不確実な点、振り返りを促す提案が想定されます。
 
----
+現行の非同期AI処理では、要約・タグ付け・問いの候補生成を扱います。生成結果は、人間が確認する注釈として保持します。
 
-## AI と Canonical Event
+### 2. 内容の構造化
 
-採用アーキテクチャにおいて、AI が直接合わせるべき中心モデルは
-Nostr / Lingonberry / ATProto などの transport schema ではなく Canonical Event です。
+自然言語の観察や問いを整理し、`body`、`contexts`、`relationships`、`phase`、`trigger`、`lineage`などの意味上の項目と、出典・来歴を保ちます。各配信方式の固有項目を中心にはしません。
 
-基本フロー:
+### 3. 補助的な構造表現（DSL）
 
-```text
-Raw local signals
-  ↓
-Inquiry generation
-  ↓
-Canonical Event draft
-  ↓
-Optional DSL projection
-  ↓
-Converter
-  ↓
-Target transport event
-```
+問いの構造を`dsl:*`に相当する表現で補う設計です。一つの問いに複数のモデルを併存させることを想定します。
 
-つまり AI の主責務は、
+DSLは任意の補助表現であり、正しさを保証するものではありません。自然言語の問いを置き換えません。この節は設計上の役割を示しており、汎用的なDSL生成機能の完成を宣言するものではありません。
 
-- 観察から問いを作る
-- 自然言語の boundary object を保つ
-- 必要なら DSL を補助的に付与する
-- Canonical Event draft を生成する
+### 4. 複数の解釈の保持
 
-ことです。
+気候、土壌、地域、コミュニティなど、異なる観点の解釈を並べる設計です。解釈の違いを、直ちに誤りとして扱いません。
 
----
+### 5. 振り返りと橋渡し
 
-## AI の機能層
+既存の問いとの比較、文脈の違いの可視化、新しい問いへの橋渡しを支援する設計です。AIによる関係の提案と、人間による関係の確定は分けて扱います。
 
-### 1. Inquiry Generation Layer
+## 維持すべき設計原則
 
-役割:
+- 自然言語の問いを主な表現として残す。Canonical Eventでは`body.text`がその本文に当たる。
+- DSLなどの構造表現は補助とし、問いの正解として扱わない。
+- AI処理と配信方式の変換を分ける。
+- 地域固有の言葉や文脈を失わないようにする。
+- 元データをそのまま外部へ送る前提にせず、公開範囲を管理する。
+- AI出力、人間による確認、公開承認を区別する。
+- AI出力の農業上の正しさを保証しない。
 
-- センサー値
-- 農家メモ
-- 圃場観察
-- 周辺イベント
+## 実行構成と検証
 
-から「問いに値する差異」を見つける
+低リソース端末の参考構成は、[`EDGE_AI_LOW_RESOURCE_PROFILE.md`](./EDGE_AI_LOW_RESOURCE_PROFILE.md)を参照してください。これは実装構成の一例であり、唯一の規範仕様ではありません。
 
-出力例:
+導入の経緯は[`AI_ADOPTION_ROADMAP.md`](../roadmap/AI_ADOPTION_ROADMAP.md)、起動と検証の手順は[Edge AIクイックスタート](../quickstart/EDGE_AI_QUICKSTART.md)にあります。固定入力で再現可能なCIの成功は、実際のローカルモデルによる再現性の証拠とは区別します。
 
-- possible inquiries
-- hypotheses
-- uncertainty markers
-- reflective prompts
+## 対象外とすること
 
-### 2. Canonical Structuring Layer
+- 単一の正解を確定すること
+- 一律の推奨を現場に押し付けること
+- 特定の通信スキーマへ強く依存すること
+- 地域の知識を上書きすること
+- AIだけで公開や同一性の統合を決定すること
 
-役割:
+## 関連文書
 
-- 自然言語の観察や問いを Canonical Event draft にまとめる
-- `body`, `contexts`, `relationships`, `phase`, `trigger`, `lineage` を整える
-- provenance に必要な source を保持する
-
-ここでは protocol-specific field を直接中心にしません。
-
-### 3. DSL Projection Layer
-
-役割:
-
-- inquiry の構造的投影を `dsl:*` 相当の形で生成する
-- 1 つの問いに複数モデルを併存させる
-
-制約:
-
-- optional
-- non-authoritative
-- natural-language inquiry を置き換えない
-
-### 4. Interpretation Layer
-
-役割:
-
-- climate model
-- soil model
-- local model
-- community model
-
-など複数観点の解釈を併置する
-
-Toitoi では、解釈の差異はエラーではなく価値です。
-
-### 5. Reflection / Mediation Layer
-
-役割:
-
-- 既存 inquiry との比較
-- 文脈の差異の可視化
-- 新たな inquiry への橋渡し
-
-を行う
-
----
-
-## 重要な設計制約
-
-### 自然言語を残す
-
-`content` に相当する自然言語の問いは、常に主表現として保持します。
-
-### DSL は補助層
-
-DSL は inquiry の projection であり、正解ではありません。
-
-### AI は Canonical Event に合わせる
-
-AI はまず Canonical Event draft を作り、protocol 変換は converter に委ねます。
-
-### local context を失わない
-
-AI は local raw data をそのまま外に出すのではなく、抽象化された context として扱います。
-
----
-
-## 書き込み時の AI パイプライン
-
-```text
-Sensor / note / observation
-  ↓
-Signal detection
-  ↓
-Inquiry generation
-  ↓
-Canonical Event draft
-  ↓
-Optional DSL projection
-  ↓
-Converter
-  ↓
-Target transport event
-```
-
----
-
-## 読み込み時の AI 利用
-
-読み込み側では、AI は raw transport event に直接依存しません。
-
-AI が扱うべき入力は、原則として
-
-- canonicalized event
-- canonical view
-- provenance summary
-- standardized API response
-- indexer が作った補助構造
-
-です。
-
-これにより、protocol 追加時も AI 側の変更を減らせます。
-
----
-
-## 非目標
-
-Toitoi の AI は以下を主目的にしません。
-
-- 単一の正解生成
-- deterministic recommendation の押し付け
-- protocol schema への強い結合
-- local knowledge の上書き
-
----
-
-## 関連
-
-- [../protocols/CANONICAL_EVENT.md](../protocols/CANONICAL_EVENT.md)
-- [../protocols/NOSTR_INQUIRY_SCHEMA.md](../protocols/NOSTR_INQUIRY_SCHEMA.md)
+- [Canonical Event](../protocols/CANONICAL_EVENT.md)
+- [Nostrの問いのスキーマ](../protocols/NOSTR_INQUIRY_SCHEMA.md)

@@ -1,540 +1,220 @@
-# Canonical Identity and Provenance
+# 記録の同一性と来歴
 
-**Status: stable** | **Last updated: 2026-06-25**
+**状態: 現行実装に対応** | **最終更新: 2026-10-20**
 
 ## 目的
 
-この文書は、Toitoi における event identity, canonical identity, identity key / identity claim, provenance, rawRef の関係を 1 本にまとめた正本です。
+この文書は、「同じ記録か」「どこから来たか」「何から派生したか」をToitoiでどう区別するかを説明します。Nostr、Lingonberry、ATProtoなどの配信方式をまたいでも、来歴と元データへの参照を失わずに記録を扱うための基準です。
 
-Toitoi では、単に「同じデータかどうか」を扱うのではなく、
+例えば、一つの問いを三つの配信先へ送った場合、各配信先には別の識別子が付きます。それでも、明示的な対応表があれば、Toitoi内では元の一つの問いとして参照できます。一方、別々に生まれた似た問いを、文章が似ているだけで統合することはありません。
 
-- どの transport から来たのか
-- どの raw source に対応するのか
-- どの canonical event に収束するのか
-- どの条件で同一とみなせるのか
+## 区別する概念
 
-を分けて扱います。
+| 用語 | 意味 |
+|---|---|
+| transport identity | 各配信方式で元の記録を指す識別情報 |
+| canonical identity | Toitoi内で一つのCanonical Eventを指す同一性 |
+| identity key | 意味上の安定した内容から計算する照合キー |
+| identity claim | 照合キーとCanonical IDの対応を示す、検証可能な申告 |
+| provenance | どの出典から、どの文脈で記録が成立したかを表す来歴 |
+| lineage | どの問いや観察から派生・統合されたかを表す関係 |
+| rawRef | 別に保存した元データへ戻るための参照 |
 
-この分離があることで、Nostr, Lingonberry, ATProto, 将来の追加 transport をまたいでも、replay と migration に耐える形で knowledge commons を維持できます。
-
----
-
-## 先に結論
-
-Toitoi の設計では、次の 5 つを混同しません。
-
-1. transport identity
-2. canonical identity
-3. identity key / identity claim
-4. provenance
-5. raw reference
-
-ざっくり言うと、
-
-- transport identity は「各 transport での原本の識別子」
-- canonical identity は「Toitoi 内部での意味的な主識別子」
-- identity key は「canonical identity を引くための再計算可能な照合キー」
-- identity claim は「その identity key と canonical identity の対応を示す検証可能な主張」
-- provenance は「その canonical event に集約された来歴」
-- rawRef は「raw event / raw payload を再取得・再 canonicalize するための入口」
-
-です。
-
----
+来歴は同一性の判定そのものではなく、元データへの参照もイベントの意味そのものではありません。
 
 ## 用語
 
 ### transport identity
 
-Nostr であれば event `id`、Lingonberry であれば object `id`、ATProto であれば `uri` / `cid` / `did` / `rkey` の組み合わせのように、transport 上で raw object を指す識別子です。
+Nostrではイベントの`id`、Lingonberryではオブジェクトの`id`、ATProtoでは`uri`、`cid`、`did`、`rkey`などが、元の記録の識別や検証に使われます。
 
-これは transport の都合で決まるものであり、Toitoi の semantic identity そのものではありません。
+これらは各配信方式の識別情報です。Toitoi内のCanonical Eventの同一性とは分けて扱います。
 
 ### canonical identity
 
-Toitoi 内部で event を 1 件として扱うための主識別子です。
+Toitoi内で一つのイベントを指す主な識別子は、`tt:evt:<opaque-id>`形式のCanonical IDです。IDの内部構造や内容の類似から、意味を推測して同一性を決めません。
 
-- `tt:evt:<opaque-id>` 形式を使う
-- transport には埋め込まない
-- raw payload から再生成できるようにする
-- ただし sourceId や identity mapping が同じであることが前提になる
+現行実装の`resolveCanonicalEventId(...)`は、次の優先順位でIDを決めます。
+
+1. 明示的に指定された有効なIDを使う。
+2. `sourceId`に対応するIDが`canonicalIdMap`にあれば使う。
+3. どちらもなければ、新しいUUIDに基づくIDを発行する。
+
+**同じ元データや同じsourceIdだけでは、同じCanonical IDは再生成されません。** 再処理でIDを保つには、明示的なIDや保存済みの対応情報が必要です。`sourceId`は対応表の照合キーであり、IDを内容から計算するための入力ではありません。
 
 ### identity key
 
-canonical event から再計算できる、transport-independent な照合キーです。
+Canonical Eventの意味上の安定した内容から、同じ規則で再計算できる照合キーです。Canonical IDそのものではありません。
 
-- canonicalization ルールに従って決まる
-- semantic identity に関わる安定した内容だけを入力にする
-- provenance, rawRef, transport endpoint, storage hint は入力にしない
-- 送信者だけでなく、受信側や第三者も同じ入力から再計算できる
-- canonical id そのものではなく、canonical id を引くための安定したキーとして扱う
-- 仕様バージョンを含めて、再現可能性を確保する
-- array や object の順序差は canonicalization で吸収する
+- 内容の正規化規則と規則バージョンを使う。
+- 来歴情報、rawRef、配信先、保存上の補助情報は入力にしない。
+- 配列やオブジェクトの順序の違いは、正規化で吸収する。
+- 送信側・受信側・第三者が、同じ入力と規則から再計算できるようにする。
+
+照合キーの生成と、Canonical IDの発行・解決は別の処理です。
 
 ### identity claim
 
-identity key と canonical identity の対応を示す、検証可能な主張です。
+照合キーとCanonical IDの対応を、第三者が検証できる形で示す申告です。来歴情報を置き換えるものではありません。
 
-- identity key
-- canonical identity
-- ルールバージョン
-- issuer / signer
-- 署名または検証手段
-- JSON として固定し、検証方式は pluggable にする
+最小構成は`schemaVersion`、`claimType`、`ruleVersion`、`identityKey`、`canonicalId`、`issuer`、`issuedAt`、`verification`です。現行の`schemaVersion`は`0.1.0`です。
 
-を含みます。
-
-identity claim は provenance の代替ではなく、同一性の根拠を第三者が検証できるようにするための層です。
-
-identity claim は `schemaVersion`, `claimType`, `ruleVersion`, `identityKey`, `canonicalId`, `issuer`, `issuedAt`, `verification` を最小単位として持ちます。
-現行の `schemaVersion` は `0.1.0` です。
+JSON形式で保持し、発行者・署名者と署名や検証手段を記録します。検証方式は差し替え可能です。
 
 ### provenance
 
-ある canonical event が、どの source から、どの文脈で成立したかを表す来歴情報です。
+記録がどの出典から来たか、統合時にどの出典が集約されたかを残します。再処理時の追跡や、APIでの説明に使います。
+
+出典プロトコル、出典ID、日時、取得場所、参照用の補助情報、出典固有のメタデータなどが対象です。文章の類似による統合判断や、同一性を決める主なロジックの代わりにはしません。配信結果も、出典の識別とは分けて記録します。
 
 ### rawRef
 
-raw event または raw payload を再取得するための参照です。
+元のイベントやデータ本体を再取得するための参照です。再処理、再変換、監査、保存領域の復旧を支えます。
 
-provenance が「どういう来歴か」を表し、rawRef が「どこに戻れば raw を読めるか」を表します。
+`protocol`、`sourceId`、`relay`などの取得先、`storage`、`storageId`、`payloadHash`を持ち得ます。同一性の判断、イベントの意味、統合の妥当性を表すものではありません。
 
----
+## 同一と判断できる条件
 
-## 何が同一か
+明示的な根拠がある場合に限ります。
 
-Toitoi における同一性は、単純な text similarity ではありません。
+- 同じCanonical IDを持つ。
+- アダプターや変換器で、同一性が明示的に確定している。
+- 再処理・移行時に、保存済みIDや同一性の対応表を使える。
 
-同一性の判断に使えるのは、原則として明示的な根拠です。
+次の情報は、それだけでは統合の根拠にしません。
 
-### 同一性の根拠として使えるもの
+- 本文が似ている。
+- ラベルが一致する。
+- 日時が近い。
+- 関係の構造が似ている。
+- DSL表現が似ている。
 
-- 同一 canonical event id を共有している
-- adapter / converter が同一性を明示的に確定している
-- replay / migration 時に identity mapping が与えられている
+## 処理段階ごとの識別情報
 
-### 同一性の根拠として使わないもの
+| 段階 | 扱う情報 |
+|---|---|
+| 元データ | 配信方式固有の識別子 |
+| 取り込み・正規化 | 署名、入力形式、重複、順序を検証した記録。これだけで意味上の同一性は確定しない |
+| Canonical Event生成 | 明示的なIDや対応表を使ってIDを解決し、なければ新規発行 |
+| 来歴・派生関係 | 出典、派生元、統合元の記録。Canonical IDとは役割が異なる |
 
-- body の類似
-- labels の一致
-- timestamp の近さ
-- relationship の構造類似
-- DSL の類似
+## IDを保持して再処理するための条件
 
-これらは補助情報にはなりますが、単独では merge の根拠にしません。
+再処理に必要な元データと、保存済みIDまたは対応表を保持します。変換規則、照合キーの正規化規則、申告の検証規則のバージョンも管理します。
 
----
+保持する情報:
 
-## Identity の階層
+- 元データの識別情報
+- 明示的なIDの対応表
+- `rawRef`
+- `provenance.sources[]`
+- 配信方式固有の出典メタデータ
+- 保存記録の`canonicalEventId`
 
-Toitoi は identity を次の階層で扱います。
+元データや対応表が欠損した場合、または規則が変わった場合は、IDや内容の再現を無条件には保証できません。曖昧な記録は、無理に同一扱いせず別々に保持します。
 
-### 1. raw source identity
+## 配信方式ごとのsourceId
 
-transport 固有の識別子です。
-
-- Nostr: event id
-- Lingonberry: object id
-- ATProto: `uri`, `cid`, `did`, `rkey`
-
-この層は transport の真実であり、canonicalization の入力です。
-
-### 2. normalized source identity
-
-raw source を ingest しやすい形に整えたものです。
-
-- signature verify 済み
-- validation 済み
-- duplicate 判定済み
-- ordering に従って並び替え済み
-
-この層ではまだ semantic identity は確定していません。
-
-### 3. canonical identity
-
-semantic layer で event を 1 件として扱うための識別子です。
-
-ここで初めて `tt:evt:...` が登場します。
-
-### 4. provenance / lineage identity
-
-canonical event に対して、どこから来たか、何から派生したか、何を統合したかを表します。
-
-- provenance は source 来歴
-- lineage は event 間の派生関係
-
-両者は似ていますが、役割は異なります。
-
----
-
-## canonical identity はいつ決まるか
-
-原則として、canonical identity は canonical event を生成する時点で決まります。
-
-これは次の意味です。
-
-- transport raw を保存しただけでは canonical identity はまだ意味を持たない
-- adapter / converter が semantic content を組み立てた段階で `id` を確定する
-- 後から再 canonicalize しても、同じ source 条件なら同じ canonical identity を再現できる
-
-実装上は、Nostr / Lingonberry / ATProto それぞれの adapter が `resolveCanonicalEventId(...)` を通して canonical id を決めます。
-
----
-
-## canonical identity を安定させる条件
-
-canonical identity の再現性は、次の前提に依存します。
-
-### 必須条件
-
-- source identity が再取得できること
-- canonicalization ルールが同じであること
-- 明示的な identity mapping が同じであること
-
-### 可能なら保持すべき条件
-
-- rawRef が残っていること
-- provenance.sources[] が残っていること
-- transport 固有の source metadata が残っていること
-- identity key の正規化ルールが固定されていること
-- identity claim の検証ルールが固定されていること
-
-### 安定しない条件
-
-- 仕様変更で canonicalization ルールが変わる
-- raw event が欠損している
-- identity mapping が未提供
-- source をまたぐ同一性が曖昧
-
-この場合、Toitoi は無理に同一扱いせず、別 event として保持する方を優先します。
-
-### transport ごとの差分が canonical id に効くか
-
-Nostr から canonicalize した event、Lingonberry から canonicalize した event、ATProto から canonicalize した event は、見た目が少し違っても、**canonical id の再解決に効く差分と、効かない差分があります**。
-
-#### 記号の読み替え
-
-この文書では、比較を読みやすくするために次のように置き換えて考えてよいです。
-
-- `A` = 送信前の元の canonical event
-- `B` = `A` を Nostr に投影して、そこから canonicalize し直した event
-- `C` = `A` を Lingonberry に投影して、そこから canonicalize し直した event
-- `D` = `A` を ATProto に投影して、そこから canonicalize し直した event
-
-要するに、`A` は元本、`B` は Nostr 経由の戻り値、`C` は Lingonberry 経由の戻り値、`D` は ATProto 経由の戻り値です。
-
-#### 基本ルール
-
-- `canonical id` の再解決は、`source identity` と `identity mapping` を主に使う
-- `body`, `provenance`, `rawRef`, transport endpoint, storage hint は `canonical id` の直接入力にしない
-- したがって、`B` / `C` / `D` の差が主に provenance 系なら、通常は canonical id に影響しない
-- ただし、`source identity` 自体が違えば、同じ canonical id に戻るとは限らない
-
-#### 影響する差分
-
-| 差分の種類 | canonical id に効くか | 理由 |
+| 配信方式 | sourceIdに使う項目 | 例 |
 |---|---|---|
-| `sourceId` が違う | yes | `resolveCanonicalEventId(...)` の入力になるため |
-| 明示的な `identity mapping` が違う | yes | 同じ source から同じ canonical id に戻せなくなるため |
-| canonicalization ルールが違う | yes | 同じ入力でも別の canonical event になるため |
-| raw event が欠損している | yes | source identity を再取得できないため |
-| `body.text` のみが違う | usually no | それ自体は canonical id の直接入力ではないため |
-| `provenance` の形が違う | no | 来歴の記録であって canonical id の入力ではないため |
-| `rawRef` の補助情報が違う | no | 再取得用メタデータであり canonical id の入力ではないため |
-| `labels` や `dsl` の transport 表現が違う | usually no | semantic content に吸収される範囲なら canonical id には直結しないため |
+| Nostr | `event.id` | `abc123...` |
+| Lingonberry | `object.id` | `lb:obj:...` |
+| ATProto | `record.uri`または`uri` | `at://did:plc:.../app.toitoi.inquiry/rkey...` |
 
-#### 実務上の見方
+ATProtoの`cid`、`did`、`collection`、`rkey`は検証・来歴・追跡に役立ちますが、現行の対応表の主なキーは`uri`です。
 
-- **`A` を Nostr に投影して戻した `B` は、通常 `A` と同じ canonical id に戻る**
-- **`A` を Lingonberry に投影して戻した `C` も、通常 `A` と同じ canonical id に戻る**
-- **`A` を ATProto に投影して戻した `D` も、通常 `A` と同じ canonical id に戻る**
-- ただし、**Nostr raw / Lingonberry raw / ATProto raw を別々に ingest して後で同一視する**場合は、明示的な mapping がない限り別 canonical id になる可能性がある
-- つまり、`A -> B` / `A -> C` / `A -> D` は「往復」の話で、`Nostr raw` / `Lingonberry raw` / `ATProto raw` の独立 ingest は別の話として分けて考える
+対応表を使うとは、これらのsourceIdから既存のCanonical IDを明示的に引ける状態を指します。NostrやATProtoだけでなく、LingonberryのオブジェクトIDも対象です。
 
-### transport ごとの sourceId
+## 一つの問いを複数の配信先へ送る場合
 
-`mapping` の入口を考えるときは、まず「どの raw field が `sourceId` になるか」を決めます。  
-この実装では、`sourceId` は canonical id の直接入力ではなく、`resolveCanonicalEventId(...)` が参照する照合キーです。
+元のCanonical Eventを`A`、Nostr経由で取り込み直した記録を`B`、Lingonberry経由を`C`、ATProto経由を`D`とします。
 
-| transport | sourceId に使う raw field | 具体例 | mapping のキーとして使う値 |
-|---|---|---|---|
-| Nostr | `event.id` | `abc123...` | `event.id` |
-| Lingonberry | `object.id` | `lb:obj:...` | `object.id` |
-| ATProto | `record.uri` / `uri` | `at://did:plc:.../app.toitoi.inquiry/rkey...` | `uri` |
+`A -> B`、`A -> C`、`A -> D`で同じIDを保持するには、往復変換の対応情報が必要です。別々の配信元から似た記録を独立に取り込む場合とは、条件が異なります。
 
-#### 補足
+| 違い | ID解決への影響 |
+|---|---|
+| sourceIdや対応表が異なる | 同じIDへ解決できない場合がある |
+| 元データ・保存済みIDが欠損している | 以前のIDを復元できない場合がある |
+| 本文だけが異なる | ID解決への直接入力ではない。ただし照合キーや意味内容には影響し得る |
+| 来歴やrawRefの補助情報が異なる | ID解決への直接入力ではない |
+| ラベルやDSLの配信表現が異なる | それ自体はID解決への直接入力ではない |
+| 変換規則が変わる | 再構成される意味内容や互換性を確認する必要がある |
 
-- Nostr では raw event の `id` が source identity の中心です
-- Lingonberry では object の `id` が source identity の中心です
-- ATProto では `uri` が source identity の中心です
-- `cid`, `did`, `collection`, `rkey` は provenance / 検証 / 追跡には有用ですが、この実装の `canonicalIdMap` の主キーとしては `uri` を使います
-- したがって、`mapping あり` とは「`event.id` か `uri` をキーに、既存の canonical id を引ける状態」です
+例えば100件の問いを三つの配信方式へ送り、APIでは100件として表示したい場合、同じCanonical IDを使える対応表や保存情報が必要です。対応情報なしで独立に取り込むと、内容が同じでも300件として扱われることがあります。
 
-#### 100 件 API が成立する条件
+## 統合するときの扱い
 
-たとえば、同じ 100 件の問いを Nostr / Lingonberry / ATProto の各 transport に出して、API では 100 件だけを見せたいとします。  
-この理想は今の設計で実現可能ですが、**「似ているから自動で 1 件になる」わけではありません**。
+同一性を明示的に確認できた記録を統合する場合は、`provenance.sources[]`を集約し、最初のrawRefなど追跡可能な元データへの参照を保ちます。派生関係があれば、それも残します。
 
-ここでいう `mapping あり` とは、次のどちらかです。
+曖昧な記録は統合しません。来歴の集約は、新たな同一性を推測する処理ではありません。
 
-- `event.id` や `uri` から、既存の canonical id を明示的に引ける
-- replay で保存済みの `canonicalEventId` を復元できる
-
-`明示的に引ける` とは、推測ではなく、次のような対応表や保存情報があるという意味です。
-
-- `identityMapping` に `sourceId -> canonicalId` が入っている
-- replay 時に raw record から `canonicalEventId` を復元できる
-- API の lookup や index 参照で、`sourceId` と canonical id の対応が既に確定している
-
-`mapping なし` とは、これらがなく、raw からその場で canonical id を新規発行する状態です。  
-この場合、同じ内容でも別 canonical event になる可能性があります。
-
-つまり、**100 件 API は「同じ意味の event だけを同じ canonical id に畳む」ことで成立します**。  
-類似内容だけでは merge しないので、Nostr / Lingonberry / ATProto を別々に ingest しただけでは 300 件に見えることがあります。
-
----
-
-## provenance の役割
-
-provenance は canonical identity の代替ではありません。
-
-provenance がやることは次の通りです。
-
-- この canonical event がどの source から来たかを残す
-- merge された場合に source を集約する
-- replay 時に根拠を追えるようにする
-- API で最小限の説明可能性を提供する
-
-### provenance に入れるもの
-
-- source protocol
-- source id
-- timestamp
-- transport locator
-- reference hint
-- source-specific metadata
-
-### provenance に入れないもの
-
-- body の類似を根拠にした merge 結果そのもの
-- transport 固有の配送状態
-- semantic identity の主判断ロジック
-
-つまり provenance は「来歴の記録」であって、「同一性判定のアルゴリズム」ではありません。
-
-identity key と identity claim は、その同一性を再計算・検証するための層です。
-
----
-
-## rawRef の役割
-
-rawRef は provenance とは別に、raw に戻るための入口です。
-
-Toitoi では、rawRef を次のために持ちます。
-
-- replay
-- re-canonicalize
-- audit
-- storage recovery
-
-### rawRef が表すもの
-
-- `protocol`
-- `sourceId`
-- `relay` または transport endpoint
-- `storage`
-- `storageId`
-- `payloadHash`
-
-### rawRef が表さないもの
-
-- 同一性の判断そのもの
-- event の意味
-- canonical merge の妥当性
-
----
-
-## merge の考え方
-
-Toitoi では、canonical identity の merge は保守的です。
-
-### merge してよい場合
-
-- 既に同じ canonical id を持つ
-- adapter / converter が同一と明示した
-- replay / migration で identity mapping が与えられた
-
-### merge しない場合
-
-- 内容が似ているだけ
-- 同じ label が付いているだけ
-- 時間が近いだけ
-- 関係構造が似ているだけ
-
-### merge した場合の扱い
-
-- `provenance.sources[]` を集約する
-- `rawRef` は最初のもの、または追跡可能なものを保持する
-- lineage があるなら派生関係も残す
-
-曖昧な場合は merge せず、別 event として残す方針です。
-
----
-
-## fan-out と fan-in
+## 複数経路への配信と取り込み
 
 ### fan-out
 
-1 つの canonical event を複数 transport に投影することです。
+一つのCanonical Eventを、複数の配信方式の表現へ変換して送ることです。Toitoi側のCanonical IDは変更しません。
 
-このとき canonical identity は変えません。
+- Nostr向けにはNostrイベントの下書きを作る。
+- Lingonberry向けにはオブジェクトの下書きを作る。
+- ATProto向けにはレコードの下書きを作る。
 
-- Nostr には Nostr draft を出す
-- Lingonberry には Lingonberry object draft を出す
-- ATProto には ATProto record draft を出す
-- canonical id は transport の中に埋め込まない
+現行の各方式の出力には、Canonical IDそのものを埋め込まない設計です。取り込み直す際に同じIDを使うための対応情報は、別に管理します。
 
 ### fan-in
 
-複数 transport から raw event を集めて canonical event に戻すことです。
+複数の配信方式から元の記録を集め、Canonical Eventへ変換することです。元データの識別子と対応表、または保存済みIDを使ってIDを解決します。識別子だけから同じIDが自動再生成されるわけではありません。
 
-このときは source identity を元に canonical identity を再生成します。
+## 各方式で保持する情報
 
----
+| 配信方式 | 主な出典・参照情報 |
+|---|---|
+| Nostr | `provenance.sources[].sourceId`と`rawRef.sourceId`にイベントID、rawRefにリレーなどの取得情報 |
+| Lingonberry | 出典のsourceIdとobjectId、rawRefのsourceIdにオブジェクトID |
+| ATProto | 出典とrawRefのsourceIdにURI、出典にcid・did・collection・rkeyなど |
 
-## Nostr での扱い
+いずれもCanonical Event本体の`id`とは区別します。Nostrの`e`タグは、派生関係をNostrの表現で示すものであり、Canonical IDそのものではありません。
 
-Nostr では raw event の `id` が source identity です。
+## 保存形式と再処理
 
-canonical event を生成するとき、Toitoi は次を保持します。
+元データとCanonical Eventは、分けて保存します。
 
-- `provenance.sources[].sourceId = Nostr event id`
-- `rawRef.sourceId = Nostr event id`
-- `rawRef.relay` などの取得情報
-- `canonicalEvent.id = tt:evt:...`
+- 元データ側: 元のイベントやレコード、`canonicalEventId`、検証・重複排除の情報、出典メタデータ
+- Canonical Event側: イベント本体、`id`、`provenance`、`rawRef`
 
-一方で、Nostr event そのものに canonical id は入りません。
+保存データの再処理（replay）は、元データからもう一度Canonical Eventを構成する処理です。現行の保存処理は、元データの保存記録にある`canonicalEventId`を使って対応表を復元します。保存済みIDを保った再処理と、対応表のない新規取り込みを区別してください。
 
-Nostr の `e` tag は canonical id ではなく、lineage の transport 表現として扱われます。
+## Standard APIでの扱い
 
----
+Standard APIは、元イベントの全文ではなく共通の参照形式を返します。
 
-## ATProto での扱い
-
-ATProto では `uri` が source identity の中心です。
-
-canonical event を生成するとき、Toitoi は次を保持します。
-
-- `provenance.sources[].sourceId = at://...`
-- `provenance.sources[].uri`, `cid`, `did`, `collection`, `rkey`
-- `rawRef.sourceId = at://...`
-- `canonicalEvent.id = tt:evt:...`
-
-ATProto record そのものに canonical id は入りません。
-
-## Lingonberry での扱い
-
-Lingonberry では object の `id` が source identity の中心です。
-
-canonical event を生成するとき、Toitoi は次を保持します。
-
-- `provenance.sources[].sourceId = Lingonberry object id`
-- `provenance.sources[].objectId = Lingonberry object id`
-- `rawRef.sourceId = Lingonberry object id`
-- `canonicalEvent.id = tt:evt:...`
-
-一方で、Lingonberry object そのものに canonical id は入りません。
-
----
-
-## canonical id と保存形式
-
-保存では、raw と canonical を分けます。
-
-### raw 側
-
-- raw event / raw record
-- `canonicalEventId`
-- verification / dedupe 情報
-- source metadata
-
-### canonical 側
-
-- canonical event 本体
-- `id`
-- `provenance`
-- `rawRef`
-
-つまり、保存している canonical event の中には canonical id がある一方、transport schema にはありません。
-
----
-
-## replay の意味
-
-replay は「保存済み canonical event をそのまま読む」ことではなく、「raw からもう一度 canonical event を作り直せる」ことを意味します。
-
-その結果として:
-
-- sourceId が同じ
-- canonicalization ルールが同じ
-- identity mapping が同じ
-
-なら、同じ canonical id を再現できます。
-
-この再現性があるからこそ、raw data を捨てずに持つ価値があります。
-
----
-
-## Standard API での扱い
-
-Standard API では canonical view を返し、raw event の全文を露出しません。
-
-基本方針は次です。
-
-- provenance は追跡可能な最小単位で返す
-- rawRef は必要に応じて返す
-- transport 固有の詳細は最小限にする
-- canonical identity を主キーとして扱う
-
-これにより、API 利用者は transport の違いを意識しすぎずに、同じ event を参照できます。
-
----
+- 来歴を追跡できる最小限の情報を返す。
+- 必要に応じてrawRefを返す。
+- 配信方式固有の詳細を最小限にする。
+- Canonical IDを主なキーとして扱う。
 
 ## 典型的な流れ
 
-1. transport から raw event を取る
-2. validate / verify / dedupe / normalize する
-3. canonical event を作る
-4. canonical identity を確定する
-5. provenance と rawRef を付与する
-6. raw と canonical を別々に保存する
-7. replay 時に raw から canonical を再生成する
-8. 明示的な同一性がある場合だけ provenance を集約する
+1. 配信経路から元の記録を取得する。
+2. 入力検査、署名検証、重複排除、正規化を行う。
+3. 意味内容を構成し、Canonical IDを解決または新規発行する。
+4. 来歴情報と元データへの参照を付ける。
+5. 元データとCanonical Eventを分け、再処理用の対応情報も保存する。
+6. 再処理では保存済みIDを復元して、Canonical Eventを再構成する。
+7. 同一性が明示的に確定した場合に限り、来歴を集約する。
 
----
-
-## 実装上の着地点
-
-現行実装では、この文書の考え方は次で支えられています。
+## 関連する仕様と実装
 
 - `docs/protocols/CANONICAL_EVENT.md`
 - `docs/architecture/MULTI_TRANSPORT_IDENTITY_POLICY.md`
 - `docs/protocols/INQUIRY_TRANSPORT_SCHEMA_TEMPLATE.md`
 - `schemas/identity-claim.schema.json`
+- `packages/protocol/canonical_identity.js`
 - `packages/protocol/identity_verification.js`
+- `packages/protocol/test_canonical_identity.js`
 - `packages/nostr/adapter/nostr_adapter.js`
+- `packages/lingonberry/adapter/lingonberry_adapter.js`
 - `packages/atproto/adapter/atproto_adapter.js`
-- `packages/nostr/storage/persistence.js`
-- `packages/atproto/storage/persistence.js`
-- `packages/nostr/storage/standard_api_views.js`
+- `packages/nostr/storage/replay.js`
+- `packages/lingonberry/storage/replay.js`
+- `packages/atproto/storage/replay.js`
 - `apps/api/standard_api_service.js`
-
----
-
-## まとめ
-
-Toitoi における identity の要点は、次の一文に集約できます。
-
-> transport の raw identity はそのまま残し、canonical identity は semantic layer で再生成可能な opaque id として持ち、provenance と rawRef で来歴と再取得性を分離する
-
-この分離により、Toitoi は単一 transport の固定仕様ではなく、replayable で multi-transport な knowledge commons として扱えるようになります。
