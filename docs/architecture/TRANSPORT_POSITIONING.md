@@ -1,65 +1,57 @@
-# Transport Positioning
+# 配信方式の位置づけ
 
-**Status: evolving** | **Last updated: 2026-06-24**
+**状態: 継続的に見直し** | **最終更新: 2026-10-20**
 
-この文書は、Toitoi における Nostr / Lingonberry / ATProto の立ち位置を整理するための architecture note です。
+この文書は、ToitoiにおけるNostr、Lingonberry、ATProtoの役割を説明します。配信方式（transport）は、問いや関連情報を運ぶ仕組みです。
 
-transport の採用判断は、単に「送れるか」ではなく、Toitoi が扱う `inquiry`、Canonical Event、provenance、replay、commons memory との相性で決めます。
+採用判断では、送信できるかだけでなく、問い（`inquiry`）、Canonical Event、来歴の記録、保存データの再処理、知識の継承との相性を考慮します。以下は設計上の位置づけであり、外部サービスの可用性や本番運用の認定を示すものではありません。
 
-## 結論
+## 各方式の役割
 
-現時点の位置づけは次の通りです。
-
-| Transport | Position | Summary |
+| 配信方式 | 位置づけ | 理由 |
 |---|---|---|
-| Lingonberry | Semantic primary | Toitoi の思想・意味論に最も近い transport。knowledge object / inquiry を中心に扱いやすい。 |
-| Nostr | Operational primary | すぐ運用できる relay-oriented transport。署名、分散配信、公開 relay の軽さが強い。 |
-| ATProto | Secondary compatibility | 外部ネットワーク接続、ingest/replay 検証、将来 federation のために維持する補助 transport。 |
-
-短く言えば、Lingonberry は思想・意味論上の primary transport、Nostr は運用上の primary transport、ATProto は互換性・検証・将来 federation のための secondary transport です。
+| Lingonberry | 思想・意味の扱いを重視する主な方式（Semantic primary） | 文脈を持つ問いや知識オブジェクトを扱う考え方が、Toitoiに近い |
+| Nostr | 初期運用を支える主な方式（Operational primary） | リレー、署名、分散配信を利用でき、比較的軽い構成で運用を始められる |
+| ATProto | 外部接続と互換性検証のための補助的な方式（Secondary compatibility） | 外部ネットワークへの接続、取り込み・再処理の検証、将来の連携の検討に使う |
 
 ## 比較
 
 | 観点 | Lingonberry | Nostr | ATProto |
 |---|---|---|---|
-| Toitoi との思想相性 | 最も高い | 高い | 中くらい |
-| `inquiry` / knowledge object との相性 | 非常に高い | 良い | やや SNS / record 寄り |
-| Canonical Event への投影 | 自然 | 良い | 可能だが変換層が厚め |
-| 運用しやすさ | これから育てる段階 | 強い | サービス依存がある |
-| 分散性 | 高め、carrier 設計次第 | 高い | PDS / service 文脈が強い |
-| append-only / replay | 良い | 良い | 工夫が必要 |
-| 公開ネットワーク性 | これから | 強い | 強いが文脈が違う |
-| Toitoi primary transport 向き | 最も高い | 高い | secondary 向き |
+| Toitoiの思想との相性 | 特に近い | 良い | 接続先の用途に応じた調整が必要 |
+| 問いや知識オブジェクトとの相性 | 扱う単位が近い | 変換層で意味を支える | 投稿やレコード中心の構造との変換が必要 |
+| Canonical Eventとの変換 | 自然に対応させやすい | 対応可能 | 対応可能だが変換層が厚くなりやすい |
+| 運用面 | 配送を担うキャリアの構成も含めて整備する | リレーを使った運用が強み | PDSや接続サービスに依存する部分がある |
+| 分散性 | キャリアの設計に左右される | 分散配信を利用できる | PDSやサービスの構成に左右される |
+| 追記型保存・再処理との相性 | 良い | 良い | 方式に合わせた工夫が必要 |
+| 公開ネットワークとの関係 | 接続環境を育てる段階 | 公開リレーを利用できる | 外部ネットワークを利用できるが、用途の違いに注意が必要 |
+| Toitoiでの主な役割 | 意味の扱いを重視する方式 | 初期運用を支える方式 | 互換性と外部接続を支える方式 |
 
 ## Lingonberry
 
-Lingonberry は、Toitoi の意味論に最も近い transport です。
+Toitoiが流通させたい単位は、地域の文脈を持つ問いです。Lingonberryの知識オブジェクトはこの単位に近く、Canonical Eventとの変換を整理しやすい特徴があります。
 
-Toitoi が流通させたいものは、単なる投稿や SNS event ではなく、文脈を持った `inquiry` です。Lingonberry の knowledge object は、この単位に近く、Canonical Event との adapter / converter 境界を自然に作れます。
-
-Toitoi では Lingonberry を内部中心モデルにはしません。あくまで Canonical Event からの transport projection / ingest source として扱います。ただし、思想的には最も Toitoi らしい transport なので、semantic primary と位置づけます。
+ただし、Toitoi内部の中心となる記録をLingonberry固有の形式にするわけではありません。Canonical Eventを変換して配信する先、または記録を取り込む元として扱います。
 
 ## Nostr
 
-Nostr は、運用面で最も強い transport です。
+Nostrは、リレー、署名、分散配信、比較的軽い公開ネットワーク構成を備え、Toitoiの初期運用に適しています。
 
-relay、署名、分散配信、公開ネットワークとしての軽さがあり、Toitoi の初期運用 transport として妥当です。一方で、Nostr 自体は汎用 event transport なので、Toitoi の `inquiry` としての意味論は adapter / schema / canonical layer 側で支えます。
-
-そのため、Nostr は operational primary と位置づけます。
+Nostr自体は汎用的なイベント配信方式です。Toitoiの問いとしての意味は、アダプター、スキーマ、Canonical Eventの層で保持します。
 
 ## ATProto
 
-ATProto は、Toitoi の中心 transport というより、外部ネットワーク接続と multi-protocol 互換性のための secondary transport です。
+ATProtoは、外部ネットワークへの接続と、複数のプロトコル間での互換性を支える方式です。
 
-record / repo / PDS の構造は便利ですが、Toitoi の独立した commons transport としては既存サービスや platform 文脈が強くなりやすいです。外部公開、ingest/replay 検証、将来 federation の検討には有用なので、secondary compatibility transport として維持します。
+レコード、リポジトリ、PDSの構造は有用ですが、既存サービスやプラットフォームの前提にも影響されます。外部公開、取り込み・再処理の検証、将来の分散システム間連携の検討に使います。
 
 ## 実装上の扱い
 
-実装では、transport の優先順位を Canonical Event の schema に持ち込みません。
+配信方式の優先順位を、Canonical Eventのスキーマには持ち込みません。
 
-- Canonical Event は protocol-independent な semantic layer として維持する
-- Lingonberry / Nostr / ATProto の差分は adapter / converter / storage / protocol descriptor に閉じる
-- multi-transport replay では、explicit identity mapping と provenance によって同一性を扱う
-- Standard API は transport 固有 schema ではなく canonical view を返す
+- Canonical Eventは、通信プロトコルに依存せず意味を表す記録として維持する。
+- 方式ごとの差は、アダプター、変換器、保存処理、プロトコル記述子に閉じ込める。
+- 複数経路の再処理では、明示的な同一性の対応付けと来歴情報を使う。
+- Standard APIは、配信先固有のスキーマではなく、共通の参照形式を返す。
 
-この分離により、transport の立ち位置が変わっても、Toitoi の意味論と API 契約を壊さずに拡張できます。
+この分離により、配信方式の位置づけが変わっても、意味の扱いとAPI仕様を維持しながら拡張できます。

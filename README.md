@@ -7,10 +7,10 @@
 
 **Digital Agroecology Commons powered by protocol-independent Canonical Events**
 
-**Latest public release: v0.9.0**  
-**v1.0.0 candidate implementation: PR #39**  
-**Language status:** English and Japanese sections are maintained as equivalent.  
-**Last synchronized:** 2026-07-27
+**Latest public release: v0.9.0**
+**v1.0.0 implementation: PR #39 merged into main; not yet released**
+**Language status:** English and Japanese sections are maintained as equivalent.
+**Last synchronized:** 2026-10-20
 
 *[日本語は下に続きます]*
 
@@ -22,7 +22,7 @@ It follows the philosophy of [Letting Go of Technology in Agriculture](./docs/es
 
 The v1.0.0 candidate connects one deterministic reference scenario from offline observation through asynchronous AI candidates, human annotation review, Inquiry Draft, independent publication approval, Canonical Event publication, transport delivery state, search, vocabulary mapping, semantic derivation, replay, backup, restore, and migration verification.
 
-The latest public release remains v0.9.0 until PR review, merge, post-merge validation, release-owner decisions, tagging, and GitHub Release publication are complete.
+PR #39 is merged into main and post-merge CI validation is complete. The latest public release remains v0.9.0 until the remaining real-environment validation, release-owner decisions, tagging, and GitHub Release publication are complete.
 
 ## Architecture
 
@@ -114,38 +114,41 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md), [SECURITY.md](./SECURITY.md), and [LIC
 
 ---
 
+
 # Toitoi 🌱
 
-**protocol-independentなCanonical Eventを基盤とする、デジタル・アグロエコロジー・コモンズ**
+**通信プロトコルに依存しないCanonical Eventを基盤とする、デジタル・アグロエコロジー・コモンズ**
 
-**最新の公開リリース: v0.9.0**  
-**v1.0.0候補実装: PR #39**  
-**言語状態:** 英語版と日本語版は同等の内容として管理します。  
-**最終同期日:** 2026-07-27
+**最新の公開リリース: v0.9.0**
+**v1.0.0実装: PR #39をmainへ統合済み（正式公開前）**
+**言語状態:** 英語版と日本語版は同等の内容として管理します。
+**最終同期日:** 2026-10-20
 
-Toitoiは、『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、普遍的な「答え」ではなく、地域固有の観察から生まれる**問い**を共有・検討・派生・探索する分散型protocol platform／digital commonsです。
+Toitoiは、地域固有の観察から生まれる**問い**を共有し、検討・比較・派生・検索できる分散型の基盤です。アグロエコロジーの知識を、普遍的な「答え」ではなく、それぞれの地域の文脈を保った問いとして育てるコモンズを目指しています。
+
+『[テクノロジーを手放す農業論](./docs/essays/Tech-wo-Tebanasu-Nogyoron.md)』の思想に基づき、通信方式に依存しないCanonical Eventを通じて、問いの再処理や分散システム間での配送にも対応します。
 
 ## v1.0.0候補
 
-v1.0.0候補では、一つの決定的なreference scenarioを通して、offline observation、非同期AI候補、人間によるannotation review、Inquiry Draft、独立したpublication approval、Canonical Event公開、transport delivery state、search、Vocabulary mapping、semantic derivation、replay、backup、restore、migration verificationを接続しています。
+v1.0.0の最小参照実装はmainに統合済みで、統合後のCI検証も完了しています。参照シナリオでは、オフラインでの観察記録から、非同期AIによる候補生成、人間によるAI注釈の確認、Inquiry Draft（公開前の問いの下書き）の作成、独立した公開承認、Canonical Eventの公開までをつないで検証しています。
 
-PR review、merge、merge後validation、release-owner判断、tag、GitHub Release公開が完了するまでは、最新の公開releaseはv0.9.0です。
+さらに、配信状態の記録、検索、語彙の対応付け、問いの派生、保存データの再処理、バックアップ・復元・移行の検証を含みます。残る実環境の検証とリリース責任者の判断、タグ作成、GitHub Release公開が完了するまでは、最新の公開版はv0.9.0です。
 
 ## アーキテクチャ
 
 ```text
-Mobile-first SPA / PWA
-  -> local observation and synchronization state
-  -> Standard API and actor authority
-  -> asynchronous AI annotation workflow
-  -> human review and independent publication approval
-  -> append-only Canonical storage
-  -> Nostr / Lingonberry / ATProto transport projections
-  -> replay and rebuildable search projections
-  -> Conformance and recovery validation
+スマートフォン向け SPA / PWA
+  -> 観察記録の端末内保存と同期状態
+  -> Standard APIと操作主体の権限確認
+  -> 非同期AIによる注釈の生成
+  -> 人間による確認と独立した公開承認
+  -> Canonical Eventの追記型保存
+  -> Nostr / Lingonberry / ATProto 向けの変換
+  -> 保存データの再処理と検索索引の再構築
+  -> 適合性と復旧の検証
 ```
 
-Canonical storageが正本です。search index、facet、metrics、health view、related-inquiry candidateは再構築可能なderived stateです。transport delivery、AI output、similarity、Vocabulary mappingはCanonical identityを自動統合しません。
+Canonical storage（Canonical Eventの保存領域）を正本とします。検索索引、絞り込み項目、運用指標、稼働状態の表示、関連する問いの候補は、元データから再構築できます。配信結果、AI出力、類似性、語彙の対応付けだけで、Canonical Eventの同一性を自動統合することはありません。
 
 ## クイックスタート
 
@@ -156,13 +159,13 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm test
 ```
 
-外部開発者は、英日併記の[Developer Quick Starts](./docs/quickstart/README.md)へ進んでください。
+外部開発者は、英日併記の[開発者向けクイックスタート](./docs/quickstart/README.md)へ進んでください。
 
-- [Transport Quick Start: Nostr、Lingonberry、ATProto](./docs/quickstart/TRANSPORT_QUICKSTART.md)
-- [Indexer・Standard API Quick Start](./docs/quickstart/INDEXER_API_QUICKSTART.md)
-- [Edge AI Quick Start](./docs/quickstart/EDGE_AI_QUICKSTART.md)
+- [配信経路のクイックスタート: Nostr、Lingonberry、ATProto](./docs/quickstart/TRANSPORT_QUICKSTART.md)
+- [索引作成・Standard APIのクイックスタート](./docs/quickstart/INDEXER_API_QUICKSTART.md)
+- [Edge AIのクイックスタート](./docs/quickstart/EDGE_AI_QUICKSTART.md)
 
-reference APIを起動します。
+参照実装のAPIを起動します。
 
 ```bash
 TOITOI_STORAGE_DIR=/path/to/storage \
@@ -172,7 +175,7 @@ TOITOI_PROTOCOL=nostr \
 corepack pnpm --filter @toitoi/api start
 ```
 
-native v1 Conformance inputを実行します。
+v1本来の形式を使い、Conformance Suite（適合性検証ツール）を実行します。
 
 ```bash
 corepack pnpm --filter @toitoi/conformance exec \
@@ -183,38 +186,38 @@ corepack pnpm --filter @toitoi/conformance exec \
 
 ## 主要文書
 
-- [Developer Quick Starts](./docs/quickstart/README.md)
+- [開発者向けクイックスタート](./docs/quickstart/README.md)
 - [文書言語ポリシー](./docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md)
 - [v1.0.0 Quick Start Class A登録決定](./docs/governance/V1.0.0_QUICKSTART_CLASS_A_DECISION.md)
 - [アーキテクチャ概要](./docs/architecture/ARCHITECTURE_OVERVIEW.md)
 - [Canonical Event](./docs/protocols/CANONICAL_EVENT.md)
-- [v1 Contract Index](./docs/reference/V1_CONTRACT_INDEX.md)
-- [v1.0.0 Reference Scenario](./docs/reference/V1.0.0_REFERENCE_SCENARIO.md)
-- [v1.0.0 Setup and Demo](./docs/reference/V1.0.0_SETUP_AND_DEMO.md)
-- [v1.0.0 最小運用Runbook](./docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md)
+- [v1の仕様一覧](./docs/reference/V1_CONTRACT_INDEX.md)
+- [v1.0.0 参照シナリオ](./docs/reference/V1.0.0_REFERENCE_SCENARIO.md)
+- [v1.0.0 セットアップとデモ](./docs/reference/V1.0.0_SETUP_AND_DEMO.md)
+- [v1.0.0 最小運用手順書](./docs/operations/V1.0.0_OPERATIONS_RUNBOOK.md)
 - [セキュリティと機微情報](./SECURITY.md)
 - [貢献ガイド](./CONTRIBUTING.md)
-- [Release Notes](./docs/roadmap/RELEASE_NOTES.md)
+- [リリースノート](./docs/roadmap/RELEASE_NOTES.md)
 - [v1.0.0文書言語移行台帳](./docs/roadmap/V1.0.0_DOCUMENTATION_LANGUAGE_MIGRATION.md)
-- [v1.0.0 Release Runbook](./docs/roadmap/V1.0.0_RELEASE_RUNBOOK.md)
-- [v1.0.0 Release Record](./docs/roadmap/V1.0.0_RELEASE_RECORD.md)
+- [v1.0.0 リリース手順書](./docs/roadmap/V1.0.0_RELEASE_RUNBOOK.md)
+- [v1.0.0 リリース記録](./docs/roadmap/V1.0.0_RELEASE_RECORD.md)
 
 ## 対象範囲と制約
 
-v1.0.0候補はminimum reference implementationであり、production認定されたhosted productではありません。
+v1.0.0候補は最小限の参照実装です。本番運用の認定を受けたホスト型製品ではありません。
 
-- reference authenticationは明示的headerを使い、OAuth/OIDC認定ではありません。
-- durable queueはsingle-node JSONLです。
-- live modelとexternal transport availabilityはdefault deterministic CIの対象外です。
-- deterministic fixtureはlive local-model reproducibilityを証明しません。
-- 実参加者pilotはまだ実施されていません。
-- FTS5はlexical／structured baselineであり、production vector searchやRAGではありません。
-- generated、derived、related、mapped inquiryの農業上の正しさは保証しません。
+- 参照実装の認証には明示的なヘッダーを使います。OAuth/OIDC認定ではありません。
+- 永続キューは、単一ノード上のJSONL形式で管理します。
+- 実際のAIモデルや外部配信先の可用性は、標準CIの検証対象外です。
+- 固定テストデータでの成功は、実際のローカルモデルによる再現性を証明しません。
+- 実参加者による試行は、まだ実施されていません。
+- FTS5は語句検索と条件検索の基本実装です。本番向けのベクトル検索やRAGではありません。
+- 生成・派生・関連付け・対応付けされた問いの、農業上の正しさは保証しません。
 
 ## 貢献とライセンス
 
 [CONTRIBUTING.md](./CONTRIBUTING.md)、[SECURITY.md](./SECURITY.md)、[LICENSE_POLICY.md](./LICENSE_POLICY.md)を参照してください。
 
-- Relay／indexer infrastructure: GNU AGPLv3
-- Frontend／edge client: MIT License
-- Protocol schema／documentation: CC BY-SA 4.0
+- リレー・索引作成の基盤: GNU AGPLv3
+- フロントエンド・エッジクライアント: MIT License
+- プロトコルスキーマ・文書: CC BY-SA 4.0

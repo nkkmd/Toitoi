@@ -1,8 +1,8 @@
 # Toitoi Architecture Overview
 
-**Status: v1.0.0 release candidate**  
-**Language status:** English and Japanese sections are maintained as equivalent.  
-**Last synchronized:** 2026-07-23
+**Status: v1.0.0 release candidate**
+**Language status:** English and Japanese sections are maintained as equivalent.
+**Last synchronized:** 2026-10-20
 
 ## Purpose
 
@@ -126,67 +126,68 @@ Rebuildable state:
 
 ---
 
+
 # Toitoi アーキテクチャ概要
 
-**状態: v1.0.0 release candidate**  
-**言語状態:** 英語版と日本語版は同等の内容として管理します。  
-**最終同期日:** 2026-07-23
+**状態: v1.0.0 リリース候補**
+**言語状態:** 英語版と日本語版は同等の内容として管理します。
+**最終同期日:** 2026-10-20
 
 ## 目的
 
-この文書は、Toitoi v1.0.0の英日併記による公開architecture入口です。adapter、package、schema、deployment、実装の詳細文書は、文書言語ポリシーで別に分類されない限り英語で管理します。
+この文書は、Toitoi v1.0.0の全体構成を英語と日本語で説明します。アダプター、パッケージ、スキーマ、配備、実装の詳細文書は、文書言語ポリシーで別に分類されない限り、英語で管理します。
 
 ## システムの位置づけ
 
-Toitoiは、地域固有の観察に基づく問いを保存、review、関連付け、検索、流通するprotocol-independentなsystemです。
+Toitoiは、地域固有の観察から生まれる問いを保存し、確認・関連付け・検索・共有できるシステムです。特定の通信プロトコルに依存しません。
 
-systemの意味的中心にはCanonical Eventを使用します。Nostr、Lingonberry、ATProto、および将来のtransportはprojectionと配送手段であり、Canonical identityの正本ではありません。
+意味を表す中心的な記録にはCanonical Eventを使います。Nostr、Lingonberry、ATProtoなどの配信経路では、その記録を各方式に合わせた表現へ変換して配送します。配信先の表現を、Canonical Eventの同一性を判断する正本にはしません。
 
 ## 主要な流れ
 
 ```text
-Mobile-first SPA / PWA
-  → local observation and synchronization state
-  → Standard API workflow mutations
-  → operational HTTP boundary and actor authority
-  → append-only raw and Canonical persistence
-  → asynchronous AI job and annotation layer
-  → human annotation review
-  → Inquiry Draft
-  → human-confirmed semantic derivation
-  → independent publication approval
-  → Canonical Event publication
-  → outbound transport adapters
-  → Nostr / Lingonberry / ATProto delivery state
-  → replay and Canonical read index
-  → rebuildable FTS5 search projection
-  → search / context / vocabulary / related-inquiry API
-  → Conformance and recovery validation
+スマートフォン向け SPA / PWA
+  → 観察記録の端末内保存と同期状態
+  → Standard APIによるワークフロー操作
+  → HTTP運用機能と操作主体の権限確認
+  → 元データとCanonical Eventの追記型保存
+  → 非同期AIジョブと注釈
+  → 人間によるAI注釈の確認
+  → Inquiry Draft（公開前の問いの下書き）
+  → 人間が確定した問いの派生
+  → 独立した公開承認
+  → Canonical Eventの公開
+  → 外向き配信アダプター
+  → Nostr / Lingonberry / ATProto の配信状態
+  → 保存データの再処理とCanonical Eventの参照用索引
+  → 再構築可能なFTS5検索索引
+  → 検索・文脈・語彙・関連する問いのAPI
+  → 適合性と復旧の検証
 ```
 
 ## アーキテクチャ層
 
-### 1. Captureとlocal state
+### 1. 観察の記録と端末内の状態
 
-frontendはmobile-first、offline-firstのobservation captureを支援します。local persistenceとqueue stateは、synchronization、publication、transport deliveryを意味しません。
+フロントエンドは、スマートフォンやオフライン環境での観察記録を支援します。端末内に保存されていることや同期キューに入っていることは、同期・公開・配信の完了を意味しません。
 
-### 2. Standard APIとauthority boundary
+### 2. Standard APIと権限の分離
 
-Standard APIはtransport-independentなworkflow operationを提供します。authentication identity、actor identity、transport identity、Canonical Event identityは分離します。
+Standard APIは、配信方式に依存しないワークフロー操作を提供します。認証時の識別情報、操作主体の識別情報、配信先固有の識別情報、Canonical Eventの同一性は、それぞれ分けて扱います。
 
-annotation review、relation confirmation、publication approval、moderation、operator authorityは、それぞれ独立した監査可能な判断です。
+AI注釈の確認、問い同士の関係の確定、公開承認、モデレーション、運用者の権限行使は、別々の判断として監査可能な形で記録します。
 
-### 3. RawとCanonical persistence
+### 3. 元データとCanonical Eventの永続保存
 
-raw protocol payloadとCanonical Eventは分離して保存します。semantic stateの正本はCanonical storageです。公開済みeventはappend-onlyとし、訂正や再解釈は履歴を黙って書き換えず、新しいeventとlineageで表現します。
+受信したプロトコル固有のデータとCanonical Eventは、分けて保存します。意味を表す記録の正本はCanonical storageです。公開済みイベントは追記型とし、訂正や再解釈は既存の履歴を書き換えず、新しいイベントと派生関係で表します。
 
 ### 4. AI支援
 
-AI処理はpersistence後に非同期で実行します。AIはsummary、tag、inquiry、relationを提案できますが、自律的にapprove、publish、moderate、Canonical identity mergeを行えません。
+AI処理は、データの永続保存後に非同期で実行します。AIは要約、タグ、問い、関係を提案できますが、自律的な承認・公開・モデレーションや、Canonical Eventの同一性の統合は行えません。
 
-### 5. Inquiry workflowとlineage
+### 5. 問いのワークフローと派生関係
 
-review済みannotation outputはInquiry Draftへpromoteできます。derived inquiryは次の規範relation vocabularyでsource lineageを保持します。
+確認済みのAI注釈から、Inquiry Draftを作成できます。派生した問いには、次の規範的な関係語彙を使って派生元を記録します。
 
 - `derived_from`
 - `translated_from`
@@ -197,49 +198,49 @@ review済みannotation outputはInquiry Draftへpromoteできます。derived in
 - `annotates`
 - `revises`
 
-similarity、Vocabulary mapping、semantic relationはCanonical identityを確定しません。
+類似性、語彙の対応付け、意味上の関係だけで、Canonical Eventの同一性は確定しません。
 
-### 6. Transport abstraction
+### 6. 配信方式の抽象化
 
-adapterとconverterはCanonical meaningをprotocol-specific representationへprojectionし、ingest時にCanonical meaningを再構成します。delivery failureはdelivery stateを変更しますが、Canonical persistenceを無効化しません。
+アダプターと変換器は、Canonical Eventの意味を各プロトコル固有の表現へ変換し、取り込み時にはその意味を再構成します。配信の失敗は配信状態を変えますが、Canonical Eventの永続保存を無効にはしません。
 
-### 7. Searchとreplay
+### 7. 検索と保存データの再処理
 
-FTS5 index、context facet、related-inquiry candidate、metrics、health viewはderived stateです。決定的replayによりCanonical storageから再構築できなければなりません。
+FTS5索引、文脈による絞り込み項目、関連する問いの候補、運用指標、稼働状態の表示は、元データから作る派生状態です。同じ入力から同じ結果を得られる再処理によって、Canonical storageから再構築できる必要があります。
 
-### 8. Conformanceとrecovery
+### 8. 適合性検証と復旧
 
-Conformance Suiteはprivate application moduleを要求せずobservable contractを検証します。recovery toolingはbackup manifest、SHA-256 verification、restore、corruption detection、migration plan、dry-run、apply、derived-state rebuildを対象とします。
+Conformance Suite（適合性検証ツール）は、アプリケーション内部の非公開モジュールに依存せず、外部から確認できる仕様を検証します。復旧ツールは、バックアップ一覧、SHA-256による検証、復元、破損検知、移行計画、試行実行（dry-run）、適用、派生状態の再構築を対象とします。
 
-## Durable stateとrebuildable state
+## 永続保存する状態と再構築できる状態
 
-Durable state:
+永続保存する状態:
 
-- raw storage
+- 受信した元データ
 - Canonical storage
-- durable queue state
-- audit record
-- repository fixture外で管理するdeployment configurationとsecret
+- 永続キューの状態
+- 監査記録
+- リポジトリの固定テストデータとは別に管理する配備設定と機密情報
 
-Rebuildable state:
+再構築できる状態:
 
-- FTS5 search index
-- context facet
-- related-inquiry projection
-- metricsとhealth projection
+- FTS5検索索引
+- 文脈による絞り込み項目
+- 関連する問いの派生データ
+- 運用指標と稼働状態の派生データ
 
-## 安定アーキテクチャ不変条件
+## 維持すべき設計原則
 
-1. Canonical storageが正本です。
-2. raw dataとCanonical dataは分離して管理します。
-3. identity domainを分離します。
-4. AI proposalには人間reviewが必要です。
-5. publicationには独立したapprovalが必要です。
-6. similarityとmappingでidentityを自動統合しません。
-7. transport failureはCanonical persistenceを消去しません。
-8. derived stateは再構築可能とします。
-9. repository release `v1.0.0`におけるCanonical Eventのstable wire identifierは`schemaVersion: "0.1.0"`です。
-10. 決定的fixtureはlive transport、live model、hosted deployment、実参加者の結果を証明しません。
+1. Canonical storageを正本とします。
+2. 元データとCanonical Eventは分けて管理します。
+3. 各種の識別情報を分けて扱います。
+4. AIの提案には人間による確認が必要です。
+5. 公開には独立した承認が必要です。
+6. 類似性や対応付けだけで同一性を自動統合しません。
+7. 配信に失敗しても、永続保存したCanonical Eventは失われません。
+8. 派生状態は再構築できるようにします。
+9. リポジトリのリリース `v1.0.0`でも、Canonical Eventの通信形式上のバージョン識別子は`schemaVersion: "0.1.0"`です。
+10. 固定テストデータによる検証は、実際の配信先・AIモデル・ホスト環境・参加者による結果の証拠にはなりません。
 
 ## 規範文書・詳細文書
 
