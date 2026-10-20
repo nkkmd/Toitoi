@@ -1,7 +1,7 @@
 # Security and Sensitive Information
 
-**Language status:** English and Japanese sections are maintained as equivalent.  
-**Last synchronized:** 2026-07-23
+**Language status:** English and Japanese sections are maintained as equivalent.
+**Last synchronized:** 2026-10-20
 
 ## Purpose
 
@@ -98,91 +98,89 @@ Do not publish sensitive evidence merely to demonstrate that an incident occurre
 
 # セキュリティと機微情報
 
-**言語状態:** 英語版と日本語版は同等の内容として管理します。  
-**最終同期日:** 2026-07-23
+**言語状態:** 英語版と日本語版は同等の内容として管理します。
+**最終同期日:** 2026-10-20
 
 ## 目的
 
-この文書は、Toitoiの公開security・sensitive information入口です。deployment固有のsecurity engineeringを代替するものではありませんが、v1.0.0参照実装で求める最小限の報告、情報取扱い、authority boundaryを定めます。
+この文書は、Toitoiのセキュリティと機微情報の取り扱いを案内します。配備環境ごとのセキュリティ設計を代替するものではありません。v1.0.0参照実装で必要となる、最小限の報告方法、情報の取り扱い、権限の分離を定めます。
 
 ## 脆弱性の報告
 
-未修正の脆弱性をpublic Issue、Discussion、Pull Request、fixture、logで公開しないでください。
+未修正の脆弱性を、公開Issue、Discussion、Pull Request、固定テストデータ、ログで公開しないでください。
 
-利用可能な場合はGitHubのprivate security reporting channelを使用してください。private channelがない場合はrepository ownerへ非公開で連絡し、次を提示してください。
+利用できる場合は、GitHubの非公開の脆弱性報告機能を使ってください。非公開の報告窓口がない場合は、リポジトリ所有者へ非公開で連絡し、次を提示してください。
 
-- 影響するcomponentとversionまたはcommit
+- 影響する構成要素と、バージョンまたはコミット
 - 再現手順
-- security impact
-- credential、personal information、圃場位置、未公開observationが関係するか
-- 判明している場合はmitigation案
+- セキュリティ上の影響
+- 認証情報、個人情報、圃場の位置、未公開の観察記録が関係するか
+- 判明している場合は、影響を軽減する案
 
-報告には実credentialや不要なpersonal dataを含めず、redactedまたはsyntheticな例を使用してください。
+実際の認証情報や不要な個人情報を報告に含めず、機微情報を伏せた例や架空の例を使ってください。
 
-## Sensitive information boundary
+## 機微情報に該当し得るもの
 
-機微情報となり得るものには次が含まれます。
+- 農場、圃場、世帯、参加者の正確な位置
+- 参加者を識別できる情報や連絡先
+- 未公開の観察記録やコミュニティの知識
+- 認証情報や配信用の鍵
+- APIトークン、リレーやPDSの認証情報、秘密鍵（private key）、モデルサービスの機密情報
+- リクエスト、操作主体、操作の詳細を含む監査記録やログ
+- バックアップ一式や受信した元データ
 
-- 正確な農場、圃場、世帯、参加者の位置
-- 参加者identityまたはcontact information
-- 未公開observationまたはcommunity knowledge
-- authentication credentialとtransport key
-- API token、relay credential、PDS credential、private key、model-service secret
-- request、actor、operation detailsを含むaudit recordまたはlog
-- backup archiveとraw payload
-
-機微情報をrepository fixture、example、screenshot、test、documentationへcommitしてはいけません。
+機微情報を、リポジトリの固定テストデータ、使用例、スクリーンショット、テスト、文書にコミットしてはいけません。
 
 ## 参照実装の制約
 
-v1.0.0参照実装はproduction security certificationではありません。
+v1.0.0参照実装は、本番環境のセキュリティ認定を受けたものではありません。
 
-- reference authentication headerは決定的development boundaryであり、OAuth/OIDC certificationではありません
-- TLS terminationとnetwork policyはdeployment側の責任です
-- secretはrepositoryとpublic fixtureの外で保存します
-- rate limiting、idempotency、process-local stateはdeployment固有のdurable implementationを必要とする場合があります
-- external transportとAI providerには、それぞれcredentialとdata retentionの境界があります
+- 参照実装の認証ヘッダーは、再現可能な開発用の仕組みです。OAuth/OIDC認定ではありません。
+- TLS終端処理とネットワーク方針は、配備環境側で管理します。
+- 機密情報は、リポジトリや公開の固定テストデータとは別に保存します。
+- リクエスト頻度制限、冪等性、プロセス内の状態には、配備環境に応じた永続化の実装が必要になる場合があります。
+- 外部配信先とAIプロバイダーには、それぞれ認証情報とデータ保持の管理範囲があります。
 
-## Authorityとidentity
+## 権限と識別情報
 
-authentication identity、actor identity、transport identity、Canonical Event identityは分離します。
+認証時の識別情報、操作主体の識別情報、配信先固有の識別情報、Canonical Eventの同一性（Canonical Event identity）は、分けて扱います。
 
-credentialを所持しているだけではpublication、moderation、operator authorityを自動的に取得しません。annotation review、relation confirmation、publication approval、moderation、operator operationは、別々に帰属・監査できなければなりません。
+認証情報を持つだけで、公開・モデレーション・運用者の権限が自動的に得られるわけではありません。AI注釈の確認、関係の確定、公開承認、モデレーション、運用者の操作は、それぞれ誰の判断・操作かを追跡し、監査できる必要があります。
 
-## Data minimization
+## 必要最小限の情報の取り扱い
 
-capture、publication、logging、backup、transport deliveryの前に次を行います。
+記録、公開、ログ出力、バックアップ、配信の前に、次を行います。
 
-1. intended inquiryまたはoperationに必要な情報だけを収集する
-2. exact coordinateが不要な場合はprecise localityを抽象化する
-3. marked sensitive fieldのsynchronization前にexplicit acknowledgmentを要求する
-4. secretまたはprivate raw dataをCanonical Event semantic fieldへ入れない
-5. raw storageとCanonical storageの境界を保持する
-6. incident reportとtest fixtureから不要な機微情報をredactする
+1. 対象の問いや操作に必要な情報だけを収集する。
+2. 正確な座標が不要な場合は、位置情報の粒度を粗くする。
+3. 機微情報として指定された項目の同期前に、明示的な確認を求める。
+4. 機密情報や非公開の元データを、Canonical Eventの意味を表す項目に入れない。
+5. 元データとCanonical Eventの保存範囲を分ける。
+6. 事故報告や固定テストデータから、不要な機微情報を伏せる。
 
-## Secretとcredential
+## 機密情報と認証情報
 
-- secretをcommitしない
-- operator-controlled environmentまたはsecret storageからcredentialを読み込む
-- exposureが疑われる場合はcredentialをrotateする
-- secret valueを複製せずaudit evidenceを保持する
-- 必要に応じて影響したtransport operationをinvalidateまたはquarantineする
-- retryで新しいCanonical identityを作らないことを確認する
+- 機密情報をコミットしない。
+- 運用者が管理する環境や機密情報の保存先から、認証情報を読み込む。
+- 漏えいが疑われる場合は、認証情報を更新・交換する。
+- 機密情報の値を複製せずに、監査に必要な証拠を保持する。
+- 必要に応じて、影響を受けた配信操作を無効化または隔離する。
+- 再試行によって新しいCanonical Eventの同一性が生じないことを確認する。
 
-## Backupとincident対応
+## バックアップと事故対応
 
-backupには機微なdurable stateが含まれる場合があります。operatorはdeploymentと法的義務に応じてaccess、retention、encryption、transfer、deletionを管理しなければなりません。
+バックアップには、機微な永続データが含まれる場合があります。運用者は、配備環境と法的義務に応じて、アクセス、保持期間、暗号化、転送、削除を管理する必要があります。
 
-incident時には次を保持します。
+事故時には、次を保持します。
 
-- timestamp
-- 影響するcommitとdeployment version
-- request IDとaudit reference
-- 関連するqueueとtransport state
-- backup・restore verification result
-- corrective actionと未解決risk
+- 日時
+- 影響するコミットと配備バージョン
+- リクエストIDと監査記録への参照
+- 関連するキューと配信の状態
+- バックアップ・復元の検証結果
+- 是正措置と未解決のリスク
 
-incidentが発生したことを示すためだけに機微なevidenceを公開してはいけません。
+事故の発生を示すためだけに、機微な証拠を公開してはいけません。
 
 ## 関連文書
 

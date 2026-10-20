@@ -1,12 +1,12 @@
 # Toitoi Release Notes
 
-**Status: current**  
-**Language policy:** New public release entries are maintained in English followed by equivalent Japanese. Historical entries retain their existing language.  
-**Last synchronized:** 2026-07-23
+**Status: current**
+**Language policy:** New public release entries are maintained in English followed by equivalent Japanese. Historical entries retain their existing language.
+**Last synchronized:** 2026-10-20
 
 ## v1.0.0 candidate
 
-**Status: implementation candidate in Draft PR #39; not yet publicly released**
+**Status: PR #39 merged into main; post-merge CI validation complete; not yet publicly released**
 
 ### Summary
 
@@ -45,7 +45,7 @@ The fixed reference scenario begins with an offline observation that weed specie
 - FTS5 is a lexical and structured baseline, not production vector search or RAG;
 - generated, derived, related, or mapped inquiries are not guaranteed to be agriculturally correct.
 
-Publication still requires human review, merge, post-merge validation, hosted-environment verification, release-owner disposition of the pilot limitation, an annotated `v1.0.0` tag, and GitHub Release publication.
+Implementation merge and post-merge validation are complete. Publication still requires human review of the final candidate, hosted-environment verification, release-owner disposition of the pilot limitation, an annotated `v1.0.0` tag, and GitHub Release publication.
 
 Related documents:
 
@@ -59,46 +59,46 @@ Related documents:
 
 ## v1.0.0候補
 
-**状態: Draft PR #39で実装中。まだ公開リリースではありません。**
+**状態: PR #39をmainへ統合し、統合後のCI検証も完了。正式公開前です。**
 
 ### 概要
 
-Toitoi v1.0.0は、これまで構築してきたprotocol、API、AI、review、offline、transport、search、replay、recovery、governanceの基盤を、一つの最小reference implementationとして接続します。
+Toitoi v1.0.0は、プロトコル、API、AI、人間による確認、オフライン操作、配信、検索、保存データの再処理、復旧、運営ルールの基盤を、一つの最小参照実装につなぎます。
 
-固定reference scenarioは、「畑の東側だけ雑草の種類が違う」というoffline observationから始まり、AIによるInquiry候補、人間によるannotation review、Inquiry Draft、独立したpublication approval、Canonical Event公開、transport delivery state、別地域の問いの発見、Vocabulary mapping、人間確認済みsynthesis、replay、backup、restore、migration検証までを一続きに扱います。
+参照シナリオは、「畑の東側だけ雑草の種類が違う」というオフラインでの観察記録から始まります。AIによる問いの候補生成、人間によるAI注釈の確認、Inquiry Draft（公開前の問いの下書き）、独立した公開承認、Canonical Eventの公開、配信状態の記録、別地域の問いの発見、語彙の対応付け、人間が確定した問いの統合、保存データの再処理、バックアップ・復元・移行の検証までを、一連の流れとして扱います。
 
 ### 主な内容
 
-- protocol-independentなCanonical Event storageを正本として維持します。
-- publication、transport projection、replay、backup、restoreを通してstable Canonical IDを保持します。
-- AI annotation reviewとpublication approvalを分離し、個別に帰属可能にします。
-- mobile/offline Golden Pathでlocal persistence、sensitive field確認、queue、同期失敗、明示的retry、publicationを検証します。
-- FTS5 search、structured filter、context facet、related-inquiry candidate、replay equivalenceをreference fixtureへ接続します。
-- Conformance Suite 1.0.0でnative v1 inputを検証し、legacy v0.9 acceptanceは明示的compatibility profileに限定します。
-- backup manifest検証、corruption detection、migration plan、dry-run、apply、derived-state rebuildを検証します。
-- 公開入口文書と最小運用手順をrepositoryの文書言語ポリシーに従って管理します。
-- automatic identity mergeとautonomous AI publicationは引き続き禁止します。
+- 通信プロトコルに依存しないCanonical Eventの保存領域を、正本として維持します。
+- 公開、配信方式ごとの変換、再処理、バックアップ、復元を経ても、安定したCanonical IDを保持します。
+- AI注釈の確認と公開承認を分け、誰が判断したかをそれぞれ記録できるようにします。
+- スマートフォン・オフライン向けの一連の検証では、端末内保存、機微情報の確認、キューへの登録、同期失敗、利用者の操作による再試行、公開を確認します。
+- FTS5検索、条件による絞り込み、文脈による絞り込み項目、関連する問いの候補、再処理前後の結果の同等性を、参照用の固定テストデータで検証します。
+- Conformance Suite 1.0.0では、v1本来の形式の入力を検証します。旧v0.9形式の受理は、明示的な互換プロファイルに限定します。
+- バックアップ一覧の検証、破損検知、移行計画、試行実行（dry-run）、適用、派生状態の再構築を検証します。
+- 公開上の入口となる文書と最小限の運用手順は、リポジトリの文書言語ポリシーに従って管理します。
+- 同一性の自動統合とAIによる自律的な公開は、引き続き禁止します。
 
-### Stable contractに関する注意
+### 安定した仕様に関する注意
 
-- repository release version: `v1.0.0`
-- Canonical Event wire identifier: `schemaVersion: "0.1.0"`
-- Canonical ID形式: `tt:evt:<opaque-id>`
-- 正式なsynthesis lineage relation: `synthesizes`
-- Canonical storageはdurableかつauthoritativeです。
-- search index、facet、metrics、health projectionは再構築可能なderived stateです。
+- リポジトリのリリース版: `v1.0.0`
+- Canonical Eventの通信形式上のバージョン識別子: `schemaVersion: "0.1.0"`
+- Canonical IDの形式: `tt:evt:<opaque-id>`
+- 問いの統合を表す正式な派生関係: `synthesizes`
+- Canonical storageは、永続保存する正本です。
+- 検索索引、絞り込み項目、運用指標、稼働状態の派生データは、再構築可能です。
 
 ### 公開前に残る既知の制約
 
-- reference authentication providerはheader-basedであり、OAuth/OIDC認定ではありません。
-- durable queueはsingle-node JSONLのreference implementationです。
-- deterministic fixtureだけではlive local-modelの再現性を証明できません。
-- 実参加者pilotは`not yet conducted`として記録されています。
-- hosted environment同期とexternal transport availabilityは別途検証が必要です。
-- FTS5はlexical／structured baselineであり、production vector searchやRAGではありません。
-- generated、derived、related、mapped inquiryの農業上の正しさは保証されません。
+- 参照実装の認証方式はヘッダーを使います。OAuth/OIDC認定ではありません。
+- 永続キューは、単一ノード上のJSONL形式を使う参照実装です。
+- 固定テストデータだけでは、実際のローカルモデルによる再現性を証明できません。
+- 実参加者による試行は、`not yet conducted`（未実施）として記録されています。
+- ホスト環境への同期と、外部配信先の可用性は、別途検証が必要です。
+- FTS5は語句検索と条件検索の基本実装です。本番向けのベクトル検索やRAGではありません。
+- 生成・派生・関連付け・対応付けされた問いの、農業上の正しさは保証されません。
 
-公開には、human review、merge、merge後検証、hosted environment確認、pilot limitationに関するrelease-owner判断、annotated `v1.0.0` tag、GitHub Release公開が必要です。
+実装の統合と統合後の検証は完了しています。公開には、最終候補の人間によるレビュー、ホスト環境の確認、参加者による試行が未実施である制約についてのリリース責任者の判断、注釈付き`v1.0.0`タグの作成、GitHub Release公開が必要です。
 
 関連文書:
 
@@ -116,7 +116,7 @@ Historical entries retain their existing language and are not rewritten solely f
 
 ## v0.9.0
 
-**Status: implementation merged / release administration in progress**
+**Status: released**
 
 v0.9.0は、Toitoiを単独開発向けreference environmentから、小規模な共同利用、障害復旧、外部互換性検証、共同運営手続きへ拡張するreleaseです。
 

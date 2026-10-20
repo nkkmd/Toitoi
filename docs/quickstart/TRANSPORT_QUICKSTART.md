@@ -1,8 +1,8 @@
 # Transport Quick Start
 
-**Status:** v1.0.0 candidate  
-**Language status:** English and Japanese sections are maintained as equivalent.  
-**Last synchronized:** 2026-07-27
+**Status:** v1.0.0 candidate
+**Language status:** English and Japanese sections are maintained as equivalent.
+**Last synchronized:** 2026-10-20
 
 This guide creates Canonical storage from one of Toitoi's supported transport inputs: Nostr, Lingonberry, or ATProto. A transport record is an input or delivery representation; it does not define Canonical identity.
 
@@ -108,13 +108,13 @@ Omit transport entries whose storage directory you did not create.
 
 # Transport Quick Start
 
-**状態:** v1.0.0候補  
-**言語状態:** 英語版と日本語版は同等の内容として管理します。  
-**最終同期日:** 2026-07-27
+**状態:** v1.0.0候補
+**言語状態:** 英語版と日本語版は同等の内容として管理します。
+**最終同期日:** 2026-10-20
 
-このガイドでは、Toitoiが対応するNostr、Lingonberry、ATProtoのいずれかからCanonical storageを作成します。transport recordは入力または配送上の表現であり、Canonical identityを定義しません。
+このガイドでは、Nostr、Lingonberry、ATProtoのいずれかから記録を取り込み、Canonical Eventの保存領域を作成します。配信先固有の記録は、入力や配送のための表現です。それ自体でCanonical Eventの同一性（Canonical identity）は決まりません。
 
-## 共通setup
+## 共通の準備
 
 ```bash
 corepack enable
@@ -122,7 +122,7 @@ corepack pnpm install --frozen-lockfile
 mkdir -p .local/transport-storage
 ```
 
-## Path A: Nostr relayから取り込む
+## 方法A: Nostrリレーから取り込む
 
 ```bash
 corepack pnpm --filter @toitoi/nostr-transport start -- \
@@ -131,11 +131,11 @@ corepack pnpm --filter @toitoi/nostr-transport start -- \
   --storage-dir "$PWD/.local/transport-storage/nostr"
 ```
 
-workerはrelay eventを読み、対応recordをcanonicalizeし、append-onlyなraw、Canonical、ingest log、index snapshotを保存します。アクセス権限のあるrelayを使用してください。self-hostingとproduction運用は[`../../infra/transports/nostr/NOSTR_RELAY_SETUP.md`](../../infra/transports/nostr/NOSTR_RELAY_SETUP.md)を参照します。
+ワーカーはリレーのイベントを読み込み、対応する記録をCanonical Eventへ変換します。元データ、Canonical Event、取り込みログ、索引のスナップショットを追記型で保存します。アクセス権限のあるリレーを使用してください。自前でのホスティングと本番運用については、[`../../infra/transports/nostr/NOSTR_RELAY_SETUP.md`](../../infra/transports/nostr/NOSTR_RELAY_SETUP.md)を参照してください。
 
-## Path B: Lingonberryから取り込む
+## 方法B: Lingonberryから取り込む
 
-carrier endpointから:
+キャリアのエンドポイントから取り込む場合:
 
 ```bash
 corepack pnpm --filter @toitoi/lingonberry-transport start -- \
@@ -145,7 +145,7 @@ corepack pnpm --filter @toitoi/lingonberry-transport start -- \
   --source-label carrier
 ```
 
-archive directoryから:
+アーカイブ用ディレクトリから取り込む場合:
 
 ```bash
 corepack pnpm --filter @toitoi/lingonberry-transport start -- \
@@ -155,7 +155,7 @@ corepack pnpm --filter @toitoi/lingonberry-transport start -- \
   --source-label archive
 ```
 
-JSONL fileから:
+JSONLファイルから取り込む場合:
 
 ```bash
 corepack pnpm --filter @toitoi/lingonberry-transport start -- \
@@ -165,9 +165,9 @@ corepack pnpm --filter @toitoi/lingonberry-transport start -- \
   --source-label jsonl
 ```
 
-## Path C: ATProtoから取り込む
+## 方法C: ATProtoから取り込む
 
-保存済みJSONL archiveのbatch ingest:
+保存済みのJSONLアーカイブを一括で取り込む場合:
 
 ```bash
 corepack pnpm --filter @toitoi/atproto-transport start -- \
@@ -176,7 +176,7 @@ corepack pnpm --filter @toitoi/atproto-transport start -- \
   --storage-dir "$PWD/.local/transport-storage/atproto"
 ```
 
-Jetstream-compatible endpointからのlive ingest:
+Jetstream互換のエンドポイントからリアルタイムで取り込む場合:
 
 ```bash
 corepack pnpm --filter @toitoi/atproto-transport start -- \
@@ -184,7 +184,7 @@ corepack pnpm --filter @toitoi/atproto-transport start -- \
   --storage-dir "$PWD/.local/transport-storage/atproto"
 ```
 
-処理権限のあるcollectionとendpointだけを購読してください。live availabilityはdeterministic CIの対象外です。
+処理権限のあるコレクションとエンドポイントだけを購読してください。実際の外部サービスの可用性は、固定入力で再現可能なCIの検証対象外です。
 
 ## Standard APIから結果を確認する
 
@@ -196,18 +196,18 @@ TOITOI_TRANSPORT_SOURCES='[
 ]' PORT=3000 corepack pnpm --filter @toitoi/api start
 ```
 
-続けて:
+続けて、次を実行します。
 
 ```bash
 curl -s http://127.0.0.1:3000/api/v1/protocols
 curl -s http://127.0.0.1:3000/api/v1/inquiries
 ```
 
-作成していないstorage directoryのentryは除外してください。
+作成していない保存ディレクトリの設定項目は、除外してください。
 
-## 重要な境界
+## 区別すべきこと
 
-- transport deliveryの成功とCanonical persistenceの成功は別です。
-- 異なるtransport上の類似recordを自動的に同じCanonical Eventとして扱いません。
-- raw transport recordとCanonical Eventは別々にattributionを保持します。
-- production credentialとprivate keyをcommitしてはいけません。
+- 配信の成功と、Canonical Eventの永続保存の成功は別です。
+- 異なる配信経路にある記録を、似ているという理由だけで同じCanonical Eventとして扱いません。
+- 受信した元の記録とCanonical Eventは、それぞれの帰属情報を保持します。
+- 本番用の認証情報や秘密鍵をコミットしてはいけません。

@@ -1,7 +1,7 @@
 # Contributing to Toitoi
 
-**Language status:** English and Japanese sections are maintained as equivalent.  
-**Last synchronized:** 2026-07-23
+**Language status:** English and Japanese sections are maintained as equivalent.
+**Last synchronized:** 2026-10-20
 
 Thank you for your interest in Toitoi. Toitoi is an open-source digital agroecology commons built around protocol-independent Canonical Events and inquiry-centered knowledge exchange.
 
@@ -77,16 +77,16 @@ By submitting a Pull Request, you agree that your contribution will be licensed 
 
 # Toitoiへの貢献
 
-**言語状態:** 英語版と日本語版は同等の内容として管理します。  
-**最終同期日:** 2026-07-23
+**言語状態:** 英語版と日本語版は同等の内容として管理します。
+**最終同期日:** 2026-10-20
 
-Toitoiに関心を持っていただき、ありがとうございます。Toitoiは、protocol-independentなCanonical Eventと、問いを中心とした知識交換を基盤とするオープンソースのデジタル・アグロエコロジー・コモンズです。
+Toitoiは、通信プロトコルに依存しないCanonical Eventと、問いを中心とした知識交換を基盤とする、オープンソースのデジタル・アグロエコロジー・コモンズです。
 
-開発者、農家、研究者、designer、operator、翻訳者、地域知識communityに関わる方からの貢献を歓迎します。
+開発者、農家、研究者、デザイナー、運用者、翻訳者、地域の知識を共有するコミュニティに関わる方からの貢献を歓迎します。
 
 ## 貢献前に確認する文書
 
-次を確認してください。
+次の文書を確認してください。
 
 - `README.md`
 - `docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md`
@@ -94,22 +94,22 @@ Toitoiに関心を持っていただき、ありがとうございます。Toito
 - `LICENSE_POLICY.md`
 - `SECURITY.md`
 
-Issue、Pull Request、fixture、log、screenshotには、credential、非公開の圃場座標、参加者を特定できる情報、その他の不要な機微情報を含めないでください。
+Issue、Pull Request、固定テストデータ、ログ、スクリーンショットには、認証情報、非公開の圃場座標、参加者を特定できる情報、その他の不要な機微情報を含めないでください。
 
 ## 貢献方法
 
-- **バグ報告・機能提案:** 再現手順と期待する動作を添えてGitHub Issueを作成します。
-- **protocol・schema・Vocabulary提案:** observable contract、互換性、lineage vocabulary、governanceへ影響する可能性がある場合は、実装前にIssueで議論します。
+- **バグ報告・機能提案:** 再現手順と期待する動作を添えて、GitHub Issueを作成します。
+- **プロトコル・スキーマ・語彙の提案:** 外部から確認できる仕様、互換性、派生関係を表す語彙、運営ルールに影響する可能性がある場合は、実装前にIssueで議論します。
 - **文書:** 文書言語ポリシーに従います。Class Aの変更では、同じPull Request内で英語版と日本語版を更新します。
-- **コード:** scopeを限定し、決定的なtestを追加・更新し、authority、identity、provenance、replay、recoveryの境界を保持します。
-- **運用改善:** durable stateへの影響、migration要否、rollback動作、secret handlingの前提を文書化します。
+- **コード:** 変更範囲を絞り、再現可能なテストを追加・更新します。権限、同一性、来歴、保存データの再処理、復旧の責務を維持します。
+- **運用改善:** 永続保存する状態への影響、移行の要否、以前の状態へ戻す際の動作、機密情報の取り扱いの前提を文書化します。
 
 ## Pull Requestの手順
 
-1. Forkまたは作業branchを作成します。
-2. 内容が分かるbranch名を使用します。
+1. フォークまたは作業ブランチを作成します。
+2. 作業内容が分かるブランチ名を付けます。
 3. 変更範囲を限定します。
-4. testと文書を追加・更新します。
+4. テストと文書を追加・更新します。
 5. 次を実行します。
 
 ```bash
@@ -117,35 +117,35 @@ corepack pnpm install --frozen-lockfile
 corepack pnpm test
 ```
 
-6. 明確なmessageでcommitします。
-7. branchをpushし、Pull Requestを作成します。
-8. scope、validation、互換性への影響、既知の制約、migrationまたは運用上の影響を説明します。
+6. 内容が分かるメッセージでコミットします。
+7. ブランチをプッシュし、Pull Requestを作成します。
+8. 変更範囲、検証結果、互換性への影響、既知の制約、移行や運用への影響を説明します。
 
-実施していないvalidationを実施済みと表現してはいけません。決定的fixtureは、live transport availability、live model reproducibility、hosted deployment synchronization、実参加者の知見を証明しません。
+実施していない検証を、実施済みと記載してはいけません。固定テストデータによる検証は、実際の配信先の可用性、AIモデルの再現性、ホスト環境への反映、実参加者から得た知見の証拠にはなりません。
 
-## Contract・互換性変更
+## 仕様・互換性の変更
 
-次に影響する変更は、明示的なreviewが必要です。
+次に影響する変更には、明示的なレビューが必要です。
 
-- Canonical Eventのrequired fieldまたはwire identifier
-- Standard APIのobservable behavior
-- Canonical identityまたはprovenance rule
-- lineageまたはsemantic relation vocabulary
-- authentication、review、publication、moderation、operator authority
-- storage、replay、backup、restore、migration
-- transport adapter semantics
-- Conformance Suite behavior
+- Canonical Eventの必須項目や通信形式上のバージョン識別子
+- Standard APIの外部から確認できる動作
+- Canonical Eventの同一性や来歴情報の規則
+- 派生関係や意味上の関係を表す語彙
+- 認証、確認、公開、モデレーション、運用者の権限
+- 保存、再処理、バックアップ、復元、移行
+- 配信アダプターが扱う意味
+- Conformance Suiteの動作
 
-schemaの暗黙的な付け替え、strict v1 validationの弱体化、similarityによるidentity統合、人間review境界の迂回を行ってはいけません。
+スキーマの暗黙的な付け替え、v1の厳密な検証の弱体化、類似性による同一性の統合、人間による確認の迂回を行ってはいけません。
 
 ## 文書言語
 
-規範ポリシーは次です。
+規範となるポリシーは、次の文書です。
 
 `docs/governance/DOCUMENTATION_LANGUAGE_POLICY.md`
 
-公開上の入口、主要概念、最小運用文書は英日併記とします。詳細な技術文書と実装文書は英語とします。歴史文書は、現在の技術的・運用上の誤解を生まない限り、既存言語のまま保存します。
+公開上の入口、主要概念、最小限の運用文書は英日併記とします。詳細な技術文書と実装文書は英語で管理します。過去の記録は、現在の技術や運用について誤解を生まない限り、既存の言語のまま保存します。
 
 ## ライセンスへの同意
 
-Pull Requestを提出した場合、`LICENSE_POLICY.md`で定義された条件に従い、module・artifact種別に応じてAGPLv3、MIT、またはCC BY-SA 4.0で貢献物が公開されることに同意したものとみなします。
+Pull Requestの提出により、`LICENSE_POLICY.md`の条件に従い、モジュールや成果物の種類に応じて、貢献物をAGPLv3、MIT、またはCC BY-SA 4.0で公開することに同意したものとみなします。
